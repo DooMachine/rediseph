@@ -72,15 +72,21 @@ io.on('connection', (client) => {
             redis.on('ready', () => {
                 console.log("Redis Ready")
                 redisutils.buildRedisTree(redis).then((tree) => {
+                    redis.monitor(function (err, monitor) {
+                        monitor.on('monitor', function (time, args, source, database) {
+                            console.log(time)
+                            io.to(roomId).emit(actions.REDIS_EVENT,{time,args,source,database});
+                        });
+                    });
                     const redisInstance = {roomId:roomId, redis: redis, redisTree: tree};
                     db.redisInstances.push(redisInstance)              
                     client.join(roomId)
-                    console.log(redisInstance);
                     client.emit(actions.CONNECT_REDIS_INSTANCE_SUCCESS,
                         {redisInfo: data, redisTree: tree, serverInfo: redis.serverInfo})
                 })
                 .catch((err)=> console.log(err))
             });
+            
         }        
     });
 

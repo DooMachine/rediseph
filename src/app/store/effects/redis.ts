@@ -39,6 +39,15 @@ export class RedisEffects {
             )
         );
     @Effect()
+    redisEvent$: Observable<Action> =
+        this.redisService.redisEvent$.pipe( // listen to the socket for CLIENT CONNECTED event
+            switchMap((resp) =>  {
+                    console.log(resp);
+                    return of();
+                }
+            )
+        );
+    @Effect()
     connectRedisFail$: Observable<Action> =
         this.redisService.redisConnectFail$.pipe( // listen to the socket for CLIENT CONNECTED FAIL event
             switchMap(resp =>
