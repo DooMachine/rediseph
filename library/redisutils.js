@@ -20,9 +20,12 @@ async function buildRedisTree(redis) {
     for (let i = 0; i < keys.length; i++) { // process types
       const key = keys[i];
       const type = await redis.type(key);
+      console.log(type)
       root[key] = {type};
       if (type !== 'string') {
-        root[key].len = await redis[lencommands[type]](key);
+        if (lencommands[type]) {
+          root[key].len = await redis[lencommands[type]](key);
+        }
       } else {
         root[key].value = await redis.get(key);
       }
@@ -42,7 +45,6 @@ async function buildRedisTree(redis) {
         buildTree(node.children[key], parts.slice(1));
       }
     };
-    console.log("3")
   
     const parseTreeToArray = (node, depth) => {
   
@@ -60,9 +62,7 @@ async function buildRedisTree(redis) {
         result.children.push(parseTreeToArray(n));
       });
       return result;
-    };
-    console.log("4")
-  
+    };  
   
     const newRoot = [];
     for (let i = 0; i < keys.length; i++) {
@@ -79,22 +79,27 @@ async function buildRedisTree(redis) {
         buildTree(tree[parts[0]], parts.slice(1))
       }
     }
-    console.log("5")
-  
-  
   
     for (let i = 0; i < newRoot.length; i++) {
       const v = newRoot[i];
       if (v.children) {
         newRoot[i] = parseTreeToArray(v, 1);
       }
-    }
-  
-    console.log("6")
-  
+    }  
     return newRoot;
   }
 
+  
+
+  const refreshNeedCommands = ['set',
+  'del','hmset','hset','hdel',
+  'append','decr','exec','expire',
+  'flushall','flushdb','hincrby','hincrbyfloat','hsetnx',
+  'incr','incrby','incrbyfloat','linsert','lpop','lpush','lpushx',
+  'lrem','lset','ltrim','migrate','move','mset','msetnx','publish','rename','renamenx',
+  'restore','rpush','rpushx','sadd','sdiff','setnx','sinter','smove','srem','sunion','sunionstore',
+  'zadd','zincrby','zinterstore','zpopmax','zpopmin','zrem','zrank','xadd']
+
   module.exports = {
-    buildRedisTree
+    buildRedisTree, refreshNeedCommands
   }

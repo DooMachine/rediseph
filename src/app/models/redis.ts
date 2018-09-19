@@ -1,5 +1,6 @@
 
 import { TableInfo, OrderType } from './table-helpers';
+import { RedisNode } from './redis-node';
 
 /**
  * add server model
@@ -20,8 +21,10 @@ export class RedisInstance {
   searchQuery = '';
   working = false;
   serverModel: ConnectServerModel;
+  tree: RedisNode[];
   selectedNodeKey: string;
   expandedNodeKeys: string[] = [];
+  rootSelected = true;
   id = '';
   expanded = false;
   info: TableInfo<RedisInfo> = {

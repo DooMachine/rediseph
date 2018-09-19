@@ -11,9 +11,13 @@ export enum RedisActionTypes {
     CONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] CONNECT_REDIS_INSTANCE_SUCCESS',
     CONNECT_REDIS_INSTANCE_FAIL = '[Redis] CONNECT_REDIS_INSTANCE_FAIL',
 
+    REDIS_INSTANCE_UPDATED = '[Redis] REDIS_INSTANCE_UPDATED',
+
     EXECUTE_COMMAND = '[Redis] EXECUTE_COMMAND',
     SET_SEARCH_QUERY = '[Redis] SET_SEARCH_QUERY',
 
+
+    SHOW_ROOT_INFO = '[Redis] SHOW_ROOT_INFO',
     SET_SELECTED_NODE = '[Redis] SET_SELECTED_NODE',
     SET_SELECTED_REDIS_INDEX = '[Redis] SET_SELECTED_REDIS_INDEX',
     EXPAND_TOGGLE_NODE = '[Redis] EXPAND_TOGGLE_NODE',
@@ -43,6 +47,12 @@ export class ConnectRedisInstanceFail implements Action {
 
     constructor(public payload: RedisInstance) { }
 }
+
+export class RedisInstanceUpdated implements Action {
+    readonly type = RedisActionTypes.REDIS_INSTANCE_UPDATED;
+
+    constructor(public payload: any) { }
+}
 export class SetSearchQuery implements Action {
     readonly type = RedisActionTypes.SET_SEARCH_QUERY;
 
@@ -52,6 +62,12 @@ export class SetSelectedNode implements Action {
     readonly type = RedisActionTypes.SET_SELECTED_NODE;
 
     constructor(public payload: {redis: RedisInstance, node: RedisNode}) { }
+}
+
+export class ShowRootInfo implements Action {
+    readonly type = RedisActionTypes.SHOW_ROOT_INFO;
+
+    constructor(public payload: RedisInstance) { }
 }
 export class SetSelectedRedisIndex implements Action {
     readonly type = RedisActionTypes.SET_SELECTED_REDIS_INDEX;
@@ -71,7 +87,9 @@ export type RedisActions
                         = ConnectRedisInstance
                         | ConnectRedisInstanceSuccess
                         | ConnectRedisInstanceFail
+                        | RedisInstanceUpdated
                         | SetSelectedNode
+                        | ShowRootInfo
                         | SetSearchQuery
                         | SetSelectedRedisIndex
                         | ExpandToggleNode;

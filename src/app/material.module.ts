@@ -31,6 +31,7 @@ import {
     MatTooltipModule,
     MatStepperModule,
     MatTreeModule,
+    MatBadgeModule,
 } from '@angular/material';
 import {MatNativeDateModule, MatRippleModule} from '@angular/material';
 import {CdkTableModule} from '@angular/cdk/table';
@@ -80,6 +81,7 @@ exports: [
         MatToolbarModule,
         MatTooltipModule,
         MatTreeModule,
+        MatBadgeModule,
         MatNativeDateModule,
         CdkTableModule,
         A11yModule,

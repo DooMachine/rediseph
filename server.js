@@ -38,7 +38,7 @@ const server = app.listen(app.get('port'), () => {
 const io = socketio(server, {'origins': '*:*'} );
 
 const db = {
-    redisInstances: [],    
+    redisInstances: [],
 };
 
 
@@ -48,7 +48,6 @@ io.on('connection', (client) => {
     console.log("client connected...");
 
     client.on(actions.CONNECT_REDIS_INSTANCE, (data) => {
-        console.log(data);
 
         let roomId = data.ip + '|' + data.port + '|' + data.db + '|' + data.password;
         data.id = roomId;
@@ -66,25 +65,33 @@ io.on('connection', (client) => {
             redis.on('error', (e) => {           
                 db.redisInstances = db.redisInstances.filter(p=>p.roomId != roomId)
                 client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
-                    {redisInfo: data, redisTree: tree, serverInfo: redis.serverInfo, error: e.message})
+                    {redisInfo: data, error: e.message})
             });
           
             redis.on('ready', () => {
                 console.log("Redis Ready")
-                redisutils.buildRedisTree(redis).then((tree) => {
-                    redis.monitor(function (err, monitor) {
-                        monitor.on('monitor', function (time, args, source, database) {
-                            console.log(time)
-                            io.to(roomId).emit(actions.REDIS_EVENT,{time,args,source,database});
-                        });
-                    });
+                redisutils.buildRedisTree(redis).then((tree) => {                    
                     const redisInstance = {roomId:roomId, redis: redis, redisTree: tree};
                     db.redisInstances.push(redisInstance)              
                     client.join(roomId)
                     client.emit(actions.CONNECT_REDIS_INSTANCE_SUCCESS,
-                        {redisInfo: data, redisTree: tree, serverInfo: redis.serverInfo})
-                })
+                        {redisInfo: data, redisTree: tree, serverInfo: redis.serverInfo})                    
+                })                
                 .catch((err)=> console.log(err))
+            });
+            redis.monitor((err, monitor) => {
+                monitor.on('monitor', (time, args, source, database) => {
+                    console.log(time, args, source, database)
+                    const command = args[0];
+                    if (redisutils.refreshNeedCommands.indexOf(command.toLowerCase()) != -1) {
+                        redisutils.buildRedisTree(redis).then((tree)=> {
+                            const dbInstance = db.redisInstances.find(p=>p.roomId == roomId)
+                            dbInstance.redisTree = tree;
+                            io.to(roomId).emit(actions.REDIS_INSTANCE_UPDATED,
+                                {redisInfo: data, redisTree: dbInstance.redisTree, serverInfo: redis.serverInfo})
+                        })
+                    }
+                });
             });
             
         }        

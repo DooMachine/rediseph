@@ -2,9 +2,11 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { State } from './store/reducers/redis';
 import { Store, select } from '@ngrx/store';
 import * as redisActions from './store/actions/redis';
-import { RedisInstance } from './models/redis';
+import { RedisInstance, ConnectServerModel } from './models/redis';
 import { Observable } from 'rxjs';
 import { selectAllRedisInstances, getSelectedRedisIndex } from './store/reducers';
+import { MatDialogRef, MatDialog } from '@angular/material';
+import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +18,7 @@ export class AppComponent implements OnInit {
   title = 'rediSeph';
   redisInstances$: Observable<RedisInstance[]>;
   selectedRedisIndex$: Observable<number>;
-  constructor(private readonly store: Store<State>) {
+  constructor(private readonly store: Store<State>, private dialog: MatDialog) {
   }
 
   ngOnInit(): void {
@@ -45,5 +47,27 @@ export class AppComponent implements OnInit {
   }
   setNodeSearchQuert($event) {
     this.store.dispatch(new redisActions.SetSearchQuery($event));
+  }
+  clickNew() {
+    const newData: ConnectServerModel = {
+      ip: 'localhost',
+      name: '',
+      port: 6379,
+      password: '',
+      db: 0
+    };
+    const dialogRef = this.dialog.open(AddRedisModalComponent, {
+      data: newData,
+      width: '300px'
+    });
+
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res) {
+        this.store.dispatch(new redisActions.ConnectRedisInstance(res));
+      }
+    });
+  }
+  showRootInfo($event) {
+    this.store.dispatch(new redisActions.ShowRootInfo($event));
   }
 }

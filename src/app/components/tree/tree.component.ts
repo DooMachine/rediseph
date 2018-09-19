@@ -5,6 +5,7 @@ import { MatTreeNestedDataSource } from '@angular/material';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { searchFilterNodes } from 'src/app/utils/redisutils';
 
 @Component({
   selector: 'app-tree',
@@ -38,10 +39,9 @@ export class TreeComponent implements OnInit {
 
   @Input('redisTree')
   set redisTree(tree: any) {
-    console.log(this.expandedNodeKeys);
     this.nestedTreeControl = new NestedTreeControl<RedisNode>(this._getChildren);
     this.nestedDataSource = new MatTreeNestedDataSource();
-    this.nestedDataSource.data = tree;
+    this.nestedDataSource.data = searchFilterNodes(tree, this.searchText);
     this.nestedTreeControl.isExpanded = this.isExpanded;
   }
   hasNestedChild = (_: number, nodeData: RedisNode) => nodeData.type === 'folder';
@@ -53,7 +53,7 @@ export class TreeComponent implements OnInit {
   ngOnInit() {
     this.searchInputControlSub = this.searchInputControl.valueChanges
     .pipe(
-      debounceTime(700)
+      debounceTime(600)
     ).subscribe(newValue => this.searchInputChanged.emit(newValue));
   }
 }

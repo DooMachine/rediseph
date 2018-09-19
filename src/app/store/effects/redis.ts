@@ -40,10 +40,9 @@ export class RedisEffects {
         );
     @Effect()
     redisEvent$: Observable<Action> =
-        this.redisService.redisEvent$.pipe( // listen to the socket for CLIENT CONNECTED event
+        this.redisService.redisUpdated$.pipe( // listen to the socket for REDIS UPDATES
             switchMap((resp) =>  {
-                    console.log(resp);
-                    return of();
+                    return of(new redisActions.RedisInstanceUpdated(resp));
                 }
             )
         );

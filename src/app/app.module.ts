@@ -13,13 +13,16 @@ import { StorageService } from './services/storage.service';
 import { TreeComponent } from './components/tree/tree.component';
 import { RedisInstanceComponent } from './components/redis-instance/redis-instance.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TreeComponent,
-    RedisInstanceComponent
+    RedisInstanceComponent,
+    AddRedisModalComponent
   ],
+  entryComponents: [AddRedisModalComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

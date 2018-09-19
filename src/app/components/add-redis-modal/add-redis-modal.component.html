@@ -1,0 +1,30 @@
+<h1 mat-dialog-title>Connect Redis</h1>
+<div mat-dialog-content>
+  <div fxLayout="column" fxLayoutAlign="start start" >
+    <mat-form-field>
+      <input matInput type="text" [(ngModel)]="data.name" placeholder="Tab Name">
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput type="text" [(ngModel)]="data.ip" placeholder="Host/Ip">
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput type="number" [(ngModel)]="data.port" placeholder="Port">
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput type="password" [(ngModel)]="data.password" placeholder="Password">
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput [(ngModel)]="data.db" placeholder="Database">
+    </mat-form-field>
+  </div>
+</div>
+<div class="mat-dialog-content">
+  <ul class="err-area">
+    <li *ngFor="let err of errors">{{err}}</li>
+  </ul>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button mat-button color="primary" (click)="onSubmit()" cdkFocusInitial>Connect</button>
+</div>
+  

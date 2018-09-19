@@ -1,13 +1,27 @@
 <ng-container>
+    
+</ng-container>
+
+<mat-sidenav-container fullscreen  class="nav-sidenav-container">
+  <mat-sidenav #sidenav mode="side" opened autosize class="nav-sidenav"> 
+    <div fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="10px">
+      <mat-divider color="primary"></mat-divider>
+        <button (click)="clickNew()" mat-icon-button>
+          <mat-icon class="menu-icon" matTooltip="Connect/Add new redis instance" aria-label="Example icon-button with a heart icon">add</mat-icon>
+        </button>
+    </div>
+  </mat-sidenav>
+  <mat-sidenav-content fxFlex>
     <mat-tab-group (selectedIndexChange)="redisSelected($event)" [@.disabled]="true">
         <mat-tab [@.disabled]="true" *ngFor=" let instance of (redisInstances$ | async)">
           <ng-template mat-tab-label>
             <mat-icon matTooltip="Synched" color="primary" class="tab-icon">flash_on</mat-icon>
-            {{instance.name}}
+              {{instance.name}}
             <mat-icon matTooltip="Disconnect" class="tab-icon">exit</mat-icon>
           </ng-template>
-          <mat-sidenav-container class="example-container">
-              <mat-sidenav #sidenav mode="side" opened autosize class="example-sidenav"> 
+          <mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
+              <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
+                  <button mat-raised-button color="primary" (click)="showRootInfo(instance)">Status</button>
                   <app-tree
                     [selectedNodeKey] = "instance.selectedNodeKey"
                     [expandedNodeKeys] = "instance.expandedNodeKeys"
@@ -19,22 +33,19 @@
                     >
                   </app-tree>
               </mat-sidenav>
-              <mat-sidenav-content>
+              <mat-sidenav-content >
                   <app-redis-instance
-                   [instance] = "instance"
+                    *ngIf="instance.rootSelected;else nodeSection"
+                    [instance] = "instance"
                   >
                   </app-redis-instance>
-              </mat-sidenav-content>
-            </mat-sidenav-container>
+                  <ng-template #nodeSection>
 
-        </mat-tab>        
-        <!--<mat-tab *ngIf="(redisInstances$ | async)" disabled selected="false">
-          <ng-template class="new-tab" mat-tab-label>
-            <mat-icon matTooltip="New">tab</mat-icon>              
-          </ng-template>          
-        </mat-tab>-->
+                  </ng-template>
+              </mat-sidenav-content>
+          </mat-sidenav-container>
+        </mat-tab>   
           <mat-toolbar class="example-footer">Footer</mat-toolbar>
       </mat-tab-group>
-
- 
-</ng-container>
+  </mat-sidenav-content>
+</mat-sidenav-container>

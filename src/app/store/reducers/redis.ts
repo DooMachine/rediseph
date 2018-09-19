@@ -15,7 +15,7 @@ export interface State extends EntityState<RedisInstance> {
  */
 export const adapter: EntityAdapter<RedisInstance> = createEntityAdapter<RedisInstance>({
   selectId: (redisInstance: RedisInstance) => redisInstance.id,
-  sortComparer: (a: RedisInstance, b: RedisInstance) => b.serverModel.name.localeCompare(a.serverModel.name),
+  sortComparer: false
 });
 /**
  * Initial state factory for RedisInstance
@@ -63,10 +63,40 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                  selectedInstanceIndex: state.ids.length
                 };
         }
+        case redisActions.RedisActionTypes.REDIS_INSTANCE_UPDATED:
+        {
+            const previous = state.entities[action.payload.redisInfo.id];
+            const infoAsKey = [];
+            Object.keys(action.payload.serverInfo).forEach(function(key) {
+                infoAsKey.push({index: key, value: action.payload.serverInfo[key]});
+            });
+            const tableInfo: TableInfo<any> = {
+                entities: infoAsKey,
+                pageIndex: previous.info.pageIndex,
+                pageSize: previous.info.pageSize,
+                totalCount: infoAsKey.length,
+                orderableColumns: [],
+                displayedColumns: ['key', 'value'],
+                displayedActions: [],
+                searchQuery: previous.info.searchQuery,
+                order: previous.info.order,
+                orderType: previous.info.orderType,
+            };
+            action.payload.redisInfo.info = tableInfo;
+            action.payload.redisInfo.tree = action.payload.redisTree;
+            action.payload.redisInfo.expandedNodeKeys = previous.expandedNodeKeys;
+            action.payload.redisInfo.selectedNodeKey = previous.selectedNodeKey;
+
+            return adapter.upsertOne(action.payload.redisInfo, state);
+        }
         case redisActions.RedisActionTypes.SET_SELECTED_NODE:
         {
             return adapter.updateOne({id: action.payload.redis.id,
-                 changes: {selectedNodeKey: action.payload.node.key}}, state);
+                 changes: {selectedNodeKey: action.payload.node.key, rootSelected: false}}, state);
+        }
+        case redisActions.RedisActionTypes.SHOW_ROOT_INFO:
+        {
+            return adapter.updateOne({id: action.payload.id, changes: {rootSelected: true}}, state);
         }
         case redisActions.RedisActionTypes.EXPAND_TOGGLE_NODE:
         {
@@ -82,6 +112,13 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         case redisActions.RedisActionTypes.SET_SEARCH_QUERY:
         {
             return adapter.updateOne({id: action.payload.redis.id, changes: {searchQuery: action.payload.query}} , state);
+        }
+        case redisActions.RedisActionTypes.SET_SELECTED_REDIS_INDEX:
+        {
+            return {
+                ...state,
+                selectedInstanceIndex: action.payload
+            };
         }
         default:
             return state;

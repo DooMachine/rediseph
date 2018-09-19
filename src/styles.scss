@@ -15,7 +15,9 @@ $redis-typography: mat-typography-config(
 
 @include mat-base-typography($redis-typography);
 body{
-  font-family: 'Open Sans,  sans-serif' !important,
+  font-family: 'Open Sans,  sans-serif' !important;
+  margin: 0;
+  padding: 0;
 }
 
 // Override typography for a specific Angular Material components.
@@ -36,3 +38,4 @@ $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 }
 
 .mat-tab-body{ transition: none; }
+.mat-ink-bar { height: 4px !important;}  

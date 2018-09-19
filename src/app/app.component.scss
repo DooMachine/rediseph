@@ -1,12 +1,24 @@
-mat-sidenav-container {
-    height: 90vh;
-}
-mat-sidenav-content{
+.nav-sidenav-container {
     display: flex;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
 }
+.nav-sidenav {
+    width: 50px;
+    background: #5a5a5a;
+}
+.menu-icon {
+    color:rgb(232, 232, 232);
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+}
+.inner-sidenav-container {
+    height: 100%;
+}
+.inner-sidenav {
+    position: relative;
+    display: flex;
+}
+
 mat-sidenav {
     padding:8px;
     padding-right: 17px;
