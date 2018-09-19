@@ -5,23 +5,27 @@
 <mat-sidenav-container fullscreen  class="nav-sidenav-container">
   <mat-sidenav #sidenav mode="side" opened autosize class="nav-sidenav"> 
     <div fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="10px">
-      <mat-divider color="primary"></mat-divider>
         <button (click)="clickNew()" mat-icon-button>
-          <mat-icon class="menu-icon" matTooltip="Connect/Add new redis instance" aria-label="Example icon-button with a heart icon">add</mat-icon>
+          <mat-icon class="menu-icon" matTooltip="Connect/Add new redis instance" >add</mat-icon>
         </button>
     </div>
   </mat-sidenav>
   <mat-sidenav-content fxFlex>
-    <mat-tab-group (selectedIndexChange)="redisSelected($event)" [@.disabled]="true">
+    <mat-tab-group [selectedIndex]="selectedRedisIndex$ | async" (selectedIndexChange)="redisSelected($event)" [@.disabled]="true">
         <mat-tab [@.disabled]="true" *ngFor=" let instance of (redisInstances$ | async)">
           <ng-template mat-tab-label>
-            <mat-icon matTooltip="Synched" color="primary" class="tab-icon">flash_on</mat-icon>
+            <mat-icon matTooltip="Synched" color="primary" class="tab-icon">storage</mat-icon>
               {{instance.name}}
             <mat-icon matTooltip="Disconnect" class="tab-icon">exit</mat-icon>
           </ng-template>
           <mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
               <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
-                  <button mat-raised-button color="primary" (click)="showRootInfo(instance)">Status</button>
+                  <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="6px">
+                      <button matTooltip="Add new key" color="accent" mat-mini-fab>
+                          <mat-icon >device_hub</mat-icon>
+                        </button>
+                      <button fxFlex mat-raised-button color="primary" (click)="showRootInfo(instance)">Status</button>
+                  </div>                
                   <app-tree
                     [selectedNodeKey] = "instance.selectedNodeKey"
                     [expandedNodeKeys] = "instance.expandedNodeKeys"
@@ -33,11 +37,11 @@
                     >
                   </app-tree>
               </mat-sidenav>
-              <mat-sidenav-content >
+              <mat-sidenav-content fxFlex>
                   <app-redis-instance
                     *ngIf="instance.rootSelected;else nodeSection"
                     [instance] = "instance"
-                  >
+                  >                  
                   </app-redis-instance>
                   <ng-template #nodeSection>
 

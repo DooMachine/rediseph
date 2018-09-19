@@ -5,7 +5,7 @@
     matInput placeholder="Search key..." value="{{searchText}}" #searchInput>
     <button mat-button *ngIf="searchText" matSuffix mat-icon-button aria-label="Clear"
      (click)="searchInputChanged.emit(null)">
-    <mat-icon>close</mat-icon>
+      <mat-icon>close</mat-icon>
     </button>
 </mat-form-field> 
 
@@ -20,6 +20,17 @@
               {{typeIconMap[node.type]}}
             </mat-icon></button>        
           <span [matBadge]="node.len" matBadgePosition="after" matBadgeOverlap="false" [matBadgeHidden]="!node.len">{{node.key}} </span>
+        </div>
+        <div class="menu-area">
+          <button mat-icon-button [matMenuTriggerFor]="nodeMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #nodeMenu="matMenu">
+            <button color="warn" mat-menu-item>
+              <mat-icon>delete_forever</mat-icon>
+              <span>Delete Key</span>
+            </button>
+          </mat-menu>
         </div>
       </li>
     </mat-tree-node>
@@ -37,6 +48,21 @@
           </button>
           <div class="selector-area" (click)="nodeClick.emit(node)">
             {{node.key}}
+          </div>
+          <div class="menu-area">
+            <button mat-icon-button [matMenuTriggerFor]="nodeMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #nodeMenu="matMenu">
+              <button color="warn" mat-menu-item>
+                <mat-icon>delete_forever</mat-icon>
+                <span>Delete Key</span>
+              </button>
+              <button color="accent" mat-menu-item>
+                <mat-icon>device_hub</mat-icon>
+                <span>Add New Key (Folder)</span>
+              </button>
+            </mat-menu>
           </div>
         </div>
         <ul [class.example-tree-invisible]="!nestedTreeControl.isExpanded(node)">

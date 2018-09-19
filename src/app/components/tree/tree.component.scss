@@ -11,6 +11,11 @@
 .mat-tree-node{
     min-height: 0px;
 }
+.mat-tree-node:hover {
+    .menu-area {
+        visibility: visible;
+    }
+}
 .selector-area
 {
     cursor: pointer;
@@ -31,4 +36,8 @@ mat-chip{
 }
 mat-form-field {
     width: 100%;
+}
+.menu-area {
+    visibility: hidden;
+    transition: all ease 0.1s;
 }

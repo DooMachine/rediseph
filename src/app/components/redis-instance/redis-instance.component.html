@@ -1,2 +1,15 @@
-<ng-content></ng-content>
-<ng-content select="info"></ng-content>
+<div fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="12px">
+    <div fxLayout="row" fxLayoutAlign="start stretch" fxLayoutGap="21px">
+        <div fxLayout="column" class="icon-cont" fxLayoutAlign="center center" fxLayoutGap="0px">
+            <mat-icon class="mat-storage-icon" color="primary">storage</mat-icon>
+        </div>
+        <div>
+            <h2>{{instance.name}}</h2>
+            <dl>
+                <dt>Host : {{instance.ip}}</dt>
+                <dt>Database : {{instance.db}}</dt>
+            </dl>
+        </div>
+    </div>
+    <ng-content></ng-content>
+</div>
