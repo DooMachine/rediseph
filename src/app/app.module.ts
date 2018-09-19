@@ -1,16 +1,41 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 import { AppComponent } from './app.component';
+import { AppMaterialModule } from './material.module';
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreDevtoolsModule} from '@ngrx/store-devtools';
+import { RedisStoreModule } from './store/store.module';
+import { environment } from '../environments/environment';
+import { StorageService } from './services/storage.service';
+import { TreeComponent } from './components/tree/tree.component';
+import { RedisInstanceComponent } from './components/redis-instance/redis-instance.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    TreeComponent,
+    RedisInstanceComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    BrowserAnimationsModule,
+    AppMaterialModule,
+    FormsModule,
+    ReactiveFormsModule,
+
+    StoreModule.forRoot({}),
+    EffectsModule.forRoot([]),
+    // StoreDevtoolsModule.instrument({
+    //   maxAge: 25, // Retains last 25 states
+    //   logOnly: environment.production, // Restrict extension to log-only mode
+    // }),
+    RedisStoreModule,
   ],
-  providers: [],
+  providers: [StorageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,0 +1,38 @@
+@import '~@angular/material/theming';
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,500,600,700');
+@include mat-core();
+
+$redis-app-primary: mat-palette($mat-red,800, 400, 700);
+$redis-app-accent:  mat-palette($mat-teal,500, 300, 800);
+$redis-app-warn:  mat-palette($mat-purple,800, 400, 700);
+$redis-app-theme: mat-light-theme($redis-app-primary, $redis-app-accent);
+
+$redis-typography: mat-typography-config(
+  $font-family: 'Open Sans,  sans-serif',
+  $headline: mat-typography-level(24px, 36px, 600),
+  $body-1: mat-typography-level(14px, 20px, 400)
+);
+
+@include mat-base-typography($redis-typography);
+body{
+  font-family: 'Open Sans,  sans-serif' !important,
+}
+
+// Override typography for a specific Angular Material components.
+@include mat-checkbox-typography($redis-typography);
+
+// Override typography for all Angular Material, including mat-base-typography and all components.
+@include angular-material-typography($redis-typography);
+
+@include angular-material-theme($redis-app-theme);
+
+/* Define CLI theme  */
+$dark-primary: mat-palette($mat-blue-grey);
+$dark-accent:  mat-palette($mat-amber, A200, A100, A400);
+$dark-warn:    mat-palette($mat-deep-orange);
+$dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
+.cli-theme {
+  @include angular-material-theme($dark-theme);
+}
+
+.mat-tab-body{ transition: none; }

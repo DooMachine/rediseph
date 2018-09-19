@@ -1,0 +1,31 @@
+.example-tree-invisible {
+    display: none;
+}
+  
+.example-tree ul,
+.example-tree li {
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-type: none;
+}
+.mat-tree-node{
+    min-height: 0px;
+}
+.selector-area
+{
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+}
+mat-tree{
+    margin: 10px auto;
+}
+mat-chip{
+    margin-left: 10px;    
+    padding: 4px;
+    border-radius: 15px;
+}
+.selectedNode
+{
+    background-color: #d4d4d4;
+}

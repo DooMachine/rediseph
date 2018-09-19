@@ -1,0 +1,21 @@
+mat-sidenav-container {
+    height: 1200px;
+}
+mat-sidenav-content{
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+mat-sidenav {
+    padding:8px;
+    padding-right: 17px;
+    border-right: 1px solid wheat;
+}
+.tab-icon {
+    margin:0 6px;
+}
+.new-tab-label{
+    min-width: 50px;
+    
+}
