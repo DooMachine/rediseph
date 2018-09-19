@@ -1,0 +1,15 @@
+<table mat-table [dataSource]="tableInfo.entities">
+
+    <ng-container matColumnDef="key">
+      <th mat-header-cell *matHeaderCellDef> Info </th>
+      <td mat-cell *matCellDef="let element"> {{element.key}} </td>
+    </ng-container>
+  
+    <ng-container matColumnDef="value">
+      <th mat-header-cell *matHeaderCellDef> Status </th>
+      <td mat-cell *matCellDef="let element"> {{element.value}} </td>
+    </ng-container>
+  
+    <tr mat-header-row *matHeaderRowDef="tableInfo.displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: tableInfo.displayedColumns;"></tr>
+  </table>

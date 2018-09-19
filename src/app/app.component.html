@@ -37,11 +37,14 @@
                     >
                   </app-tree>
               </mat-sidenav>
-              <mat-sidenav-content fxFlex>
+              <mat-sidenav-content fxFlex="70" class="inner-sidenav-content" fullscreen>
                   <app-redis-instance
                     *ngIf="instance.rootSelected;else nodeSection"
-                    [instance] = "instance"
-                  >                  
+                    [instance] = "instance">                          
+                    <app-root-info
+                      [tableInfo] = "instance.info"
+                      >
+                    </app-root-info>   
                   </app-redis-instance>
                   <ng-template #nodeSection>
 

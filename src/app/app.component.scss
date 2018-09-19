@@ -18,7 +18,9 @@
     position: relative;
     display: flex;
 }
-
+.inner-sidenav-content {
+    max-height: 93vh;
+}
 mat-sidenav {
     padding:8px;
     padding-right: 17px;

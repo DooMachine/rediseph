@@ -24,7 +24,7 @@ app.use(function(req, res, next) {
 
 const router = express.Router();              
 
-
+// TODO: Serve Angular APP
 router.get('/', (req, res) => {
     res.json({ health: 'OK', ...db });
 });
@@ -89,6 +89,7 @@ io.on('connection', (client) => {
                             dbInstance.redisTree = tree;
                             io.to(roomId).emit(actions.REDIS_INSTANCE_UPDATED,
                                 {redisInfo: data, redisTree: dbInstance.redisTree, serverInfo: redis.serverInfo})
+                            
                         })
                     }
                 });

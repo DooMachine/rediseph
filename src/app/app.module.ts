@@ -14,13 +14,15 @@ import { TreeComponent } from './components/tree/tree.component';
 import { RedisInstanceComponent } from './components/redis-instance/redis-instance.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
+import { RootInfoComponent } from './components/root-info/root-info.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TreeComponent,
     RedisInstanceComponent,
-    AddRedisModalComponent
+    AddRedisModalComponent,
+    RootInfoComponent
   ],
   entryComponents: [AddRedisModalComponent],
   imports: [

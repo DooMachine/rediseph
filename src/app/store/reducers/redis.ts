@@ -39,7 +39,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         {
             const infoAsKey = [];
             Object.keys(action.payload.serverInfo).forEach(function(key) {
-                infoAsKey.push({index: key, value: action.payload.serverInfo[key]});
+                infoAsKey.push({key: key, value: action.payload.serverInfo[key]});
             });
             const tableInfo: TableInfo<any> = {
                 entities: infoAsKey,
@@ -68,7 +68,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             const previous = state.entities[action.payload.redisInfo.id];
             const infoAsKey = [];
             Object.keys(action.payload.serverInfo).forEach(function(key) {
-                infoAsKey.push({index: key, value: action.payload.serverInfo[key]});
+                infoAsKey.push({key: key, value: action.payload.serverInfo[key]});
             });
             const tableInfo: TableInfo<any> = {
                 entities: infoAsKey,
