@@ -32,13 +32,13 @@
                       </button>
                       <button
                         (click)="watchChange({checked: false, instance: instance})"
-                        *ngIf="instance.isWatching"
+                        *ngIf="instance.isMonitoring"
                         matTooltip="Stop Watching Keys" color="accent" mat-mini-fab>
                           <mat-icon >sync</mat-icon>
                       </button>
                       <button
                         (click)="watchChange({checked: true, instance: instance})"
-                        *ngIf="!instance.isWatching"
+                        *ngIf="!instance.isMonitoring"
                         matTooltip="Start Watching Keys" color="accent" mat-mini-fab>
                           <mat-icon >sync_disabled</mat-icon>
                       </button>                      

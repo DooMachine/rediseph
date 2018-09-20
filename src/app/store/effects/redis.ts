@@ -59,7 +59,7 @@ export class RedisEffects {
     @Effect({dispatch: false})
     stopWatchChanges$ = this.actions$
         .pipe(
-            ofType(redisActions.RedisActionTypes.WATCH_CHANGES),
+            ofType(redisActions.RedisActionTypes.STOP_WATCH_CHANGES),
             mergeMap((action: redisActions.StopWatchChanges) => {
                 this.redisService.stopWatchChanges(action.payload.id);
                 return of();
