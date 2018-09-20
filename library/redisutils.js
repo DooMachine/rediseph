@@ -20,7 +20,6 @@ async function buildRedisTree(redis) {
     for (let i = 0; i < keys.length; i++) { // process types
       const key = keys[i];
       const type = await redis.type(key);
-      console.log(type)
       root[key] = {type};
       if (type !== 'string') {
         if (lencommands[type]) {
@@ -87,6 +86,20 @@ async function buildRedisTree(redis) {
       }
     }  
     return newRoot;
+  }
+
+  async function scanRedisTree(redisInstance, cursor, pattern, fetchCount = 0) {
+    if (pattern.indexOf('*') === -1 && pattern.indexOf('?') === -1) {
+      pattern += '*'
+    }
+    let count = 0
+
+    const iter = () => {
+      redisInstance.redis.scan(cursor, 'MATCH', pattern, 'COUNT', fetchCount, (err, res) => {
+       
+      })
+    }
+    
   }
 
   

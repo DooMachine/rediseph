@@ -7,6 +7,8 @@ import { Observable } from 'rxjs';
 import { selectAllRedisInstances, getSelectedRedisIndex } from './store/reducers';
 import { MatDialogRef, MatDialog } from '@angular/material';
 import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
+import { RedisNode } from './models/redis-node';
+import { buildDELQuery } from './utils/commandutils';
 
 @Component({
   selector: 'app-root',
@@ -67,7 +69,14 @@ export class AppComponent implements OnInit {
       }
     });
   }
+  disconnectRedis($event) {
+    this.store.dispatch(new redisActions.DisconnectRedisInstance($event));
+  }
   showRootInfo($event) {
     this.store.dispatch(new redisActions.ShowRootInfo($event));
+  }
+  deleteNode($event) {
+    const args = buildDELQuery($event.node);
+    this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redis.id, command: args}));
   }
 }

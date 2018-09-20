@@ -1,7 +1,12 @@
+:host {
+    padding-right: 12px;
+}
 .example-tree-invisible {
     display: none;
 }
-  
+input{
+    font-size: 14px;
+}
 .example-tree ul,
 .example-tree li {
     margin-top: 0;

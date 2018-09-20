@@ -20,9 +20,7 @@ export interface RedisNode {
     value: any | NodeSetTableInfo | null;
     children: Array<RedisNode> | null;
 }
-/**
- * the backend type to frontend type map
- */
+
 export const TYPE_MAP = {
     string: 'String',
     list: 'List',

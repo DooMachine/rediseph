@@ -16,7 +16,7 @@
           <ng-template mat-tab-label>
             <mat-icon matTooltip="Synched" color="primary" class="tab-icon">storage</mat-icon>
               {{instance.name}}
-            <mat-icon matTooltip="Disconnect" class="tab-icon">exit</mat-icon>
+            <mat-icon matTooltip="Disconnect" (click)="disconnectRedis(instance)" class="tab-icon">close</mat-icon>
           </ng-template>
           <mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
               <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
@@ -25,11 +25,26 @@
                           <mat-icon >device_hub</mat-icon>
                         </button>
                       <button fxFlex mat-raised-button color="primary" (click)="showRootInfo(instance)">Status</button>
-                  </div>                
+                      <button mat-icon-button [matMenuTriggerFor]="redisMenu">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #redisMenu="matMenu">
+                        <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
+                          <mat-icon>delete_forever</mat-icon>
+                          <span>Flush Keys In Database</span>
+                        </button>
+                        <button color="accent" mat-menu-item>
+                          <mat-icon>delete_outline</mat-icon>
+                          <span>Flush Keys in Server</span>
+                        </button>
+                      </mat-menu>
+                  </div>   
+                  <mat-divider></mat-divider>             
                   <app-tree
                     [selectedNodeKey] = "instance.selectedNodeKey"
                     [expandedNodeKeys] = "instance.expandedNodeKeys"
                     (nodeClick) = "nodeClicked({node: $event, redis:instance})"
+                    (deleteClick) = "deleteNode({node:$event, redis: instance})"
                     (searchInputChanged)= "setNodeSearchQuert({redis: instance, query:$event})"
                     [searchText]= "instance.searchQuery"
                     (expandClick)= "expandClicked({node: $event, redis:instance})"
@@ -37,7 +52,7 @@
                     >
                   </app-tree>
               </mat-sidenav>
-              <mat-sidenav-content fxFlex="70" class="inner-sidenav-content" fullscreen>
+              <mat-sidenav-content fxFlex class="inner-sidenav-content" fullscreen>
                   <app-redis-instance
                     *ngIf="instance.rootSelected;else nodeSection"
                     [instance] = "instance">                          

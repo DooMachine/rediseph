@@ -1,4 +1,4 @@
-import { RedisInstance } from '../models/redis';
+
 import { RedisNode } from '../models/redis-node';
 
 export const searchFilterNodes = (nodes: Array<RedisNode>, query: string) => {
@@ -35,3 +35,4 @@ export const recursiveSearchNode = (node: RedisNode, query: string): RedisNode =
     }
     return;
 };
+

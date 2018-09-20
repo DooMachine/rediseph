@@ -2,6 +2,20 @@
 import { TableInfo, OrderType } from './table-helpers';
 import { RedisNode } from './redis-node';
 
+export enum DataType {
+  string = 'string', list = 'list', set = 'set', hashmap = 'hashmap', sortedset = 'sortedset'
+}
+export interface AddKeyModel {
+  key: string;
+  isSubKey: boolean;
+  type: DataType;
+  values: {
+    string: string,
+    list: Array<string>,
+    hashmap: Map<string, string>,
+    sortedset: Map<string, number>,
+  };
+}
 /**
  * add server model
  */

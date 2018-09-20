@@ -60,24 +60,38 @@ io.on('connection', (client) => {
             const redis = new Redis({
                 host: data.ip, port: data.port, db: data.db,
                 password: data.password,
+                lazyConnect: true,
+                retryStrategy: (times) => {
+                    var delay = Math.min(times * 50, 3000);
+                    return delay;
+                }
+            });
+            redis.connect(()=> {
+                console.log("Redis Server Connected");
+            })
+            .catch((err)=>{
+                console.log("ERROR Connection",err)
+                client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                    {error: err})
             });
             
             redis.on('error', (e) => {           
                 db.redisInstances = db.redisInstances.filter(p=>p.roomId != roomId)
                 client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                     {redisInfo: data, error: e.message})
+                redis.disconnect();
             });
           
             redis.on('ready', () => {
                 console.log("Redis Ready")
                 redisutils.buildRedisTree(redis).then((tree) => {                    
-                    const redisInstance = {roomId:roomId, redis: redis, redisTree: tree};
+                    const redisInstance = {roomId:roomId, redis: redis, redisTree: tree, cursor:0};
                     db.redisInstances.push(redisInstance)              
                     client.join(roomId)
                     client.emit(actions.CONNECT_REDIS_INSTANCE_SUCCESS,
                         {redisInfo: data, redisTree: tree, serverInfo: redis.serverInfo})                    
                 })                
-                .catch((err)=> console.log(err))
+                .catch((err)=> console.log("red not ready",err))
             });
             redis.monitor((err, monitor) => {
                 monitor.on('monitor', (time, args, source, database) => {
@@ -98,8 +112,22 @@ io.on('connection', (client) => {
         }        
     });
 
-    client.on(actions.EXECUTE_COMMAND, (command) => {
-        io.in('notes').emit(actions.NOTE_ADDED, newNote);
+    client.on(actions.EXECUTE_COMMAND, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
+        if (!redisInstance) {
+            client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                {error: 'This should not happen!'})
+        }
+        await redisInstance.redis.call(data.args[0], data.args.slice(1));
+    });
+
+    client.on(actions.DISCONNECT_REDIS_INSTANCE, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
+        if (!redisInstance) {
+            client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                {error: 'This should not happen!'})
+        }
+        await redisInstance.redis.call(data.args[0], data.args.slice(1));
     });
 
     client.on('disconnect', () => {

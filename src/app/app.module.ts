@@ -1,20 +1,19 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
 import { AppComponent } from './app.component';
 import { AppMaterialModule } from './material.module';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
-import { StoreDevtoolsModule} from '@ngrx/store-devtools';
 import { RedisStoreModule } from './store/store.module';
-import { environment } from '../environments/environment';
 import { StorageService } from './services/storage.service';
 import { TreeComponent } from './components/tree/tree.component';
 import { RedisInstanceComponent } from './components/redis-instance/redis-instance.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
 import { RootInfoComponent } from './components/root-info/root-info.component';
+import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.component';
 
 @NgModule({
   declarations: [
@@ -22,16 +21,16 @@ import { RootInfoComponent } from './components/root-info/root-info.component';
     TreeComponent,
     RedisInstanceComponent,
     AddRedisModalComponent,
+    AddKeyModalComponent,
     RootInfoComponent
   ],
-  entryComponents: [AddRedisModalComponent],
+  entryComponents: [AddRedisModalComponent, AddKeyModalComponent],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
+    NoopAnimationsModule,
     AppMaterialModule,
     FormsModule,
     ReactiveFormsModule,
-
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     // StoreDevtoolsModule.instrument({

@@ -2,7 +2,7 @@
   <input
     type="text"
     [formControl]="searchInputControl"
-    matInput placeholder="Search key..." value="{{searchText}}" #searchInput>
+    matInput placeholder="Key/name/pattern" value="{{searchText}}" #searchInput>
     <button mat-button *ngIf="searchText" matSuffix mat-icon-button aria-label="Clear"
      (click)="searchInputChanged.emit(null)">
       <mat-icon>close</mat-icon>
@@ -19,14 +19,14 @@
             <mat-icon>
               {{typeIconMap[node.type]}}
             </mat-icon></button>        
-          <span [matBadge]="node.len" matBadgePosition="after" matBadgeOverlap="false" [matBadgeHidden]="!node.len">{{node.key}} </span>
+          <span [@.disabled]="true" matBadgeSize="small" [matBadge]="node.len" matBadgePosition="after" matBadgeOverlap="false" [matBadgeHidden]="!node.len">{{node.key}} </span>
         </div>
         <div class="menu-area">
           <button mat-icon-button [matMenuTriggerFor]="nodeMenu">
             <mat-icon>more_vert</mat-icon>
           </button>
           <mat-menu #nodeMenu="matMenu">
-            <button color="warn" mat-menu-item>
+            <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
               <mat-icon>delete_forever</mat-icon>
               <span>Delete Key</span>
             </button>
@@ -54,7 +54,7 @@
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #nodeMenu="matMenu">
-              <button color="warn" mat-menu-item>
+              <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
                 <mat-icon>delete_forever</mat-icon>
                 <span>Delete Key</span>
               </button>

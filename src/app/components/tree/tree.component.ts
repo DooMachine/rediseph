@@ -32,10 +32,11 @@ export class TreeComponent implements OnInit {
 
 
   @Input() selectedNodeKey: string;
+  @Input() expandedNodeKeys: Array<string>;
   @Input() searchText: string;
   @Output() nodeClick = new EventEmitter();
   @Output() expandClick = new EventEmitter();
-  @Input() expandedNodeKeys: Array<string>;
+  @Output() deleteClick = new EventEmitter();
 
   @Input('redisTree')
   set redisTree(tree: any) {

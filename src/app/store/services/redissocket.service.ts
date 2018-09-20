@@ -22,4 +22,7 @@ export class RedisSocketService {
     connectRedisInstance(redisInstance) {
         this.socket.emit('[Redis] CONNECT_REDIS_INSTANCE', redisInstance.payload);
     }
+    executeRedisInstance(redisId, args) {
+        this.socket.emit('[Redis] EXECUTE_COMMAND', {redisId: redisId, args: args});
+    }
 }

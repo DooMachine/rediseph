@@ -11,6 +11,9 @@ export enum RedisActionTypes {
     CONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] CONNECT_REDIS_INSTANCE_SUCCESS',
     CONNECT_REDIS_INSTANCE_FAIL = '[Redis] CONNECT_REDIS_INSTANCE_FAIL',
 
+    DISCONNECT_REDIS_INSTANCE = '[Redis] DISCONNECT_REDIS_INSTANCE',
+    DISCONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] DISCONNECT_REDIS_INSTANCE_SUCCESS',
+
     REDIS_INSTANCE_UPDATED = '[Redis] REDIS_INSTANCE_UPDATED',
 
     EXECUTE_COMMAND = '[Redis] EXECUTE_COMMAND',
@@ -47,11 +50,25 @@ export class ConnectRedisInstanceFail implements Action {
 
     constructor(public payload: RedisInstance) { }
 }
+export class DisconnectRedisInstance implements Action {
+    readonly type = RedisActionTypes.DISCONNECT_REDIS_INSTANCE;
 
+    constructor(public payload: ConnectServerModel) { }
+}
+export class DisconnectRedisInstanceSuccess implements Action {
+    readonly type = RedisActionTypes.DISCONNECT_REDIS_INSTANCE_SUCCESS;
+
+    constructor(public payload: ConnectServerModel) { }
+}
 export class RedisInstanceUpdated implements Action {
     readonly type = RedisActionTypes.REDIS_INSTANCE_UPDATED;
 
     constructor(public payload: any) { }
+}
+export class ExecuteCommand implements Action {
+    readonly type = RedisActionTypes.EXECUTE_COMMAND;
+
+    constructor(public payload: {command: Array<string>, redisId: string}) { }
 }
 export class SetSearchQuery implements Action {
     readonly type = RedisActionTypes.SET_SEARCH_QUERY;
@@ -89,7 +106,10 @@ export type RedisActions
                         | ConnectRedisInstanceFail
                         | RedisInstanceUpdated
                         | SetSelectedNode
+                        | ExecuteCommand
                         | ShowRootInfo
                         | SetSearchQuery
                         | SetSelectedRedisIndex
-                        | ExpandToggleNode;
+                        | ExpandToggleNode
+                        | DisconnectRedisInstance
+                        | DisconnectRedisInstanceSuccess;

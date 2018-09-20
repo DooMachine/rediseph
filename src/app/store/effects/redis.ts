@@ -24,7 +24,15 @@ export class RedisEffects {
                 return of();
             }),
         );
-
+    @Effect({dispatch: false})
+    executeCommand$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.EXECUTE_COMMAND),
+            mergeMap((action: redisActions.ExecuteCommand) => {
+                this.redisService.executeRedisInstance(action.payload.redisId, action.payload.command);
+                return of();
+            }),
+        );
     @Effect()
     connectRedisSuccess$: Observable<Action> =
         this.redisService.redisConnected$.pipe( // listen to the socket for CLIENT CONNECTED event

@@ -54,10 +54,10 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                 orderType: OrderType.None,
             };
             action.payload.redisInfo.info = tableInfo;
+            action.payload.redisInfo.rootSelected = true;
             action.payload.redisInfo.tree = action.payload.redisTree;
             action.payload.redisInfo.expandedNodeKeys = [];
             action.payload.redisInfo.selectedNodeKey = '';
-
             return {
                 ...adapter.addOne(action.payload.redisInfo, state),
                  selectedInstanceIndex: state.ids.length
