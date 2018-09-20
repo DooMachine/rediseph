@@ -37,14 +37,32 @@ export class RedisEffects {
     connectRedisSuccess$: Observable<Action> =
         this.redisService.redisConnected$.pipe( // listen to the socket for CLIENT CONNECTED event
             switchMap((resp) =>  {
-                    const redisTree = resp.redisTree;
-                    redisTree.redisInstanceId = resp.redisInfo.id;
-                    return from([
-                        new redisActions.ConnectRedisInstanceSuccess(resp),
-                        new redisTreeActions.AddRedisTree(redisTree)
-                    ]);
+                    return from(
+                        [
+                            new redisActions.ConnectRedisInstanceSuccess(resp),
+                            new redisActions.WatchChanges(resp.redisInfo.id)
+                        ]
+                    );
                 }
             )
+        );
+    @Effect({dispatch: false})
+    watchChanges$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.WATCH_CHANGES),
+            switchMap((action: redisActions.WatchChanges) => {
+                this.redisService.watchChanges(action.payload);
+                return of();
+            }),
+        );
+    @Effect({dispatch: false})
+    searchQueryChanged$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.SET_SEARCH_QUERY),
+            switchMap((action: redisActions.SetSearchQuery) => {
+                this.redisService.changeKeyPattern(action.payload.redis, action.payload.query);
+                return of();
+            }),
         );
     @Effect()
     redisEvent$: Observable<Action> =

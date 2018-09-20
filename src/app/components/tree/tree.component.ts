@@ -42,7 +42,7 @@ export class TreeComponent implements OnInit {
   set redisTree(tree: any) {
     this.nestedTreeControl = new NestedTreeControl<RedisNode>(this._getChildren);
     this.nestedDataSource = new MatTreeNestedDataSource();
-    this.nestedDataSource.data = searchFilterNodes(tree, this.searchText);
+    this.nestedDataSource.data = tree;
     this.nestedTreeControl.isExpanded = this.isExpanded;
   }
   hasNestedChild = (_: number, nodeData: RedisNode) => nodeData.type === 'folder';

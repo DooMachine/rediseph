@@ -10,6 +10,7 @@ export enum RedisActionTypes {
     CONNECT_REDIS_INSTANCE = '[Redis] CONNECT_REDIS_INSTANCE',
     CONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] CONNECT_REDIS_INSTANCE_SUCCESS',
     CONNECT_REDIS_INSTANCE_FAIL = '[Redis] CONNECT_REDIS_INSTANCE_FAIL',
+    WATCH_CHANGES = '[Redis] WATCH_CHANGES',
 
     DISCONNECT_REDIS_INSTANCE = '[Redis] DISCONNECT_REDIS_INSTANCE',
     DISCONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] DISCONNECT_REDIS_INSTANCE_SUCCESS',
@@ -47,6 +48,11 @@ export class ConnectRedisInstanceSuccess implements Action {
 }
 export class ConnectRedisInstanceFail implements Action {
     readonly type = RedisActionTypes.CONNECT_REDIS_INSTANCE_FAIL;
+
+    constructor(public payload: RedisInstance) { }
+}
+export class WatchChanges implements Action {
+    readonly type = RedisActionTypes.WATCH_CHANGES;
 
     constructor(public payload: RedisInstance) { }
 }
@@ -112,4 +118,5 @@ export type RedisActions
                         | SetSelectedRedisIndex
                         | ExpandToggleNode
                         | DisconnectRedisInstance
-                        | DisconnectRedisInstanceSuccess;
+                        | DisconnectRedisInstanceSuccess
+                        | WatchChanges;

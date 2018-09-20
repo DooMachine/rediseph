@@ -1,7 +1,8 @@
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import * as redisActions from '../actions/redis';
-import { RedisInstance } from 'src/app/models/redis';
+import { RedisInstance, KeyInfo } from 'src/app/models/redis';
 import { TableInfo, OrderType} from '../../models/table-helpers';
+import { buildRedisTree } from 'src/app/utils/redisutils';
 
 /**
  * State to keep RedisInstances
@@ -53,11 +54,17 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                 order: null,
                 orderType: OrderType.None,
             };
+            const keyInfo = new KeyInfo();
+            keyInfo.selectedKey = action.payload.keyInfo.selectedKey,
+            keyInfo.pattern = action.payload.keyInfo.pattern,
+            keyInfo.pageSize = action.payload.keyInfo.pageSize;
+            keyInfo.pageIndex = action.payload.keyInfo.pageIndex;
             action.payload.redisInfo.info = tableInfo;
             action.payload.redisInfo.rootSelected = true;
-            action.payload.redisInfo.tree = action.payload.redisTree;
+            action.payload.redisInfo.tree = buildRedisTree(action.payload.keys);
             action.payload.redisInfo.expandedNodeKeys = [];
             action.payload.redisInfo.selectedNodeKey = '';
+            action.payload.redisInfo.keyInfo = keyInfo;
             return {
                 ...adapter.addOne(action.payload.redisInfo, state),
                  selectedInstanceIndex: state.ids.length
@@ -83,16 +90,29 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                 orderType: previous.info.orderType,
             };
             action.payload.redisInfo.info = tableInfo;
-            action.payload.redisInfo.tree = action.payload.redisTree;
+            action.payload.redisInfo.tree = buildRedisTree(action.payload.keys);
             action.payload.redisInfo.expandedNodeKeys = previous.expandedNodeKeys;
-            action.payload.redisInfo.selectedNodeKey = previous.selectedNodeKey;
+
+            const keyInfo = new KeyInfo();
+            keyInfo.selectedKey = action.payload.keyInfo.selectedKey,
+            keyInfo.pattern = action.payload.keyInfo.pattern,
+            keyInfo.pageSize = action.payload.keyInfo.pageSize;
+            keyInfo.pageIndex = action.payload.keyInfo.pageIndex;
+            action.payload.redisInfo.keyInfo = keyInfo;
 
             return adapter.upsertOne(action.payload.redisInfo, state);
         }
+        case redisActions.RedisActionTypes.WATCH_CHANGES:
+        {
+            // TODO: FIX
+            return state;
+        }
         case redisActions.RedisActionTypes.SET_SELECTED_NODE:
         {
+            const redisInstance = state.entities[action.payload.redis.id];
+            const change = {...redisInstance.keyInfo, selectedNodeKey: action.payload.node.key };
             return adapter.updateOne({id: action.payload.redis.id,
-                 changes: {selectedNodeKey: action.payload.node.key, rootSelected: false}}, state);
+                    changes: {keyInfo: change , rootSelected: false}}, state);
         }
         case redisActions.RedisActionTypes.SHOW_ROOT_INFO:
         {
@@ -111,7 +131,9 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         }
         case redisActions.RedisActionTypes.SET_SEARCH_QUERY:
         {
-            return adapter.updateOne({id: action.payload.redis.id, changes: {searchQuery: action.payload.query}} , state);
+            const redisInstance = state.entities[action.payload.redis.id];
+            const change = {...redisInstance.keyInfo, pattern: action.payload.query };
+            return adapter.updateOne({id: action.payload.redis.id, changes: { keyInfo: change }}, state);
         }
         case redisActions.RedisActionTypes.SET_SELECTED_REDIS_INDEX:
         {

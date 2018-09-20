@@ -32,15 +32,15 @@ export interface ConnectServerModel {
  */
 export class RedisInstance {
   status = 'new';
-  searchQuery = '';
+  watching = false;
   working = false;
   serverModel: ConnectServerModel;
   tree: RedisNode[];
-  selectedNodeKey: string;
-  expandedNodeKeys: string[] = [];
+  selectedNodeKey =  '';
+  expandedNodeKeys = [];
   rootSelected = true;
   id = '';
-  expanded = false;
+  keyInfo: KeyInfo;
   info: TableInfo<RedisInfo> = {
     entities: [],
     pageIndex: 0,
@@ -53,6 +53,14 @@ export class RedisInstance {
     order: null,
     orderType: OrderType.None,
   };
+}
+
+export class KeyInfo {
+    selectedKey = '';
+    pattern = '' ;
+    hasMoreKeys = true;
+    pageIndex = 0;
+    pageSize = 50;
 }
 /**
  * Key value model for Redis Information

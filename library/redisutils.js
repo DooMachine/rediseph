@@ -1,118 +1,135 @@
 const _ = require('lodash');
+const monitoractions = require('./monitoractions');
 
-/**
- * build redis key tree
- * @param redis the redis instance
- */
-async function buildRedisTree(redis) {
-    if (!redis) {
-      throw errors.newBadRequestError("Redis instance not exist");
-    }  
-    const root = {};
-    const keys = await redis.keys('*');
-    const lencommands = {
-      list: 'llen',
-      set: 'scard', 
-      zset: 'zcard',
-      hash: 'hlen',
-    };
-  
-    for (let i = 0; i < keys.length; i++) { // process types
-      const key = keys[i];
-      const type = await redis.type(key);
-      root[key] = {type};
-      if (type !== 'string') {
-        if (lencommands[type]) {
-          root[key].len = await redis[lencommands[type]](key);
+async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 100, callback) {
+  if (pattern == '')
+  {
+    pattern = '*';
+  }
+  async function iter () {
+    const keyRoot = {};
+    const stream = redisInstance.redis.scanStream({
+      cursor: cursor,
+      match:pattern || '*',
+      count:fetchCount,
+    });
+    const lencommands = {list: 'llen',set: 'scard', zset: 'zcard',hash: 'hlen', };
+
+    stream.on('data', async (keys) => {      
+      for (let i = 0; i < keys.length; i++) { // process types
+        const key = keys[i];
+        const type = await redisInstance.redis.type(key);
+        keyRoot[key] = {type};
+        if (type !== 'string') {
+          if (lencommands[type]) {
+            keyRoot[key].len =  await redisInstance.redis[lencommands[type]](key);
+          }
+        } else {
+          keyRoot[key].value = await  redisInstance.redis.get(key);
         }
-      } else {
-        root[key].value = await redis.get(key);
       }
-    }
-  
-    const tree = {};
-  
-    const buildTree = (node, parts) => {
-  
-      const key = parts[0] + (parts.length === 1 ? '' : ':');
-      node.children[key] = node.children[key] || {
-        key: node.key + key,
-        name: key + (parts.length === 1 ? '' : '*'),
-        children: {},
-      };
-      if (parts.length > 1) {
-        buildTree(node.children[key], parts.slice(1));
-      }
-    };
-  
-    const parseTreeToArray = (node, depth) => {
-  
-      if (_.keys(node.children).length <= 0) {
-        return {key: node.key, ...root[node.key], name: node.name, depth}
-      }
-      const result = {
-        type: 'folder',
-        key: node.key,
-        name: node.name,
-        depth,
-        children: []
-      };
-      _.each(node.children, (n) => {
-        result.children.push(parseTreeToArray(n));
-      });
-      return result;
-    };  
-  
-    const newRoot = [];
+      callback(keyRoot);
+    });    
+  }
+  await iter();
+}
+
+async function handleMonitorCommand (redisInstance,args, callback) {
+  let actions = [];
+  command = args[0].toLowerCase();
+  if(command === 'del') {
+    keys = args.splice(1);
+    let localTreeUpdated = false;
     for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-  
-      const parts = keys[i].split(':');
-      if (parts.length <= 1) {
-        newRoot.push({key, ...root[key], depth: 1, name: key})
+      const keyObj = redisInstance.keys[keys[i]];
+      if(keyObj) {
+        localTreeUpdated = true;
+        delete redisInstance.keys[keys[i]];
+      }
+    }      
+    if (localTreeUpdated) {
+      actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+    }    
+  }
+  else if(command === 'set') {
+    if(args.length != 3) {
+      key = args[1];
+      const keyObj = redisInstance.keys[key];
+      if(keyObj) {
+        keyObj.value = args[2]
+        actions.push({type: monitoractions.UPDATE_LOCAL_TREE})
       } else {
-        if (!tree[parts[0]]) {
-          tree[parts[0]] = {key: parts[0] + ':', children: {}, name: parts[0] + ':*'};
-          newRoot.push(tree[parts[0]]);
+        const newValue = {
+          value : args[2],
+          type : 'string'
         }
-        buildTree(tree[parts[0]], parts.slice(1))
+        redisInstance.keys[key] = newValue;
+        actions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+      }
+    }      
+  } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
+    redisInstance.keys = {};
+    actions.push({type:  monitoractions.REMOVE_LOCAL_TREE})
+  } else if (shouldTreeScanCommands.indexOf(command) != -1) {
+    if (command == 'renamenx') {      
+      key = args[1];
+      newKey = args[2];
+      const existingnewKey = await redisInstance.redis.get(newKey);
+      if (!existingnewKey) {
+        const keyObj = redisInstance.keys[key];
+        if(keyObj) {
+          redisInstance.keys[newKey] = redisInstance.keys[key];
+          delete redisInstance.keys[key];
+          actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+        }
+      }
+    }else if (command == 'rename') {
+      key = args[1];
+      newKey = args[2];
+      const existingnewKey = await redisInstance.redis.get(newKey);
+      const keyObj = redisInstance.keys[key];
+      if(keyObj) {
+        if (!existingnewKey) {
+            redisInstance.keys[newKey] = redisInstance.keys[key];
+            delete redisInstance.keys[key];
+            actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+        }
       }
     }
-  
-    for (let i = 0; i < newRoot.length; i++) {
-      const v = newRoot[i];
-      if (v.children) {
-        newRoot[i] = parseTreeToArray(v, 1);
-      }
-    }  
-    return newRoot;
   }
+  callback(actions);
+}
 
-  async function scanRedisTree(redisInstance, cursor, pattern, fetchCount = 0) {
-    if (pattern.indexOf('*') === -1 && pattern.indexOf('?') === -1) {
-      pattern += '*'
-    }
-    let count = 0
 
-    const iter = () => {
-      redisInstance.redis.scan(cursor, 'MATCH', pattern, 'COUNT', fetchCount, (err, res) => {
-       
-      })
-    }
-    
-  }
+const shouldRemoveTreeCommands = [
+  'flushall','flushdb',
+]
+const shouldTreeScanCommands = [
+  'rename','renamenx','zinterstore'
+]
+const shouldHashScanCommands = [
+  'hset','hsetnx','hmset'
+]
+const shouldSetScanCommands = [
+  'sadd','srem','sort','smove'
+]
+const shoulListScanCommands = [
+  'lset','lrem','lpush','lpushx','lpop','linsert','ltrim','rpop','rpush','rpushx','rpoplpush' ,'sort'
+]
+const shouldSortedSetScanCommands = [
+  'zrem','zadd','zincrby','zpopmax','zpopmin','zremrangebylex',
+  'zremrangebyrank','zremrangebyscore','sort'
+]
 
-  
-
-  const refreshNeedCommands = ['set',
-  'del','hmset','hset','hdel',
-  'append','decr','exec','expire',
-  'flushall','flushdb','hincrby','hincrbyfloat','hsetnx',
-  'incr','incrby','incrbyfloat','linsert','lpop','lpush','lpushx',
-  'lrem','lset','ltrim','migrate','move','mset','msetnx','publish','rename','renamenx',
-  'restore','rpush','rpushx','sadd','sdiff','setnx','sinter','smove','srem','sunion','sunionstore',
-  'zadd','zincrby','zinterstore','zpopmax','zpopmin','zrem','zrank','xadd']
+const refreshNeedCommands = ['set',
+'del','hmset','hset','hdel',
+'append','decr','exec','expire',
+'flushall','flushdb','hincrby','hincrbyfloat','hsetnx',
+'incr','incrby','incrbyfloat','linsert','lpop','lpush','lpushx',
+'lrem','lset','ltrim','migrate','move','mset','msetnx','publish','rename','renamenx',
+'restore','rpush','rpushx','sadd','sdiff','setnx','sinter','smove','srem','sunion','sunionstore',
+'zadd','zincrby','zinterstore','zpopmax','zpopmin','zrem','zrank','xadd']
 
   module.exports = {
-    buildRedisTree, refreshNeedCommands
+    refreshNeedCommands, scanRedisTree, handleMonitorCommand
   }

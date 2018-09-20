@@ -46,7 +46,7 @@
                     (nodeClick) = "nodeClicked({node: $event, redis:instance})"
                     (deleteClick) = "deleteNode({node:$event, redis: instance})"
                     (searchInputChanged)= "setNodeSearchQuert({redis: instance, query:$event})"
-                    [searchText]= "instance.searchQuery"
+                    [searchText]= "instance.keyInfo.pattern"
                     (expandClick)= "expandClicked({node: $event, redis:instance})"
                     [redisTree]="instance.tree"
                     >
