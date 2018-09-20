@@ -13,7 +13,7 @@ import { searchFilterNodes } from 'src/app/utils/redisutils';
   styleUrls: ['./tree.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreeComponent implements OnInit {
+export class TreeComponent {
 
   @Output() searchInputChanged = new EventEmitter();
   searchInputControl: FormControl = new FormControl();
@@ -51,10 +51,7 @@ export class TreeComponent implements OnInit {
   private _getChildren = (node: RedisNode) => node.children;
   constructor() { }
 
-  ngOnInit() {
-    this.searchInputControlSub = this.searchInputControl.valueChanges
-    .pipe(
-      debounceTime(600)
-    ).subscribe(newValue => this.searchInputChanged.emit(newValue));
+  clickSearch() {
+    this.searchInputChanged.emit(this.searchInputControl.value);
   }
 }

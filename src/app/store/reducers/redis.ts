@@ -57,8 +57,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             const keyInfo = new KeyInfo();
             keyInfo.selectedKey = action.payload.keyInfo.selectedKey,
             keyInfo.pattern = action.payload.keyInfo.pattern,
-            keyInfo.pageSize = action.payload.keyInfo.pageSize;
-            keyInfo.pageIndex = action.payload.keyInfo.pageIndex;
+            keyInfo.cursor = action.payload.keyInfo.cursor;
             action.payload.redisInfo.info = tableInfo;
             action.payload.redisInfo.rootSelected = true;
             action.payload.redisInfo.tree = buildRedisTree(action.payload.keys);
@@ -96,16 +95,26 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             const keyInfo = new KeyInfo();
             keyInfo.selectedKey = action.payload.keyInfo.selectedKey,
             keyInfo.pattern = action.payload.keyInfo.pattern,
-            keyInfo.pageSize = action.payload.keyInfo.pageSize;
-            keyInfo.pageIndex = action.payload.keyInfo.pageIndex;
+            keyInfo.cursor = action.payload.keyInfo.cursor;
             action.payload.redisInfo.keyInfo = keyInfo;
 
             return adapter.upsertOne(action.payload.redisInfo, state);
         }
         case redisActions.RedisActionTypes.WATCH_CHANGES:
         {
-            // TODO: FIX
-            return state;
+            return {...adapter.updateOne({id: action.payload.id, changes: {working: true}}, state)};
+        }
+        case redisActions.RedisActionTypes.WATCHING_CHANGES:
+        {
+            return {...adapter.updateOne({id: action.payload, changes: {isMonitoring: true, working: false}}, state)};
+        }
+        case redisActions.RedisActionTypes.STOP_WATCH_CHANGES:
+        {
+            return {...adapter.updateOne({id: action.payload.id, changes: {working: true}}, state)};
+        }
+        case redisActions.RedisActionTypes.STOPPED_WATCH_CHANGES:
+        {
+            return {...adapter.updateOne({id: action.payload, changes: {isMonitoring: false, working: false}}, state)};
         }
         case redisActions.RedisActionTypes.SET_SELECTED_NODE:
         {
@@ -128,12 +137,6 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                 newToggled = [...prevToggled, action.payload.node.key];
             }
             return adapter.updateOne({id: action.payload.redis.id, changes: {expandedNodeKeys: newToggled}}, state);
-        }
-        case redisActions.RedisActionTypes.SET_SEARCH_QUERY:
-        {
-            const redisInstance = state.entities[action.payload.redis.id];
-            const change = {...redisInstance.keyInfo, pattern: action.payload.query };
-            return adapter.updateOne({id: action.payload.redis.id, changes: { keyInfo: change }}, state);
         }
         case redisActions.RedisActionTypes.SET_SELECTED_REDIS_INDEX:
         {

@@ -6,36 +6,36 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
   {
     pattern = '*';
   }
-  async function iter () {
+  console.log("s-1")
+  async function scanNext () {
     const keyRoot = {};
-    const stream = redisInstance.redis.scanStream({
-      cursor: cursor,
-      match:pattern || '*',
-      count:fetchCount,
-    });
-    const lencommands = {list: 'llen',set: 'scard', zset: 'zcard',hash: 'hlen', };
+    let newCursor = 0;
 
-    stream.on('data', async (keys) => {      
-      for (let i = 0; i < keys.length; i++) { // process types
-        const key = keys[i];
-        const type = await redisInstance.redis.type(key);
-        keyRoot[key] = {type};
-        if (type !== 'string') {
-          if (lencommands[type]) {
-            keyRoot[key].len =  await redisInstance.redis[lencommands[type]](key);
-          }
-        } else {
-          keyRoot[key].value = await  redisInstance.redis.get(key);
-        }
+    redisInstance.redis.scan(cursor,'MATCH', pattern || '*', 'COUNT', fetchCount, (err, resp) => {
+      newCursor = resp[0];
+      fetchkeys = resp[1];
+      const pipeline = redisInstance.redis.pipeline();
+      
+      for (let i = 0; i < fetchkeys.length; i++) { // process types
+        const key = fetchkeys[i];
+        pipeline.type(key);
       }
-      callback(keyRoot);
-    });    
+      pipeline.exec().then((keyTypes) => {      
+        
+        for (let i = 0; i < fetchkeys.length; i++) {
+          keyRoot[fetchkeys[i]] = { type: keyTypes[i][1] }          
+        }
+        callback(keyRoot, newCursor); 
+      })
+    });
   }
-  await iter();
+  await scanNext();
 }
 
 async function handleMonitorCommand (redisInstance,args, callback) {
   let actions = [];
+  console.log("s-5")
+  console.log(new Date().getMilliseconds())
   command = args[0].toLowerCase();
   if(command === 'del') {
     keys = args.splice(1);
@@ -56,11 +56,9 @@ async function handleMonitorCommand (redisInstance,args, callback) {
       key = args[1];
       const keyObj = redisInstance.keys[key];
       if(keyObj) {
-        keyObj.value = args[2]
         actions.push({type: monitoractions.UPDATE_LOCAL_TREE})
       } else {
         const newValue = {
-          value : args[2],
           type : 'string'
         }
         redisInstance.keys[key] = newValue;
@@ -95,8 +93,11 @@ async function handleMonitorCommand (redisInstance,args, callback) {
             actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
         }
       }
-    }
+    }    
+  console.log("s-9")
   }
+  console.log("s-11")
+  console.log(new Date().getMilliseconds())
   callback(actions);
 }
 

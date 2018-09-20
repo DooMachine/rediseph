@@ -34,6 +34,7 @@ export class RedisInstance {
   status = 'new';
   watching = false;
   working = false;
+  isMonitoring = false;
   serverModel: ConnectServerModel;
   tree: RedisNode[];
   selectedNodeKey =  '';
@@ -59,8 +60,8 @@ export class KeyInfo {
     selectedKey = '';
     pattern = '' ;
     hasMoreKeys = true;
-    pageIndex = 0;
-    pageSize = 50;
+    cursor = 0;
+    pageSize = 40;
 }
 /**
  * Key value model for Redis Information

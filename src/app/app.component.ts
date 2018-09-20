@@ -79,4 +79,11 @@ export class AppComponent implements OnInit {
     const args = buildDELQuery($event.node);
     this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redis.id, command: args}));
   }
+  watchChange($event) {
+    if ($event.checked) {
+      this.store.dispatch(new redisActions.WatchChanges($event.instance));
+    } else {
+      this.store.dispatch(new redisActions.StopWatchChanges($event.instance));
+    }
+  }
 }

@@ -22,12 +22,26 @@
               <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
                   <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="6px">
                       <button matTooltip="Add new key" color="accent" mat-mini-fab>
-                          <mat-icon >device_hub</mat-icon>
-                        </button>
-                      <button fxFlex mat-raised-button color="primary" (click)="showRootInfo(instance)">Status</button>
+                        <mat-icon >device_hub</mat-icon>
+                      </button>
+                      <button (click)="showRootInfo(instance)" matTooltip="Status" color="primary" mat-mini-fab>
+                        <mat-icon >developer_board</mat-icon>
+                      </button>
                       <button mat-icon-button [matMenuTriggerFor]="redisMenu">
                         <mat-icon>more_vert</mat-icon>
                       </button>
+                      <button
+                        (click)="watchChange({checked: false, instance: instance})"
+                        *ngIf="instance.isWatching"
+                        matTooltip="Stop Watching Keys" color="accent" mat-mini-fab>
+                          <mat-icon >sync</mat-icon>
+                      </button>
+                      <button
+                        (click)="watchChange({checked: true, instance: instance})"
+                        *ngIf="!instance.isWatching"
+                        matTooltip="Start Watching Keys" color="accent" mat-mini-fab>
+                          <mat-icon >sync_disabled</mat-icon>
+                      </button>                      
                       <mat-menu #redisMenu="matMenu">
                         <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
                           <mat-icon>delete_forever</mat-icon>
@@ -41,7 +55,7 @@
                   </div>   
                   <mat-divider></mat-divider>             
                   <app-tree
-                    [selectedNodeKey] = "instance.selectedNodeKey"
+                    [selectedNodeKey] = "instance.keyInfo.selectedNodeKey"
                     [expandedNodeKeys] = "instance.expandedNodeKeys"
                     (nodeClick) = "nodeClicked({node: $event, redis:instance})"
                     (deleteClick) = "deleteNode({node:$event, redis: instance})"

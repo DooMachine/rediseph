@@ -5,8 +5,6 @@ import { Action } from '@ngrx/store';
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { RedisSocketService } from '../services/redissocket.service';
 import * as redisActions from '../actions/redis';
-import * as redisTreeActions from '../actions/redistree';
-
 
 @Injectable()
 export class RedisEffects {
@@ -37,12 +35,7 @@ export class RedisEffects {
     connectRedisSuccess$: Observable<Action> =
         this.redisService.redisConnected$.pipe( // listen to the socket for CLIENT CONNECTED event
             switchMap((resp) =>  {
-                    return from(
-                        [
-                            new redisActions.ConnectRedisInstanceSuccess(resp),
-                            new redisActions.WatchChanges(resp.redisInfo.id)
-                        ]
-                    );
+                    return of(new redisActions.ConnectRedisInstanceSuccess(resp));
                 }
             )
         );
@@ -50,17 +43,42 @@ export class RedisEffects {
     watchChanges$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.WATCH_CHANGES),
-            switchMap((action: redisActions.WatchChanges) => {
-                this.redisService.watchChanges(action.payload);
+            mergeMap((action: redisActions.WatchChanges) => {
+                this.redisService.watchChanges(action.payload.id);
                 return of();
             }),
+        );
+    @Effect()
+    watchingChanges$: Observable<Action> =
+        this.redisService.startedWatchChanges$.pipe( // listen to the socket for REDIS UPDATES
+            mergeMap((resp) =>  {
+                    return of(new redisActions.WatchingChanges(resp));
+                }
+            )
+        );
+    @Effect({dispatch: false})
+    stopWatchChanges$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.WATCH_CHANGES),
+            mergeMap((action: redisActions.StopWatchChanges) => {
+                this.redisService.stopWatchChanges(action.payload.id);
+                return of();
+            }),
+        );
+    @Effect()
+    stoppedWatchChanges$: Observable<Action> =
+        this.redisService.stoppedWatchChanges$.pipe( // listen to the socket for REDIS UPDATES
+            mergeMap((resp) =>  {
+                    return of(new redisActions.StoppedWatchChanges(resp));
+                }
+            )
         );
     @Effect({dispatch: false})
     searchQueryChanged$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.SET_SEARCH_QUERY),
             switchMap((action: redisActions.SetSearchQuery) => {
-                this.redisService.changeKeyPattern(action.payload.redis, action.payload.query);
+                this.redisService.changeKeyPattern(action.payload.redis.id, action.payload.query);
                 return of();
             }),
         );
