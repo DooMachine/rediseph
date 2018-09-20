@@ -14,7 +14,7 @@
 }
 .inner-sidenav {
     position: relative;
-    display: flex;
+    overflow-y: auto;
 }
 .inner-sidenav-content {
     max-height: 93vh;

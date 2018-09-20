@@ -40,7 +40,6 @@ const io = socketio(server, {'origins': '*:*'} );
 
 const db = {
     redisInstances: [],
-    monitorInstances: [],
 };
 
 
@@ -85,6 +84,7 @@ io.on('connection', (client) => {
                         pattern: '',
                         hasMoreKeys: true,
                         cursor: 0,
+                        previousCursor: 0,
                         pageSize: 40,
                     }
                 };
@@ -96,8 +96,7 @@ io.on('connection', (client) => {
                     (keys, cursor) => {
                         redisInstance.keys = keys;
                         redisInstance.keyInfo.cursor = cursor;
-                        redisInstance.keyInfo.hasMoreKeys = cursor != 0;
-                        
+                        redisInstance.keyInfo.hasMoreKeys = cursor != 0;                        
                         db.redisInstances.push(redisInstance)              
                         client.join(roomId)
                         client.emit(actions.CONNECT_REDIS_INSTANCE_SUCCESS,
@@ -167,16 +166,41 @@ io.on('connection', (client) => {
             selectedKey: null,
             pattern: data.pattern,
             hasMoreKeys: true,
+            cursor: 0,
             pageIndex: 0,
+            previousCursor:0,
             pageSize: 40
         };
         // first scan when connected
         redisutils.scanRedisTree(redisInstance,
-            redisInstance.keyInfo.pageSize * redisInstance.keyInfo.pageIndex,
+            redisInstance.keyInfo.cursor,
             redisInstance.keyInfo.pattern,
             redisInstance.keyInfo.pageSize,
             (keys, cursor) => {
                 redisInstance.keys = keys;
+                redisInstance.keyInfo.cursor = cursor;
+                redisInstance.keyInfo.pageIndex++;
+                redisInstance.keyInfo.hasMoreKeys = cursor != 0;
+                client.emit(actions.REDIS_INSTANCE_UPDATED,
+                    {redisInfo: redisInstance.connectionInfo, isMonitoring: redisInstance.isMonitoring, keyInfo:redisInstance.keyInfo, keys: keys, serverInfo: redisInstance.redis.serverInfo})
+        })
+    });
+
+    client.on(actions.ITER_NEXT_PAGE_SCAN, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisInstanceId);
+        if (!redisInstance) {
+            client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                {error: 'This should not happen!'})
+        }
+        // In case of refresh (Maybe after user start monitoring)
+        redisInstance.keyInfo.previousCursor = redisInstance.keyInfo.cursor;    
+        // first scan when connected
+        redisutils.scanRedisTree(redisInstance,
+            redisInstance.keyInfo.cursor,
+            redisInstance.keyInfo.pattern,
+            redisInstance.keyInfo.pageSize,
+            (keys, cursor) => {
+                redisInstance.keys = Object.assign(redisInstance.keys,keys);
                 redisInstance.keyInfo.cursor = cursor;
                 redisInstance.keyInfo.pageIndex++;
                 redisInstance.keyInfo.hasMoreKeys = cursor != 0;

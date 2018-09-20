@@ -20,15 +20,12 @@
           </ng-template>
           <mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
               <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
-                  <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="6px">
+                  <div fxLayout="row" fxLayoutAlign="space-between start" fxLayoutGap="6px">
                       <button matTooltip="Add new key" color="accent" mat-mini-fab>
                         <mat-icon >device_hub</mat-icon>
                       </button>
                       <button (click)="showRootInfo(instance)" matTooltip="Status" color="primary" mat-mini-fab>
                         <mat-icon >developer_board</mat-icon>
-                      </button>
-                      <button mat-icon-button [matMenuTriggerFor]="redisMenu">
-                        <mat-icon>more_vert</mat-icon>
                       </button>
                       <button
                         (click)="watchChange({checked: false, instance: instance})"
@@ -41,7 +38,10 @@
                         *ngIf="!instance.isMonitoring"
                         matTooltip="Start Watching Keys" color="accent" mat-mini-fab>
                           <mat-icon >sync_disabled</mat-icon>
-                      </button>                      
+                      </button>  
+                      <button mat-icon-button [matMenuTriggerFor]="redisMenu">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>                    
                       <mat-menu #redisMenu="matMenu">
                         <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
                           <mat-icon>delete_forever</mat-icon>
