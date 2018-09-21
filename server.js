@@ -7,7 +7,6 @@ const redisutils = require('./library/redisutils')
 const RedisInstance = require('./library/redisinstance')
 const actions = require('./library/actions');
 const monitoractions = require('./library/monitoractions');
-const cmdlisteners = require('./library/cmdlisteners');
 
 
 const port = process.env.PORT || 3003;
@@ -76,19 +75,30 @@ io.on('connection', (client) => {
           
             redis.on('ready', async () => {
                 const redisInstance = new RedisInstance(roomId, connectionInfo,redis);
+                // We stop real-time data from monitor, we need to track local changes.
+                redisInstance.cmdStreamer.subscribe(async (actions) => {
+                    if (redisInstance.isMonitoring) 
+                        return;
+                    const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
+                    redisInstance.ioStreamer.next(ioActions);
+                })
                 redisInstance.ioStreamer.subscribe((actions)=> {
+                    console.log("io sub")
+                    console.log(actions)
                     for (let i = 0; i < actions.length; i++) {
                         const action = actions[i];
                         switch (action) {
-                            case actions.REDIS_INSTANCE_UPDATED:
-                            io.to(redisInstance.roomId).emit(actions.REDIS_INSTANCE_UPDATED,
+                            case actions.UPDATE_LOCAL_TREE:
+                            {
+                                io.to(redisInstance.roomId).emit(actions.REDIS_INSTANCE_UPDATED,
                                 {
                                     redisInfo: redisInstance.connectionInfo,
                                     keyInfo:redisInstance.keyInfo,
                                     keys: redisInstance.keys,
                                     serverInfo: redisInstance.redis.serverInfo
                                 });
-                                break;                        
+                                break; 
+                            }                                                   
                             default:
                                 break;
                         }
@@ -119,9 +129,9 @@ io.on('connection', (client) => {
     });
 
     client.on(actions.WATCH_CHANGES, async (data) => {
-        console.log(data)
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId)
         redisInstance.isMonitoring = true;
+        // We stop real-time data from monitor, we need to track local changes.
         redisInstance.redis.monitor(async (err, monitor) => {
             redisInstance.monitor = monitor;
             monitor.on('monitor', async (time, args, source, database) => {
@@ -153,6 +163,9 @@ io.on('connection', (client) => {
         }
         // We stop real-time data from monitor, we need to track local changes.
         redisInstance.cmdStreamer.subscribe(async (actions) => {
+            if(redisInstance.isMonitoring) {
+                return;
+            }
             const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
             redisInstance.ioStreamer.next(ioActions);
         })

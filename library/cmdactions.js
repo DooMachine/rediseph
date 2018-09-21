@@ -1,7 +1,8 @@
+
 module.exports = {
     SCAN_TILL_CURRENT_CURSOR: '[Command] REFRESH_TILL_CURRENT_CURSOR',
     SCAN_FROM_PREVIOUS_TO_CURRENT_CURSOR: '[Command] SCAN_FROM_PREVIOUS_TO_CURRENT_CURSOR',
-    SET_KEYS: '[Command] SET_KEYS',
+    SET_KEY: '[Command] SET_KEY',
     SET_KEYS: '[Command] SET_KEYS',    
     DEL_KEYS: '[Command] DEL_KEYS'
 }

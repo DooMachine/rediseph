@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const monitoractions = require('./monitoractions');
-const cmdactions = require('./commandactions');
 
 async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 100, callback) {
   if (pattern == '')
@@ -103,6 +102,7 @@ async function handleMonitorCommand (redisInstance,args, callback) {
 }
 
 async function handleCommandExecution(redisInstance,commands, callback) {
+  const cmdactions = require('./cmdactions');
   let nextActions = [];
   const pipeline = redisInstance.redis.pipeline();
   for (let i = 0; i < commands.length; i++) {
@@ -152,9 +152,11 @@ async function handleCommandExecution(redisInstance,commands, callback) {
 }
 
 async function handleCmdOutputActions(redisInstance, actions) {
+  const cmdactions = require('./cmdactions');
   let ioActions = [];
   for (let i = 0; i < actions.length; i++) {
     const action = actions[i];
+    console.log(action.type);
     switch (action.type) {
       case cmdactions.DEL_KEYS:
         redisInstance.keys = redisInstance.keys.filter(p=> action.payload.keys.indexOf(p) == -1);
@@ -213,6 +215,5 @@ const refreshNeedCommands = ['set',
     scanRedisTree,
     handleMonitorCommand,
     handleCommandExecution,
-    handleCommandSubscribe,
     handleCmdOutputActions
   }
