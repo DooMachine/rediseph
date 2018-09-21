@@ -65,6 +65,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             action.payload.redisInfo.expandedNodeKeys = [];
             action.payload.redisInfo.selectedNodeKey = '';
             action.payload.redisInfo.keyInfo = keyInfo;
+            action.payload.redisInfo.isMonitoring = action.payload.isMonitoring;
             return {
                 ...adapter.addOne(action.payload.redisInfo, state),
                  selectedInstanceIndex: state.ids.length

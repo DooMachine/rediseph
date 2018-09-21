@@ -7,7 +7,7 @@ const redisutils = require('./library/redisutils')
 const RedisInstance = require('./library/redisinstance')
 const actions = require('./library/actions');
 const monitoractions = require('./library/monitoractions');
-
+const config = require('config');
 
 const port = process.env.PORT || 3003;
 const env = process.env.NODE_ENV || "development";
@@ -48,15 +48,30 @@ const db = {
 io.on('connection', (client) => {
 
     client.on(actions.CONNECT_REDIS_INSTANCE, async (connectionInfo) => {
-
-        let roomId = uuid();
-        connectionInfo.id = roomId;
-        const cachedRedis = db.redisInstances.find(p=>p.roomId == roomId);
-        if(cachedRedis) {
-            client.join(roomId);
+        // if we need multiple users make changes same time (like live chat)
+        const diffrentEveryUser = config.get('DIFFERENT_CONNECTION_FOR_EVERY_USER');
+        const previousConnectedRedis = db.redisInstances.find(p=> 
+            p.connectionInfo.ip == connectionInfo.ip
+            && p.connectionInfo.password == connectionInfo.password
+            && p.connectionInfo.db == connectionInfo.db
+            && p.connectionInfo.port == connectionInfo.port
+            ) 
+        if(!diffrentEveryUser && previousConnectedRedis != null) {
+            console.log("CONNECTING SAME")
+            connectionInfo.id = previousConnectedRedis.roomId;
+            client.join(previousConnectedRedis.roomId);
+            previousConnectedRedis.connectedClientCount++;
             client.emit(actions.CONNECT_REDIS_INSTANCE_SUCCESS,
-                {redisInfo: connectionInfo, redisTree: cachedRedis.redisScanTree, serverInfo: cachedRedis.redis.serverInfo})
+                {
+                    redisInfo: connectionInfo,
+                    isMonitoring: previousConnectedRedis.isMonitoring,
+                    keyInfo:previousConnectedRedis.keyInfo,
+                    keys: previousConnectedRedis.keys,
+                    serverInfo: previousConnectedRedis.redis.serverInfo
+                })
         } else {
+            let roomId = uuid();
+            connectionInfo.id = roomId;
             const redis = new Redis({
                 host: connectionInfo.ip, port: connectionInfo.port, db: connectionInfo.db,
                 password: connectionInfo.password,
@@ -227,6 +242,46 @@ io.on('connection', (client) => {
         })
     });
 
+    client.on(actions.SET_SELECTED_NODE, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
+        if (!redisInstance) {
+            client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                {error: 'This should not happen!'})
+        }
+        const keyInfo = redisInstance.keys[data.key];
+        redisInstance.selectedKeyInfo.key = data.key;
+        redisInstance.selectedKeyInfo.type = keyInfo.type;
+
+        if(keyInfo.type === 'string') {
+            redisInstance.selectedKeyInfo.value = redisInstance.redis.get(data.key)
+        }
+        if(keyInfo.type === 'list') {
+            redisutils.handleListEntityScan(redisInstance, 
+                async (entities) => {
+                    redisInstance.selectedKeyInfo.entities = entities;
+                    redisInstance.selectedKeyInfo.pageIndex++;
+                    redisInstance.selectedKeyInfo.hasMorePage = entities.length == redisInstance.selectedKeyInfo.pageSize;
+                });
+        }
+        else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hset') {
+            redisInstance.selectedKeyInfo.previousCursors.push("0");
+            redisutils.scanKeyEntities(redisInstance,
+                redisInstance.selectedKeyInfo.cursor,
+                redisInstance.selectedKeyInfo.pattern,
+                redisInstance.selectedKeyInfo.pageSize,
+                async (entities, cursor) => {
+                    redisInstance.selectedKeyInfo.entities = entities;
+                    redisInstance.selectedKeyInfo.cursor = cursor;
+                    redisInstance.selectedKeyInfo.pageIndex++;
+                    redisInstance.selectedKeyInfo.hasMorePage = cursor !== "0";
+                    
+                    redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}]);
+            })
+        }
+        // first scan when node key selected
+        
+    });
+
     client.on(actions.ITER_NEXT_PAGE_SCAN, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
@@ -278,15 +333,29 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
-        db.redisInstances = db.redisInstances.filter(p=> p.roomId != redisId);
+        redisInstance.connectedClientCount--;
+        // if no connection left remove redis instance
+        if(redisInstance.connectedClientCount < 1) {
+            db.redisInstances = db.redisInstances.filter(p=>p.roomId == redisId);
+        }
         client.emit(actions.DISCONNECT_REDIS_INSTANCE_SUCCESS,
             {redisId:redisId})
         client.leave(redisId);
     });
 
     client.on('disconnect', async () => {
-      console.log('Client disconnected')
-      db.redisInstances = [];
+        const clientRooms = client.rooms;
+        for (let i = 0; i < clientRooms.length; i++) {
+            const room = clientRooms[i];
+            connectedRedisInstance = db.redisInstances.find(p=>p.roomId==room);
+            if(connectedRedisInstance) {
+                connectedRedisInstance.connectedClientCount--;
+                if(redisInstance.connectedClientCount < 1) {
+                    db.redisInstances = db.redisInstances.filter(p=>p.roomId == room);
+                }
+            }            
+        } 
+        console.log('Client disconnected')
     });
 
 });

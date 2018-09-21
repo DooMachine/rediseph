@@ -119,6 +119,24 @@ export class RedisEffects {
                 return of();
             }),
         );
+    @Effect({dispatch: false})
+    setSelectedKey$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.SET_SELECTED_NODE),
+            switchMap((action: redisActions.SetSelectedNode) => {
+                this.redisService.setSelectedNode(action.payload.redis.id, action.payload.node.key);
+                return of();
+            }),
+        );
+    @Effect()
+    keySelectSuccess$: Observable<Action> =
+        this.redisService.nodeKeySelected$.pipe( // listen to the socket for REDIS UPDATES
+            switchMap((resp) =>  {
+                    console.log(resp);
+                    return of(new redisActions.SetSelectedNodeSuccess(resp));
+                }
+            )
+        );
     @Effect()
     redisEvent$: Observable<Action> =
         this.redisService.redisUpdated$.pipe( // listen to the socket for REDIS UPDATES

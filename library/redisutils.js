@@ -13,7 +13,7 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
     const keyRoot = {};
     let newCursor = 0;
 
-    redisInstance.redis.scan(cursor,'MATCH', pattern, 'COUNT', fetchCount, (err, resp) => {
+    redisInstance.redis.scan(cursor,'MATCH', pattern, 'COUNT', fetchCount, async (err, resp) => {
       newCursor = resp[0];
       fetchkeys = resp[1];
       const pipeline = redisInstance.redis.pipeline();
@@ -26,13 +26,48 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
         for (let i = 0; i < fetchkeys.length; i++) {
           keyRoot[fetchkeys[i]] = { type: keyTypes[i][1] }          
         }
-        callback(keyRoot, newCursor); 
+        await callback(keyRoot, newCursor); 
       })
     });
   }
   await scanNext();
 }
 
+async function scanKeyEntities(redisInstance, key, type , cursor, pattern = '*', fetchCount = 40, callback) {
+  if (pattern === "" || pattern == null)
+  {
+    pattern = '*';
+  }
+  const SCAN_TYPE_MAP = {
+    set:'sscan',
+    hset:'hscan',
+    zset:'zscan'
+  }
+  async function iterEntityScanNext () {
+    const entities = [];
+    let newCursor = "0";
+    const scanMethod = SCAN_TYPE_MAP[type];
+
+    redisInstance.redis[scanMethod](key, cursor,'MATCH', pattern, 'COUNT', fetchCount, async (err, [cursor, resp]) => {
+      newCursor = cursor;
+      entities = resp;
+      console.log(entities);
+      await callback(entities, newCursor); 
+    });
+  }
+  await iterEntityScanNext();
+}
+async function handleListEntityScan(redisInstance, callback) {
+  const selectedKeyInfo = redisInstance.selectedKeyInfo;
+  const start = selectedKeyInfo.pageIndex* selectedKeyInfo.pageSize;
+  const end = start + selectedKeyInfo.pageSize;
+  const newEntities = [];
+  redisInstance.redis.lrange(selectedKeyInfo.key,start,end, async (err,resp) => {
+    console.log(resp)
+    newEntities = resp;
+    await callback(resp);
+  })
+}
 async function handleMonitorCommand (redisInstance,args, callback) {
   let actions = [];
   console.log("s-5")
@@ -217,6 +252,8 @@ const refreshNeedCommands = ['set',
   module.exports = {
     refreshNeedCommands,
     scanRedisTree,
+    scanKeyEntities,
+    handleListEntityScan,
     handleMonitorCommand,
     handleCommandExecution,
     handleCmdOutputActions

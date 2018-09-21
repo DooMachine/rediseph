@@ -21,16 +21,17 @@
           <mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
               <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
                   <div fxLayout="row" fxLayoutAlign="space-between start" fxLayoutGap="6px">
-                      <button (click)="refreshKeys(instance)"
-                       matTooltip="Refresh Keys" color="warn" mat-icon-button>
-                          <mat-icon >sync</mat-icon>
-                        </button>
+                      
                       <button matTooltip="Add new key" color="accent" mat-icon-button>
                         <mat-icon >device_hub</mat-icon>
                       </button>
                       <button (click)="showRootInfo(instance)" matTooltip="Status" color="primary"mat-icon-button>
                         <mat-icon >developer_board</mat-icon>
                       </button>
+                      <button (click)="refreshKeys(instance)"
+                        matTooltip="Refresh Keys" color="warn" mat-icon-button>
+                          <mat-icon >sync</mat-icon>
+                        </button>
                       <button
                         (click)="watchChange({checked: false, instance: instance})"
                         *ngIf="instance.isMonitoring"
