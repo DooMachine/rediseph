@@ -1,45 +1,10 @@
 <mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
     <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
-        <div fxLayout="row" fxLayoutAlign="space-between start" fxLayoutGap="6px">            
-            <button matTooltip="Add new value" color="accent" mat-icon-button>
-              <mat-icon >device_hub</mat-icon>
-            </button>
-            <button (click)="refreshKeys(instance)"
-              matTooltip="Refresh Keys" color="warn" mat-icon-button>
-                <mat-icon >sync</mat-icon>
-              </button>
-            <button
-              (click)="watchChange({checked: false, instance: instance})"
-              *ngIf="instance.isMonitoring"
-              matTooltip="Stop Watching Keys" color="accent" mat-icon-button>
-                <mat-icon >wifi</mat-icon>
-            </button>
-            <button
-              (click)="watchChange({checked: true, instance: instance})"
-              *ngIf="!instance.isMonitoring"
-              matTooltip="Start Watching Keys" color="accent" mat-mini-fab>
-                <mat-icon >wifi_off</mat-icon>
-            </button>  
-            <button mat-icon-button [matMenuTriggerFor]="nodeMenu">
-              <mat-icon>more_vert</mat-icon>
-            </button>                    
-            <mat-menu #redisMenu="nodeMenu">
-              <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
-                <mat-icon>delete_forever</mat-icon>
-                <span>Flush Keys In Database</span>
-              </button>
-              <button color="accent" mat-menu-item>
-                <mat-icon>delete_outline</mat-icon>
-                <span>Flush Keys in Server</span>
-              </button>
-            </mat-menu>
-        </div>   
-        <mat-divider></mat-divider>   
-        <ng-template #tree></ng-template>     
+        
+        <ng-content #tree></ng-content>     
              
     </mat-sidenav>
     <mat-sidenav-content fxFlex class="inner-sidenav-content" fullscreen>
-        <ng-template #content></ng-template>         
-      <ng-content></ng-content>
+        <ng-content #keyContent></ng-content>         
     </mat-sidenav-content>
 </mat-sidenav-container>

@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  SCAN_PAGE_SIZE: 20,
   socket: {
     baseUrl: 'http://localhost:3003',
     config: {}

@@ -1,6 +1,6 @@
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import * as redisActions from '../actions/redis';
-import { RedisInstance, KeyInfo } from 'src/app/models/redis';
+import { RedisInstance, KeyInfo, SelectedKeyInfo } from 'src/app/models/redis';
 import { TableInfo, OrderType} from '../../models/table-helpers';
 import { buildRedisTree } from 'src/app/utils/redisutils';
 
@@ -39,7 +39,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         case redisActions.RedisActionTypes.CONNECT_REDIS_INSTANCE_SUCCESS:
         {
             const infoAsKey = [];
-            Object.keys(action.payload.serverInfo).forEach(function(key) {
+            Object.keys(action.payload.serverInfo).forEach((key) => {
                 infoAsKey.push({key: key, value: action.payload.serverInfo[key]});
             });
             const tableInfo: TableInfo<any> = {
@@ -66,6 +66,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             action.payload.redisInfo.selectedNodeKey = '';
             action.payload.redisInfo.keyInfo = keyInfo;
             action.payload.redisInfo.isMonitoring = action.payload.isMonitoring;
+            action.payload.redisInfo.selectedKeyInfo = new SelectedKeyInfo();
             return {
                 ...adapter.addOne(action.payload.redisInfo, state),
                  selectedInstanceIndex: state.ids.length
@@ -130,9 +131,14 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         case redisActions.RedisActionTypes.SET_SELECTED_NODE:
         {
             const redisInstance = state.entities[action.payload.redis.id];
-            const change = {...redisInstance.selectedKeyInfo, selectedNodeKey: action.payload.node.key };
+            const change = {...redisInstance.keyInfo, selectedNodeKey: action.payload.node.key };
             return adapter.updateOne({id: action.payload.redis.id,
                     changes: {keyInfo: change , rootSelected: false}}, state);
+        }
+        case redisActions.RedisActionTypes.SELECTED_NODE_UPDATED:
+        {
+            return adapter.updateOne({id: action.payload.redisId,
+                    changes: {selectedKeyInfo: action.payload.selectedKeyInfo}}, state);
         }
         case redisActions.RedisActionTypes.SHOW_ROOT_INFO:
         {

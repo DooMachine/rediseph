@@ -46,7 +46,9 @@ const db = {
 
 
 io.on('connection', (client) => {
-
+    /**
+     * On Client tries to connect
+     */
     client.on(actions.CONNECT_REDIS_INSTANCE, async (connectionInfo) => {
         // if we need multiple users make changes same time (like live chat)
         const diffrentEveryUser = config.get('DIFFERENT_CONNECTION_FOR_EVERY_USER');
@@ -106,13 +108,18 @@ io.on('connection', (client) => {
                     }
                 }
                 const redisInstance = new RedisInstance(roomId, connectionInfo,redis);
-                // We stop real-time data from monitor, we need to track local changes.
+                /**
+                 * When we get commands, process them and send must done actions to iostreamer
+                 */
                 redisInstance.cmdStreamer.subscribe(async (actions) => {
                     if (redisInstance.isMonitoring) 
                         return;
                     const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
                     redisInstance.ioStreamer.next(ioActions);
                 })
+                /**
+                 * Get actions according to monitor or user commands, execute modifications to all redis users.
+                 */
                 redisInstance.ioStreamer.subscribe(async (acts)=> {
                     for (let i = 0; i < acts.length; i++) {
                         const action = acts[i];
@@ -128,13 +135,26 @@ io.on('connection', (client) => {
                                     serverInfo: redisInstance.redis.serverInfo
                                 });
                                 break; 
-                            }                                     
+                            }      
+                            case monitoractions.UPDATE_SELECTED_NODE:
+                            {
+                                console.log("Emitin updated")
+                                console.log("redisInstance.selectedKeyInfo")
+                                io.to(redisInstance.roomId).emit(action.SELECTED_NODE_UPDATED,
+                                    {
+                                        redisId: redisInstance.roomId,
+                                        selectedKeyInfo: redisInstance.selectedKeyInfo
+                                    });
+                                break;
+                            }                               
                             default:
                                 break;
                         }
                     }
                 })
-                // first scan when connected
+                /**
+                 * Start scan with cursor 0
+                 */
                 redisutils.scanRedisTree(redisInstance,
                     redisInstance.keyInfo.cursor,
                     redisInstance.keyInfo.pattern,
@@ -158,7 +178,9 @@ io.on('connection', (client) => {
             });
         }        
     });
-
+    /**
+     * Tell redis to MONITOR all commands in, process them and set ioStreamer.
+     */
     client.on(actions.WATCH_CHANGES, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId)
         redisInstance.isMonitoring = true;
@@ -166,6 +188,7 @@ io.on('connection', (client) => {
         redisInstance.redis.monitor(async (err, monitor) => {
             redisInstance.monitor = monitor;
             monitor.on('monitor', async (time, args, source, database) => {
+                // TODO: Store commands and handle every x seconds/milliseconds then pipeexecute needed actions.
                 console.log("monitoring")
                 redisutils.handleMonitorCommand(redisInstance, args, async (acts) => {
                     redisInstance.ioStreamer.next(acts);
@@ -175,7 +198,9 @@ io.on('connection', (client) => {
         
         io.to(data.redisId).emit(actions.WATCHING_CHANGES,data.redisId)
     });
-
+    /**
+     * Stop MONITOR on redis, this activates cmdListener to make local changes. (e.g del, set, scan, refresh scan keys)
+     */
     client.on(actions.STOP_WATCH_CHANGES, async (data) => {
         
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId)
@@ -197,7 +222,9 @@ io.on('connection', (client) => {
         })
         io.to(data.redisId).emit(actions.STOPPED_WATCH_CHANGES, data.redisId)
     });
-
+    /**
+     * Executing raw commands
+     */
     client.on(actions.EXECUTE_COMMAND, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
@@ -241,7 +268,10 @@ io.on('connection', (client) => {
                 redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}]);
         })
     });
-
+    /**
+     * When users select key in client:
+     * Fetch Values and display it to redis room.
+     */
     client.on(actions.SET_SELECTED_NODE, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
@@ -251,37 +281,43 @@ io.on('connection', (client) => {
         const keyInfo = redisInstance.keys[data.key];
         redisInstance.selectedKeyInfo.key = data.key;
         redisInstance.selectedKeyInfo.type = keyInfo.type;
-
+        console.log(keyInfo);
         if(keyInfo.type === 'string') {
             redisInstance.selectedKeyInfo.value = redisInstance.redis.get(data.key)
+            redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE}]);
         }
         if(keyInfo.type === 'list') {
             redisutils.handleListEntityScan(redisInstance, 
                 async (entities) => {
-                    redisInstance.selectedKeyInfo.entities = entities;
-                    redisInstance.selectedKeyInfo.pageIndex++;
-                    redisInstance.selectedKeyInfo.hasMorePage = entities.length == redisInstance.selectedKeyInfo.pageSize;
+                    redisInstance.selectedKeyInfo.keyScanInfo.entities = entities;
+                    redisInstance.selectedKeyInfo.keyScanInfo.pageIndex++;
+                    redisInstance.selectedKeyInfo.keyScanInfo.hasMorePage = entities.length == redisInstance.selectedKeyInfo.keyScanInfo.pageSize;
                 });
+            redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE}]);
         }
         else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hset') {
-            redisInstance.selectedKeyInfo.previousCursors.push("0");
+            console.log(keyInfo);
+            redisInstance.selectedKeyInfo.keyScanInfo.previousCursors.push("0");
             redisutils.scanKeyEntities(redisInstance,
-                redisInstance.selectedKeyInfo.cursor,
-                redisInstance.selectedKeyInfo.pattern,
-                redisInstance.selectedKeyInfo.pageSize,
+                redisInstance.selectedKeyInfo.keyScanInfo.cursor,
+                redisInstance.selectedKeyInfo.keyScanInfo.pattern,
+                redisInstance.selectedKeyInfo.keyScanInfo.pageSize,
                 async (entities, cursor) => {
-                    redisInstance.selectedKeyInfo.entities = entities;
-                    redisInstance.selectedKeyInfo.cursor = cursor;
-                    redisInstance.selectedKeyInfo.pageIndex++;
-                    redisInstance.selectedKeyInfo.hasMorePage = cursor !== "0";
+                    redisInstance.selectedKeyInfo.keyScanInfo.entities = entities;
+                    redisInstance.selectedKeyInfo.keyScanInfo.cursor = cursor;
+                    redisInstance.selectedKeyInfo.keyScanInfo.pageIndex++;
+                    redisInstance.selectedKeyInfo.keyScanInfo.hasMorePage = cursor !== "0";
                     
                     redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE}]);
             })
         }
-        // first scan when node key selected
+        
         
     });
-
+    /**
+     * Scan from last cursor with pagesize.
+     * Then update clients.
+     */
     client.on(actions.ITER_NEXT_PAGE_SCAN, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
@@ -303,6 +339,9 @@ io.on('connection', (client) => {
                 redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}])                
         })
     });
+    /**
+     * rescan from cursor 0 and count pageSize*pageIndex (previously loaded lenght)
+     */
     client.on(actions.REFRESH_LOADED_KEYS, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
@@ -326,7 +365,10 @@ io.on('connection', (client) => {
                 redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}])  
         })
     });
-
+    /**
+     * User disconnects from redis instance
+     * if no one uses disconencted redis instance, dispose it.
+     */
     client.on(actions.DISCONNECT_REDIS_INSTANCE, async (redisId) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == redisId);
         if (!redisInstance) {
@@ -342,7 +384,10 @@ io.on('connection', (client) => {
             {redisId:redisId})
         client.leave(redisId);
     });
-
+    /**
+     * User leaves app,
+     * If any unused redis instances, dispose them.
+     */
     client.on('disconnect', async () => {
         const clientRooms = client.rooms;
         for (let i = 0; i < clientRooms.length; i++) {

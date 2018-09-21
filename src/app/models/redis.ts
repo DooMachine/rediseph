@@ -1,6 +1,7 @@
 
 import { TableInfo, OrderType } from './table-helpers';
 import { RedisNode } from './redis-node';
+import { environment } from '../../environments/environment';
 
 export enum DataType {
   string = 'string', list = 'list', set = 'set', hashmap = 'hashmap', sortedset = 'sortedset'
@@ -41,7 +42,8 @@ export class RedisInstance {
   expandedNodeKeys = [];
   rootSelected = true;
   id = '';
-  selectedKeyInfo: KeyInfo;
+  keyInfo = new KeyInfo();
+  selectedKeyInfo = new SelectedKeyInfo();
   info: TableInfo<RedisInfo> = {
     entities: [],
     pageIndex: 0,
@@ -57,12 +59,28 @@ export class RedisInstance {
 }
 
 export class KeyInfo {
-    entities = [];
     selectedKey = '';
     pattern = '' ;
     hasMoreKeys = true;
+    previousCursors = [];
     cursor = '0';
-    pageSize = 40;
+    pageSize = environment.SCAN_PAGE_SIZE || 40;
+    pageIndex: 0;
+}
+
+export class SelectedKeyInfo {
+    key = null;
+    type = null;
+    value = null;
+    keyScanInfo = {
+        entities: [],
+        cursor: '0',
+        hasMoreEntities: true,
+        previousCursors: [],
+        pageIndex: 0,
+        pageSize: environment.SCAN_PAGE_SIZE || 20,
+        pattern: ''
+    };
 }
 /**
  * Key value model for Redis Information

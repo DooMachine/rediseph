@@ -124,7 +124,9 @@ export class RedisEffects {
         .pipe(
             ofType(redisActions.RedisActionTypes.SET_SELECTED_NODE),
             switchMap((action: redisActions.SetSelectedNode) => {
-                this.redisService.setSelectedNode(action.payload.redis.id, action.payload.node.key);
+                if (action.payload.node.type !== 'folder') {
+                    this.redisService.setSelectedNode(action.payload.redis.id, action.payload.node.key);
+                }
                 return of();
             }),
         );
@@ -134,6 +136,14 @@ export class RedisEffects {
             switchMap((resp) =>  {
                     console.log(resp);
                     return of(new redisActions.SetSelectedNodeSuccess(resp));
+                }
+            )
+        );
+    @Effect()
+    selectedNodeUpdated$: Observable<Action> =
+        this.redisService.selectedNodeUpdated$.pipe( // listen to the socket for SELECTED KEY UPDATES
+            switchMap((resp) =>  {
+                    return of(new redisActions.SelectedNodeUpdated(resp));
                 }
             )
         );

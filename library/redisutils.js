@@ -22,7 +22,7 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
         const key = fetchkeys[i];
         pipeline.type(key);
       }
-      pipeline.exec().then((keyTypes) => {
+      pipeline.exec().then(async (keyTypes) => {
         for (let i = 0; i < fetchkeys.length; i++) {
           keyRoot[fetchkeys[i]] = { type: keyTypes[i][1] }          
         }
@@ -33,17 +33,20 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
   await scanNext();
 }
 
-async function scanKeyEntities(redisInstance, key, type , cursor, pattern = '*', fetchCount = 40, callback) {
+async function scanKeyEntities(redisInstance , cursor, pattern = '*', fetchCount = 40, callback) {
   if (pattern === "" || pattern == null)
   {
     pattern = '*';
   }
+  const key = redisInstance.selectedKeyInfo.key;
+  const type = redisInstance.selectedKeyInfo.type;
   const SCAN_TYPE_MAP = {
     set:'sscan',
     hset:'hscan',
     zset:'zscan'
   }
   async function iterEntityScanNext () {
+    
     const entities = [];
     let newCursor = "0";
     const scanMethod = SCAN_TYPE_MAP[type];
@@ -58,13 +61,12 @@ async function scanKeyEntities(redisInstance, key, type , cursor, pattern = '*',
   await iterEntityScanNext();
 }
 async function handleListEntityScan(redisInstance, callback) {
+
   const selectedKeyInfo = redisInstance.selectedKeyInfo;
-  const start = selectedKeyInfo.pageIndex* selectedKeyInfo.pageSize;
-  const end = start + selectedKeyInfo.pageSize;
-  const newEntities = [];
-  redisInstance.redis.lrange(selectedKeyInfo.key,start,end, async (err,resp) => {
-    console.log(resp)
-    newEntities = resp;
+  const start = selectedKeyInfo.keyScanInfo.pageIndex* selectedKeyInfo.keyScanInfo.pageSize;
+  const end = start + selectedKeyInfo.keyScanInfo.pageSize;
+
+  redisInstance.redis.lrange(selectedKeyInfo.key, start, end, async (err,resp) => {
     await callback(resp);
   })
 }

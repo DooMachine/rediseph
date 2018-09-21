@@ -1,7 +1,7 @@
 import { Component, OnInit, Output, EventEmitter, Input, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { NestedTreeControl } from '@angular/cdk/tree';
+import { NestedTreeControl, FlatTreeControl } from '@angular/cdk/tree';
 import { RedisNode } from '../../models/redis-node';
 import { MatTreeNestedDataSource } from '@angular/material';
 import { KeyInfo } from '../../models/redis';
@@ -18,24 +18,21 @@ export class NodeTreeComponent {
   searchInputControl: FormControl = new FormControl();
 
 
-  nestedTreeControl: NestedTreeControl<any>;
+  flatTreeControl: FlatTreeControl<any>;
   nestedDataSource: MatTreeNestedDataSource<any>;
 
 
-  @Input() searchText: string;
-  @Input() hasMoreKeys: boolean;
-  @Output() nodeClick = new EventEmitter();
+  pattern: string;
+  hasMoreKeys: boolean;
+  @Output() entityClick = new EventEmitter();
   @Output() deleteClick = new EventEmitter();
   @Output() loadMore = new EventEmitter();
 
   @Input('selectedKeyInfo')
   set selectedKeyInfo(selectedKeyInfo: KeyInfo) {
-    this.nestedTreeControl = new NestedTreeControl<RedisNode>(this._getChildren);
-    this.nestedDataSource = new MatTreeNestedDataSource();
-    this.nestedDataSource.data = selectedKeyInfo.entities.map(m => m[0]);
+    console.log(selectedKeyInfo);
   }
-  hasNestedChild = (_: number, nodeData: RedisNode) => nodeData.type === 'folder';
-  private _getChildren = (node: RedisNode) => node.children;
+
   constructor() { }
 
   clickSearch() {
