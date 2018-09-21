@@ -1,7 +1,6 @@
 
 
 const Subject = require('rxjs').Subject;
-var config = require('config');
 
 module.exports = class RedisInstance {
     constructor(roomId,connectionInfo,redis) {
@@ -13,11 +12,12 @@ module.exports = class RedisInstance {
         this.keys= {},
         this.isMonitoring=false,
         this.keyInfo= {
-            selectedKey: null,
+            selectedKey: null,  
             pattern: '',
             hasMoreKeys: true,
             cursor: "0",
-            previousCursor: 0,
+            previousCursors: [],
+            pageIndex:0,
             pageSize: process.env.SCAN_PAGE_SIZE || 8,
         }
     }

@@ -9,6 +9,10 @@ module.exports = {
     STOPPED_WATCH_CHANGES: '[Redis] STOPPED_WATCH_CHANGES',
 
     ITER_NEXT_PAGE_SCAN: '[Redis] ITER_NEXT_PAGE_SCAN',
+    /**
+     * Scan from cursor 0 with count as pageIndex* pageSize
+     */
+    REFRESH_LOADED_KEYS: '[Redis] REFRESH_LOADED_KEYS',
 
     SET_SEARCH_QUERY: '[Redis] SET_SEARCH_QUERY',
     DISCONNECT_REDIS_INSTANCE: '[Redis] DISCONNECT_REDIS_INSTANCE', 

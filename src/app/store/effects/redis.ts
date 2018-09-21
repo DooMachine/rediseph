@@ -22,6 +22,33 @@ export class RedisEffects {
                 return of();
             }),
         );
+
+    @Effect()
+    connectRedisSuccess$: Observable<Action> =
+        this.redisService.redisConnected$.pipe( // listen to the socket for CLIENT CONNECTED event
+            switchMap((resp) =>  {
+                    return of(new redisActions.ConnectRedisInstanceSuccess(resp));
+                }
+            )
+        );
+
+    @Effect({dispatch: false})
+    disconnectRedis$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.DISCONNECT_REDIS_INSTANCE),
+            mergeMap((action) => {
+                this.redisService.disconnectRedisInstance(action);
+                return of();
+            }),
+        );
+    @Effect()
+    disconnectRedisSuccess$: Observable<Action> =
+        this.redisService.redisDisconnected$.pipe( // listen to the socket for CLIENT CONNECTED event
+            switchMap((resp) =>  {
+                    return of(new redisActions.DisconnectRedisInstanceSuccess(resp.redisId));
+                }
+            )
+        );
     @Effect({dispatch: false})
     executeCommand$ = this.actions$
         .pipe(
@@ -31,20 +58,21 @@ export class RedisEffects {
                 return of();
             }),
         );
-    @Effect()
-    connectRedisSuccess$: Observable<Action> =
-        this.redisService.redisConnected$.pipe( // listen to the socket for CLIENT CONNECTED event
-            switchMap((resp) =>  {
-                    return of(new redisActions.ConnectRedisInstanceSuccess(resp));
-                }
-            )
-        );
     @Effect({dispatch: false})
     loadNextPage$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.LOAD_NEXT_PAGE),
             mergeMap((action: redisActions.LoadNextPage) => {
                 this.redisService.LoadNextPage(action.payload.id);
+                return of();
+            }),
+        );
+    @Effect({dispatch: false})
+    refreshLoadedKeys$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.REFRESH_LOADED_KEYS),
+            mergeMap((action) => {
+                this.redisService.refreshLoadedKeys(action);
                 return of();
             }),
         );

@@ -11,6 +11,8 @@ export enum RedisActionTypes {
     CONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] CONNECT_REDIS_INSTANCE_SUCCESS',
     CONNECT_REDIS_INSTANCE_FAIL = '[Redis] CONNECT_REDIS_INSTANCE_FAIL',
 
+    REFRESH_LOADED_KEYS = '[Redis] REFRESH_LOADED_KEYS',
+
     WATCH_CHANGES = '[Redis] WATCH_CHANGES',
     WATCHING_CHANGES= '[Redis] WATCHING_CHANGES',
     STOP_WATCH_CHANGES = '[Redis] STOP_WATCH_CHANGES',
@@ -56,6 +58,12 @@ export class ConnectRedisInstanceFail implements Action {
 
     constructor(public payload: RedisInstance) { }
 }
+
+export class RefreshLoadedKeys implements Action  {
+    readonly type = RedisActionTypes.REFRESH_LOADED_KEYS;
+
+    constructor(public payload: RedisInstance) { }
+}
 export class WatchChanges implements Action {
     readonly type = RedisActionTypes.WATCH_CHANGES;
 
@@ -85,7 +93,7 @@ export class DisconnectRedisInstance implements Action {
 export class DisconnectRedisInstanceSuccess implements Action {
     readonly type = RedisActionTypes.DISCONNECT_REDIS_INSTANCE_SUCCESS;
 
-    constructor(public payload: ConnectServerModel) { }
+    constructor(public payload: string) { }
 }
 export class RedisInstanceUpdated implements Action {
     readonly type = RedisActionTypes.REDIS_INSTANCE_UPDATED;

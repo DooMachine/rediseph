@@ -68,7 +68,7 @@ async function handleMonitorCommand (redisInstance,args, callback) {
     }      
   } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
     redisInstance.keys = {};
-    actions.push({type:  monitoractions.REMOVE_LOCAL_TREE})
+    actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
   } else if (shouldTreeScanCommands.indexOf(command) != -1) {
     if (command == 'renamenx') {      
       key = args[1];

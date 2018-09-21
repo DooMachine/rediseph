@@ -70,6 +70,14 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                  selectedInstanceIndex: state.ids.length
                 };
         }
+        case redisActions.RedisActionTypes.DISCONNECT_REDIS_INSTANCE:
+        {
+            return state;
+        }
+        case redisActions.RedisActionTypes.DISCONNECT_REDIS_INSTANCE_SUCCESS:
+        {
+            return adapter.removeOne(action.payload, state);
+        }
         case redisActions.RedisActionTypes.REDIS_INSTANCE_UPDATED:
         {
             const previous = state.entities[action.payload.redisInfo.id];

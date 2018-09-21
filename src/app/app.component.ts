@@ -82,6 +82,9 @@ export class AppComponent implements OnInit {
   loadMore($event) {
     this.store.dispatch(new redisActions.LoadNextPage($event));
   }
+  refreshKeys($event) {
+    this.store.dispatch(new redisActions.RefreshLoadedKeys($event));
+  }
   watchChange($event) {
     if ($event.checked) {
       this.store.dispatch(new redisActions.WatchChanges($event.instance));
