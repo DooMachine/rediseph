@@ -38,4 +38,7 @@ export class RedisSocketService {
     executeRedisInstance(redisId, args) {
         this.socket.emit('[Redis] EXECUTE_COMMAND', {redisId: redisId, args: args});
     }
+    LoadNextPage(redisId) {
+        this.socket.emit('[Redis] ITER_NEXT_PAGE_SCAN', {redisId: redisId});
+    }
 }

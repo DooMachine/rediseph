@@ -55,9 +55,10 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                 orderType: OrderType.None,
             };
             const keyInfo = new KeyInfo();
-            keyInfo.selectedKey = action.payload.keyInfo.selectedKey,
-            keyInfo.pattern = action.payload.keyInfo.pattern,
+            keyInfo.selectedKey = action.payload.keyInfo.selectedKey;
+            keyInfo.pattern = action.payload.keyInfo.pattern;
             keyInfo.cursor = action.payload.keyInfo.cursor;
+            keyInfo.hasMoreKeys = action.payload.keyInfo.hasMoreKeys;
             action.payload.redisInfo.info = tableInfo;
             action.payload.redisInfo.rootSelected = true;
             action.payload.redisInfo.tree = buildRedisTree(action.payload.keys);
@@ -96,6 +97,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             keyInfo.selectedKey = action.payload.keyInfo.selectedKey,
             keyInfo.pattern = action.payload.keyInfo.pattern,
             keyInfo.cursor = action.payload.keyInfo.cursor;
+            keyInfo.hasMoreKeys = action.payload.keyInfo.hasMoreKeys;
             action.payload.redisInfo.keyInfo = keyInfo;
 
             return adapter.upsertOne(action.payload.redisInfo, state);

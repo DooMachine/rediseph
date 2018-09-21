@@ -57,7 +57,9 @@
                   <app-tree
                     [selectedNodeKey] = "instance.keyInfo.selectedNodeKey"
                     [expandedNodeKeys] = "instance.expandedNodeKeys"
+                    [hasMoreKeys] = "instance.keyInfo.hasMoreKeys"
                     (nodeClick) = "nodeClicked({node: $event, redis:instance})"
+                    (loadMore) = "loadMore(instance)"
                     (deleteClick) = "deleteNode({node:$event, redis: instance})"
                     (searchInputChanged)= "setNodeSearchQuert({redis: instance, query:$event})"
                     [searchText]= "instance.keyInfo.pattern"

@@ -69,11 +69,21 @@ io.on('connection', (client) => {
             redis.on('error', async (e) => {           
                 db.redisInstances = db.redisInstances.filter(p=>p.roomId != roomId)
                 client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
-                    {redisInfo: connectionInfo, error: e.message})
+                    {redisInfo: connectionInfo, error: 'Cannot connect redis instance!'})
                 redis.disconnect();
             });
           
             redis.on('ready', async () => {
+                const version = redis.serverInfo.redis_version;
+                if(version) {
+                    const versionNo = parseInt(version[0]+version[2]);
+                    if(versionNo < 28) {                    
+                        redis.disconnect();
+                        client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                            {error:'This tool works with redis versions >= 2.8.X Yours is ' + version})
+                            return;
+                    }
+                }
                 const redisInstance = new RedisInstance(roomId, connectionInfo,redis);
                 // We stop real-time data from monitor, we need to track local changes.
                 redisInstance.cmdStreamer.subscribe(async (actions) => {
@@ -82,13 +92,11 @@ io.on('connection', (client) => {
                     const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
                     redisInstance.ioStreamer.next(ioActions);
                 })
-                redisInstance.ioStreamer.subscribe((actions)=> {
-                    console.log("io sub")
-                    console.log(actions)
-                    for (let i = 0; i < actions.length; i++) {
-                        const action = actions[i];
-                        switch (action) {
-                            case actions.UPDATE_LOCAL_TREE:
+                redisInstance.ioStreamer.subscribe(async (acts)=> {
+                    for (let i = 0; i < acts.length; i++) {
+                        const action = acts[i];
+                        switch (action.type) {
+                            case monitoractions.UPDATE_LOCAL_TREE:
                             {
                                 io.to(redisInstance.roomId).emit(actions.REDIS_INSTANCE_UPDATED,
                                 {
@@ -98,7 +106,18 @@ io.on('connection', (client) => {
                                     serverInfo: redisInstance.redis.serverInfo
                                 });
                                 break; 
-                            }                                                   
+                            }        
+                            case monitoractions.REMOVE_LOCAL_TREE: 
+                            {
+                                io.to(data.redisId).emit(actions.REDIS_INSTANCE_UPDATED,
+                                    {
+                                        redisInfo: redisInstance.connectionInfo,
+                                        keyInfo:redisInstance.keyInfo,
+                                        keys: redisInstance.keys,
+                                        serverInfo: redisInstance.redis.serverInfo
+                                    });
+                                break;
+                            }                                      
                             default:
                                 break;
                         }
@@ -112,7 +131,7 @@ io.on('connection', (client) => {
                     (keys, cursor) => {
                         redisInstance.keys = keys;
                         redisInstance.keyInfo.cursor = cursor;
-                        redisInstance.keyInfo.hasMoreKeys = cursor != 0;                        
+                        redisInstance.keyInfo.hasMoreKeys = cursor !== "0";                      
                         db.redisInstances.push(redisInstance)
                         client.join(roomId)
                         client.emit(actions.CONNECT_REDIS_INSTANCE_SUCCESS,
@@ -135,15 +154,11 @@ io.on('connection', (client) => {
         redisInstance.redis.monitor(async (err, monitor) => {
             redisInstance.monitor = monitor;
             monitor.on('monitor', async (time, args, source, database) => {
+                console.log("monitoring")
                 redisutils.handleMonitorCommand(redisInstance, args, (acts) => {
-                    if(acts.some(p=>p.type ==  monitoractions.UPDATE_LOCAL_TREE)) {
-                        io.to(data.redisId).emit(actions.REDIS_INSTANCE_UPDATED,
-                            {redisInfo: redisInstance.connectionInfo,keyInfo:redisInstance.keyInfo, keys: redisInstance.keys, serverInfo: redisInstance.redis.serverInfo})
-                    } 
-                    if(acts.some(p=>p.type ==  monitoractions.REMOVE_LOCAL_TREE)) {
-                        io.to(data.redisId).emit(actions.REDIS_INSTANCE_UPDATED,
-                            {redisInfo: redisInstance.connectionInfo,keyInfo:redisInstance.keyInfo,keys: redisInstance.keys, serverInfo: redisInstance.redis.serverInfo})
-                    } 
+                    console.log("monitor acts")
+                    console.log(acts);
+                    redisInstance.ioStreamer.next(acts);
                 });
             });
         });
@@ -164,6 +179,7 @@ io.on('connection', (client) => {
         // We stop real-time data from monitor, we need to track local changes.
         redisInstance.cmdStreamer.subscribe(async (actions) => {
             if(redisInstance.isMonitoring) {
+                console.log("Already Monitoring")
                 return;
             }
             const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
@@ -181,6 +197,8 @@ io.on('connection', (client) => {
         await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {
             // if it is not monitoring we should take care of it
             if(!redisInstance.isMonitoring) {
+                console.log("Exe CB")
+                console.log(nextActions)
                 redisInstance.cmdStreamer.next(nextActions);
             }
         })
@@ -194,11 +212,11 @@ io.on('connection', (client) => {
         redisInstance.keyInfo = {
             selectedKey: null,
             pattern: data.pattern,
-            hasMoreKeys: true,
-            cursor: 0,
+            hasMoreKeys: false,
+            cursor: "0",
             pageIndex: 0,
-            previousCursor:0,
-            pageSize: 40
+            previousCursor:"0",
+            pageSize: process.env.SCAN_PAGE_SIZE
         };
         // first scan when search query changes
         redisutils.scanRedisTree(redisInstance,
@@ -209,21 +227,21 @@ io.on('connection', (client) => {
                 redisInstance.keys = keys;
                 redisInstance.keyInfo.cursor = cursor;
                 redisInstance.keyInfo.pageIndex++;
-                redisInstance.keyInfo.hasMoreKeys = cursor != 0;
+                redisInstance.keyInfo.hasMoreKeys = cursor !== "0";
                 client.emit(actions.REDIS_INSTANCE_UPDATED,
                     {redisInfo: redisInstance.connectionInfo, isMonitoring: redisInstance.isMonitoring, keyInfo:redisInstance.keyInfo, keys: keys, serverInfo: redisInstance.redis.serverInfo})
         })
     });
 
     client.on(actions.ITER_NEXT_PAGE_SCAN, async (data) => {
-        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisInstanceId);
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
         // In case of refresh (Maybe after user start monitoring)
         redisInstance.keyInfo.previousCursor = redisInstance.keyInfo.cursor;    
-        // first scan when connected
+        // iter from current cursor with pagesize
         redisutils.scanRedisTree(redisInstance,
             redisInstance.keyInfo.cursor,
             redisInstance.keyInfo.pattern,
@@ -232,9 +250,15 @@ io.on('connection', (client) => {
                 redisInstance.keys = Object.assign(redisInstance.keys,keys);
                 redisInstance.keyInfo.cursor = cursor;
                 redisInstance.keyInfo.pageIndex++;
-                redisInstance.keyInfo.hasMoreKeys = cursor != 0;
-                client.emit(actions.REDIS_INSTANCE_UPDATED,
-                    {redisInfo: redisInstance.connectionInfo, isMonitoring: redisInstance.isMonitoring, keyInfo:redisInstance.keyInfo, keys: keys, serverInfo: redisInstance.redis.serverInfo})
+                redisInstance.keyInfo.hasMoreKeys = cursor !== "0";
+                io.to(redisInstance.roomId).emit(actions.REDIS_INSTANCE_UPDATED,
+                    {
+                        redisInfo: redisInstance.connectionInfo, 
+                        isMonitoring: redisInstance.isMonitoring,
+                        keyInfo:redisInstance.keyInfo,
+                        keys: redisInstance.keys,
+                        serverInfo: redisInstance.redis.serverInfo
+                    })
         })
     });
 

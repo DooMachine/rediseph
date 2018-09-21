@@ -34,9 +34,11 @@ export class TreeComponent {
   @Input() selectedNodeKey: string;
   @Input() expandedNodeKeys: Array<string>;
   @Input() searchText: string;
+  @Input() hasMoreKeys: boolean;
   @Output() nodeClick = new EventEmitter();
   @Output() expandClick = new EventEmitter();
   @Output() deleteClick = new EventEmitter();
+  @Output() loadMore = new EventEmitter();
 
   @Input('redisTree')
   set redisTree(tree: any) {

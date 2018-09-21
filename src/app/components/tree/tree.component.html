@@ -75,3 +75,7 @@
       </li>
     </mat-nested-tree-node>
   </mat-tree>
+  <button color="warn" *ngIf="hasMoreKeys" mat-stroked-button (click)="loadMore.emit()">
+    Load More
+    <mat-icon>loading</mat-icon>
+  </button>

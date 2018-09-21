@@ -20,6 +20,7 @@ export enum RedisActionTypes {
     DISCONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] DISCONNECT_REDIS_INSTANCE_SUCCESS',
 
     REDIS_INSTANCE_UPDATED = '[Redis] REDIS_INSTANCE_UPDATED',
+    LOAD_NEXT_PAGE= '[Redis] LOAD_NEXT_PAGE',
 
     EXECUTE_COMMAND = '[Redis] EXECUTE_COMMAND',
     SET_SEARCH_QUERY = '[Redis] SET_SEARCH_QUERY',
@@ -91,6 +92,12 @@ export class RedisInstanceUpdated implements Action {
 
     constructor(public payload: any) { }
 }
+
+export class LoadNextPage implements Action {
+    readonly type = RedisActionTypes.LOAD_NEXT_PAGE;
+
+    constructor(public payload: RedisInstance) { }
+}
 export class ExecuteCommand implements Action {
     readonly type = RedisActionTypes.EXECUTE_COMMAND;
 
@@ -142,4 +149,5 @@ export type RedisActions
                         | WatchChanges
                         | WatchingChanges
                         | StopWatchChanges
-                        | StoppedWatchChanges;
+                        | StoppedWatchChanges
+                        | LoadNextPage;

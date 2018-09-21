@@ -40,6 +40,15 @@ export class RedisEffects {
             )
         );
     @Effect({dispatch: false})
+    loadNextPage$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.LOAD_NEXT_PAGE),
+            mergeMap((action: redisActions.LoadNextPage) => {
+                this.redisService.LoadNextPage(action.payload.id);
+                return of();
+            }),
+        );
+    @Effect({dispatch: false})
     watchChanges$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.WATCH_CHANGES),

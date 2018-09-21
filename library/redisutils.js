@@ -1,8 +1,10 @@
 const _ = require('lodash');
 const monitoractions = require('./monitoractions');
+const cmdactions = require('./cmdactions');
+
 
 async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 100, callback) {
-  if (pattern == '')
+  if (pattern === "" || pattern == null)
   {
     pattern = '*';
   }
@@ -20,8 +22,7 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
         const key = fetchkeys[i];
         pipeline.type(key);
       }
-      pipeline.exec().then((keyTypes) => {      
-        
+      pipeline.exec().then((keyTypes) => {
         for (let i = 0; i < fetchkeys.length; i++) {
           keyRoot[fetchkeys[i]] = { type: keyTypes[i][1] }          
         }
@@ -52,7 +53,7 @@ async function handleMonitorCommand (redisInstance,args, callback) {
     }    
   }
   else if(command === 'set') {
-    if(args.length != 3) {
+    if(args.length == 3) {
       key = args[1];
       const keyObj = redisInstance.keys[key];
       if(keyObj) {
@@ -102,7 +103,6 @@ async function handleMonitorCommand (redisInstance,args, callback) {
 }
 
 async function handleCommandExecution(redisInstance,commands, callback) {
-  const cmdactions = require('./cmdactions');
   let nextActions = [];
   const pipeline = redisInstance.redis.pipeline();
   for (let i = 0; i < commands.length; i++) {
@@ -113,7 +113,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       {
         pipeline.del(args,(err,result) => {
           if (result) {
-            nextActions.push({type: cmdactions.REMOVE_KEYS, payload: {keys: args}})
+            nextActions.push({type: cmdactions.DEL_KEYS, payload: {keys: args}})
           }
         })
         break;
@@ -122,7 +122,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       {
         pipeline.set(args[0],args[1] ,(err,result) => {
           if (result) {
-            nextActions.push({type: cmdactions.UPSERT_KEY, payload:{key: args[0]}})
+            nextActions.push({type: cmdactions.SET_KEY, payload:{key: args[0]}})
           }
         })
         break;
@@ -133,11 +133,11 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         const query = {};
         for (let i = 0, q= 1; i < args[0].length; i+=2, q+=2) {
           newKeys.push(args[0][i]);
-          query[args[0][i]] = args[0][q];          
+          query[args[0][i]] = {type: args[0][q]};          
         }
         pipeline.set(query, (err,result) => {
           if (result) {
-            nextActions.push({type: cmdactions.UPSERT_KEYS, payload: {keys: newKeys}})
+            nextActions.push({type: cmdactions.SET_KEYS, payload: {keys: newKeys}})
           }
         })
         break;
@@ -152,26 +152,30 @@ async function handleCommandExecution(redisInstance,commands, callback) {
 }
 
 async function handleCmdOutputActions(redisInstance, actions) {
-  const cmdactions = require('./cmdactions');
   let ioActions = [];
   for (let i = 0; i < actions.length; i++) {
     const action = actions[i];
-    console.log(action.type);
     switch (action.type) {
       case cmdactions.DEL_KEYS:
-        redisInstance.keys = redisInstance.keys.filter(p=> action.payload.keys.indexOf(p) == -1);
-        ioActions.push(monitoractions.UPDATE_LOCAL_TREE)
+        for (let i = 0; i < action.payload.keys.length; i++) {
+          const delkey = action.payload.keys[i];
+          console.log(delkey);
+          delete redisInstance.keys[delkey];
+        }
+        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        break;
       case cmdactions.SET_KEY:
-        redisInstance.keys[action.payload.key] = 'string'
-        ioActions.push(monitoractions.UPDATE_LOCAL_TREE)
+        redisInstance.keys[action.payload.key] = {type: 'string'}
+        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        break;
       case cmdactions.SET_KEYS:
         const newKeyAndTypes = {}
         for (let i = 0; i < action.payload.keys.length; i++) {
           const key = action.payload.keys[i];      
-          newKeyAndTypes[key] = 'string';  
+          newKeyAndTypes[key] ={type: 'string'};  
         }
-        redisInstance.keys = {...redisInstance.keys,newKeyAndTypes};
-        ioActions.push(monitoractions.UPDATE_LOCAL_TREE)
+        redisInstance.keys = Object.assign({},redisInstance.keys,newKeyAndTypes);
+        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
         break;    
       default:
         break;

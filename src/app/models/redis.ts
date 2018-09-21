@@ -60,7 +60,7 @@ export class KeyInfo {
     selectedKey = '';
     pattern = '' ;
     hasMoreKeys = true;
-    cursor = 0;
+    cursor = '0';
     pageSize = 40;
 }
 /**
