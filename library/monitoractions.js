@@ -1,4 +1,5 @@
 module.exports = {
     UPDATE_LOCAL_TREE: '[Redis] UPDATE_LOCAL_TREE',
+    REFRESH_SCANNED_TREE: '[Redis] REFRESH_SCANNED_TREE',
     REMOVE_LOCAL_TREE: '[Redis] REMOVE_LOCAL_TREE',
   };

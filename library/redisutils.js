@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const monitoractions = require('./monitoractions');
+const cmdactions = require('./commandactions');
 
 async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 100, callback) {
   if (pattern == '')
@@ -11,7 +12,7 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
     const keyRoot = {};
     let newCursor = 0;
 
-    redisInstance.redis.scan(cursor,'MATCH', pattern || '*', 'COUNT', fetchCount, (err, resp) => {
+    redisInstance.redis.scan(cursor,'MATCH', pattern, 'COUNT', fetchCount, (err, resp) => {
       newCursor = resp[0];
       fetchkeys = resp[1];
       const pipeline = redisInstance.redis.pipeline();
@@ -101,6 +102,82 @@ async function handleMonitorCommand (redisInstance,args, callback) {
   callback(actions);
 }
 
+async function handleCommandExecution(redisInstance,commands, callback) {
+  let nextActions = [];
+  const pipeline = redisInstance.redis.pipeline();
+  for (let i = 0; i < commands.length; i++) {
+    const cmd = commands[i][0].toLowerCase();
+    const args = commands[i][1];
+    switch (cmd) {
+      case 'del':
+      {
+        pipeline.del(args,(err,result) => {
+          if (result) {
+            nextActions.push({type: cmdactions.REMOVE_KEYS, payload: {keys: args}})
+          }
+        })
+        break;
+      }        
+      case 'set':
+      {
+        pipeline.set(args[0],args[1] ,(err,result) => {
+          if (result) {
+            nextActions.push({type: cmdactions.UPSERT_KEY, payload:{key: args[0]}})
+          }
+        })
+        break;
+      }        
+      case 'mset':
+      {
+        const newKeys = [];
+        const query = {};
+        for (let i = 0, q= 1; i < args[0].length; i+=2, q+=2) {
+          newKeys.push(args[0][i]);
+          query[args[0][i]] = args[0][q];          
+        }
+        pipeline.set(query, (err,result) => {
+          if (result) {
+            nextActions.push({type: cmdactions.UPSERT_KEYS, payload: {keys: newKeys}})
+          }
+        })
+        break;
+      }
+      default:
+        break;
+    }
+  }  
+  pipeline.exec((_, results) => {
+    callback(nextActions); 
+  })
+}
+
+async function handleCmdOutputActions(redisInstance, actions) {
+  let ioActions = [];
+  for (let i = 0; i < actions.length; i++) {
+    const action = actions[i];
+    switch (action.type) {
+      case cmdactions.DEL_KEYS:
+        redisInstance.keys = redisInstance.keys.filter(p=> action.payload.keys.indexOf(p) == -1);
+        ioActions.push(monitoractions.UPDATE_LOCAL_TREE)
+      case cmdactions.SET_KEY:
+        redisInstance.keys[action.payload.key] = 'string'
+        ioActions.push(monitoractions.UPDATE_LOCAL_TREE)
+      case cmdactions.SET_KEYS:
+        const newKeyAndTypes = {}
+        for (let i = 0; i < action.payload.keys.length; i++) {
+          const key = action.payload.keys[i];      
+          newKeyAndTypes[key] = 'string';  
+        }
+        redisInstance.keys = {...redisInstance.keys,newKeyAndTypes};
+        ioActions.push(monitoractions.UPDATE_LOCAL_TREE)
+        break;    
+      default:
+        break;
+    }
+  }
+  return _.uniq(ioActions);
+}
+
 
 const shouldRemoveTreeCommands = [
   'flushall','flushdb',
@@ -132,5 +209,10 @@ const refreshNeedCommands = ['set',
 'zadd','zincrby','zinterstore','zpopmax','zpopmin','zrem','zrank','xadd']
 
   module.exports = {
-    refreshNeedCommands, scanRedisTree, handleMonitorCommand
+    refreshNeedCommands,
+    scanRedisTree,
+    handleMonitorCommand,
+    handleCommandExecution,
+    handleCommandSubscribe,
+    handleCmdOutputActions
   }

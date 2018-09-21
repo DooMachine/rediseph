@@ -14,5 +14,5 @@ export const recursiveSpreadNodes = (node: RedisNode) => {
 };
 
 export const buildDELQuery = (node: RedisNode ): Array<any> => {
-    return ['DEL', recursiveSpreadNodes(node)];
+    return [['DEL', recursiveSpreadNodes(node)]];
 };

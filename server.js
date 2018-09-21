@@ -4,8 +4,10 @@ const _ = require('lodash');
 const uuid = require('uuid');
 const Redis = require('ioredis');
 const redisutils = require('./library/redisutils')
+const RedisInstance = require('./library/redisinstance')
 const actions = require('./library/actions');
 const monitoractions = require('./library/monitoractions');
+const cmdlisteners = require('./library/cmdlisteners');
 
 
 const port = process.env.PORT || 3003;
@@ -73,21 +75,25 @@ io.on('connection', (client) => {
             });
           
             redis.on('ready', async () => {
-                const redisInstance = {
-                    roomId:roomId,
-                    connectionInfo: connectionInfo,
-                    redis: redis,
-                    keys: {},
-                    isMonitoring:false,
-                    keyInfo: {
-                        selectedKey: null,
-                        pattern: '',
-                        hasMoreKeys: true,
-                        cursor: 0,
-                        previousCursor: 0,
-                        pageSize: 40,
+                const redisInstance = new RedisInstance(roomId, connectionInfo,redis);
+                redisInstance.ioStreamer.subscribe((actions)=> {
+                    for (let i = 0; i < actions.length; i++) {
+                        const action = actions[i];
+                        switch (action) {
+                            case actions.REDIS_INSTANCE_UPDATED:
+                            io.to(redisInstance.roomId).emit(actions.REDIS_INSTANCE_UPDATED,
+                                {
+                                    redisInfo: redisInstance.connectionInfo,
+                                    keyInfo:redisInstance.keyInfo,
+                                    keys: redisInstance.keys,
+                                    serverInfo: redisInstance.redis.serverInfo
+                                });
+                                break;                        
+                            default:
+                                break;
+                        }
                     }
-                };
+                })
                 // first scan when connected
                 redisutils.scanRedisTree(redisInstance,
                     redisInstance.keyInfo.cursor,
@@ -97,7 +103,7 @@ io.on('connection', (client) => {
                         redisInstance.keys = keys;
                         redisInstance.keyInfo.cursor = cursor;
                         redisInstance.keyInfo.hasMoreKeys = cursor != 0;                        
-                        db.redisInstances.push(redisInstance)              
+                        db.redisInstances.push(redisInstance)
                         client.join(roomId)
                         client.emit(actions.CONNECT_REDIS_INSTANCE_SUCCESS,
                             {
@@ -131,12 +137,12 @@ io.on('connection', (client) => {
                 });
             });
         });
-            
+        
         io.to(data.redisId).emit(actions.WATCHING_CHANGES,data.redisId)
     });
 
     client.on(actions.STOP_WATCH_CHANGES, async (data) => {
-        console.log(data)
+        
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId)
         if(redisInstance.isMonitoring) {
             if(redisInstance.monitor) {
@@ -145,7 +151,12 @@ io.on('connection', (client) => {
                 delete redisInstance.monitor;
             }
         }
-        io.to(data.redisId).emit(actions.STOPPED_WATCH_CHANGES,data.redisId)
+        // We stop real-time data from monitor, we need to track local changes.
+        redisInstance.cmdStreamer.subscribe(async (actions) => {
+            const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
+            redisInstance.ioStreamer.next(ioActions);
+        })
+        io.to(data.redisId).emit(actions.STOPPED_WATCH_CHANGES, data.redisId)
     });
 
     client.on(actions.EXECUTE_COMMAND, async (data) => {
@@ -154,7 +165,12 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
-        await redisInstance.redis.call(data.args[0], data.args.slice(1));
+        await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {
+            // if it is not monitoring we should take care of it
+            if(!redisInstance.isMonitoring) {
+                redisInstance.cmdStreamer.next(nextActions);
+            }
+        })
     });
     client.on(actions.SET_SEARCH_QUERY, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisInstanceId);
@@ -171,7 +187,7 @@ io.on('connection', (client) => {
             previousCursor:0,
             pageSize: 40
         };
-        // first scan when connected
+        // first scan when search query changes
         redisutils.scanRedisTree(redisInstance,
             redisInstance.keyInfo.cursor,
             redisInstance.keyInfo.pattern,
