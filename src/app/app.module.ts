@@ -14,6 +14,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
 import { RootInfoComponent } from './components/root-info/root-info.component';
 import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.component';
+import { NodeRootComponent } from './components/node-root/node-root.component';
+import { NodeTreeComponent } from './components/node-tree/node-tree.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +24,9 @@ import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.c
     RedisInstanceComponent,
     AddRedisModalComponent,
     AddKeyModalComponent,
-    RootInfoComponent
+    RootInfoComponent,
+    NodeRootComponent,
+    NodeTreeComponent
   ],
   entryComponents: [AddRedisModalComponent, AddKeyModalComponent],
   imports: [

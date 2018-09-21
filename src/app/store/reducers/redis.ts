@@ -130,7 +130,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         case redisActions.RedisActionTypes.SET_SELECTED_NODE:
         {
             const redisInstance = state.entities[action.payload.redis.id];
-            const change = {...redisInstance.keyInfo, selectedNodeKey: action.payload.node.key };
+            const change = {...redisInstance.selectedKeyInfo, selectedNodeKey: action.payload.node.key };
             return adapter.updateOne({id: action.payload.redis.id,
                     changes: {keyInfo: change , rootSelected: false}}, state);
         }

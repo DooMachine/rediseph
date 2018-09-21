@@ -83,12 +83,22 @@
                     </app-root-info>   
                   </app-redis-instance>
                   <ng-template #nodeSection>
-
+                    <app-node-root>
+                      <ng-content *ngIf="instance.selectedKeyInfo.type != 'string'" select="tree">
+                          <app-node-tree
+                          (nodeClick) = "nodeClicked({node: $event, redis:instance})"
+                          (loadMore) = "loadMore(instance)"
+                          (deleteClick) = "deleteNode({node:$event, redis: instance})"
+                          (searchInputChanged)= "innerSearchChanged($event)"
+                          [selectedKeyInfo]="instance.selectedKeyInfo"
+                          >
+                        </app-node-tree>
+                      </ng-content>
+                    </app-node-root>
                   </ng-template>
               </mat-sidenav-content>
           </mat-sidenav-container>
-        </mat-tab>   
-          <mat-toolbar class="example-footer">Footer</mat-toolbar>
+        </mat-tab>
       </mat-tab-group>
   </mat-sidenav-content>
 </mat-sidenav-container>

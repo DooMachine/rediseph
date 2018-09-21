@@ -41,7 +41,7 @@ export class RedisInstance {
   expandedNodeKeys = [];
   rootSelected = true;
   id = '';
-  keyInfo: KeyInfo;
+  selectedKeyInfo: KeyInfo;
   info: TableInfo<RedisInfo> = {
     entities: [],
     pageIndex: 0,
@@ -57,6 +57,7 @@ export class RedisInstance {
 }
 
 export class KeyInfo {
+    entities = [];
     selectedKey = '';
     pattern = '' ;
     hasMoreKeys = true;

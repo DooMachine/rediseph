@@ -275,7 +275,7 @@ io.on('connection', (client) => {
                     redisInstance.selectedKeyInfo.pageIndex++;
                     redisInstance.selectedKeyInfo.hasMorePage = cursor !== "0";
                     
-                    redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}]);
+                    redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE}]);
             })
         }
         // first scan when node key selected
