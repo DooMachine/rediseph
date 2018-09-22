@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { MonacoEditorModule } from 'ngx-monaco-editor';
 
 import { AppComponent } from './app.component';
 import { AppMaterialModule } from './material.module';
@@ -38,7 +38,7 @@ import { StringViewerComponent } from './components/string-viewer/string-viewer.
     AppMaterialModule,
     FormsModule,
     ReactiveFormsModule,
-    CodemirrorModule,
+    MonacoEditorModule.forRoot(),
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     // StoreDevtoolsModule.instrument({

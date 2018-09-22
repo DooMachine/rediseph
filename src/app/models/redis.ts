@@ -68,10 +68,15 @@ export class KeyInfo {
     pageIndex: 0;
 }
 
+export class SelectedKeyInfoHost {
+  keyInfos: Array<SelectedKeyInfo> = [];
+  redisId: string;
+}
 export class SelectedKeyInfo {
     key: string = null;
     type: string = null;
     value: '';
+    isMonitoring: false;
     keyScanInfo = {
         entities: [],
         cursor: '0',

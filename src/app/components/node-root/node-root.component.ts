@@ -8,7 +8,9 @@ import { SelectedKeyInfo } from '../../models/redis';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodeRootComponent implements OnInit {
-  @Input() selectedKeyInfo: SelectedKeyInfo;
+  @Input() selectedKeyInfos: Array<SelectedKeyInfo>;
+  @Input() selectedTabIndex: number;
+  @Input() redisId: string;
   constructor() { }
 
   ngOnInit() {

@@ -5,6 +5,7 @@ import { Action } from '@ngrx/store';
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { RedisSocketService } from '../services/redissocket.service';
 import * as redisActions from '../actions/redis';
+import * as keyActions from '../actions/selectedkey';
 
 @Injectable()
 export class RedisEffects {
@@ -27,7 +28,10 @@ export class RedisEffects {
     connectRedisSuccess$: Observable<Action> =
         this.redisService.redisConnected$.pipe( // listen to the socket for CLIENT CONNECTED event
             switchMap((resp) =>  {
-                    return of(new redisActions.ConnectRedisInstanceSuccess(resp));
+                    return from([
+                        new redisActions.ConnectRedisInstanceSuccess(resp),
+                        new keyActions.AddSelectedKeyHost({redisId: resp.redisInfo.id})
+                    ]);
                 }
             )
         );
@@ -143,7 +147,7 @@ export class RedisEffects {
     selectedNodeUpdated$: Observable<Action> =
         this.redisService.selectedNodeUpdated$.pipe( // listen to the socket for SELECTED KEY UPDATES
             switchMap((resp) =>  {
-                    return of(new redisActions.SelectedNodeUpdated(resp));
+                    return of(new keyActions.AddSelectedKey(resp.selectedKeyInfo));
                 }
             )
         );

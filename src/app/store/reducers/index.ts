@@ -1,5 +1,6 @@
 import * as fromRedis from './redis';
 import * as fromRedisTree from './redistree';
+import * as fromKeys from './selectedkey';
 
 import { ActionReducerMap,
     ActionReducer, Action,
@@ -13,6 +14,7 @@ import { environment } from 'src/environments/environment';
  */
 export interface State {
     redis: fromRedis.State;
+    selectedKey: fromKeys.State;
     redisTree: fromRedisTree.State;
 }
 /**
@@ -20,6 +22,7 @@ export interface State {
  */
 export const reducers: ActionReducerMap<State> = {
     redis: fromRedis.reducer,
+    selectedKey: fromKeys.reducer,
     redisTree: fromRedisTree.reducer
 };
 
@@ -29,7 +32,7 @@ export const reducers: ActionReducerMap<State> = {
  */
   export function clearState(reducer: ActionReducer<State>): ActionReducer<State> {
     return function(state: State, action: Action): State {
-      if (action.type === 'CLEAR_REDIS_STATE') {
+      if (action.type === 'CLEAR_STATE') {
         state = undefined;
       }
       return reducer(state, action);
@@ -58,6 +61,7 @@ export const metaReducers: MetaReducer<State>[] = environment.production ? [clea
 export const getFeatureState = createFeatureSelector<State>('redis');
 
 export const getRedisState = createSelector(getFeatureState, state => state.redis);
+export const getSelectedKeyState = createSelector(getFeatureState, state => state.selectedKey);
 
 
 /**
@@ -66,5 +70,12 @@ export const getRedisState = createSelector(getFeatureState, state => state.redi
 export const {
     selectAll: selectAllRedisInstances,
 } = fromRedis.adapter.getSelectors(getRedisState);
+
+/**
+ * Select All Selected Keys
+ */
+export const {
+    selectAll: selectAllSelectedKeyHosts,
+} = fromKeys.adapter.getSelectors(getSelectedKeyState);
 
 export const getSelectedRedisIndex = createSelector(getRedisState, state => state.selectedInstanceIndex);

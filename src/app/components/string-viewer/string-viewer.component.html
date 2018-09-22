@@ -1,9 +1,20 @@
+<div class="string-viewer-menu">
+  <div fxLayout="row" fxLayoutAlign="space-between center" fxLayoutGap="0px">   
+    
 
-  <ngx-codemirror 
-      [(ngModel)]="stringValue" 
-      [options]="{
-        lineNumbers: true,
-        theme: 'material',
-        mode: 'json'
-      }"
-  ></ngx-codemirror>
+    <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="10px">
+      <div fxLayout="row" fxLayoutAlign="end start" fxLayoutGap="2px">
+          <button color="accent" [disabled]="isRealtime" mat-stroked-button>Save Changes</button>
+      </div>
+      <button
+        *ngIf="!isRealtime"
+        matTooltip="Refresh Value" color="accent" mat-icon-button>
+          <mat-icon >sync</mat-icon>
+      </button>
+    </div>
+  </div>  
+</div>
+<ngx-monaco-editor  
+  class="redis-code-editor"
+  [options]="editorOptions" 
+  [(ngModel)]="stringValue"></ngx-monaco-editor>

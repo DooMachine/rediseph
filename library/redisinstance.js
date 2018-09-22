@@ -14,7 +14,7 @@ module.exports = class RedisInstance {
         this.connectedClientCount = 1;
         this.isMonitoring=false,
         // hscan, zscan etc.
-        this.selectedKeyInfo = new SelectedKeyInfo(null,null)
+        this.selectedKeyInfo = []; 
         this.keyInfo= {
             pattern: '',
             hasMoreKeys: true,

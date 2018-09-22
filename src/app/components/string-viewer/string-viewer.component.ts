@@ -8,11 +8,18 @@ import { SelectedKeyInfo } from '../../models/redis';
 })
 export class StringViewerComponent implements OnInit {
   constructor() { }
+  isRealtime = false;
+  editorOptions = {theme: 'vs-dark', language: 'text/plain' };
   stringValue = '';
   @Input('selectedKeyInfo')
   set value(v: SelectedKeyInfo) {
-    console.log(v);
     this.stringValue = v.value || '';
+    this.isRealtime = v.isMonitoring;
+    if (v.value.startsWith('{')) {
+      this.editorOptions.language = 'json';
+    } else if (v.value.startsWith('<')) {
+      this.editorOptions.language = 'html';
+    }
   }
 
   ngOnInit() {
