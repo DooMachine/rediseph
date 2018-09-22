@@ -1,9 +1,53 @@
  
 <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="4px">
-  <div [fxFlex]="15">
-    <ng-content ></ng-content>    
+  <div [fxFlex]="15" *ngIf="selectedKeyInfo.type != 'string'">
+      <div >
+          <div fxLayout="row" fxLayoutAlign="space-between stretch" fxLayoutGap="6px">            
+              <button matTooltip="Add new value" color="accent" mat-icon-button>
+                <mat-icon >device_hub</mat-icon>
+              </button>
+              <button (click)="refreshKeys(selectedKeyInfo)"
+                matTooltip="Refresh Keys" color="warn" mat-icon-button>
+                  <mat-icon >sync</mat-icon>
+                </button>
+              <button
+                (click)="watchChange(selectedKeyInfo)"
+                *ngIf="selectedKeyInfo.isMonitoring"
+                matTooltip="Stop Watching Keys" color="accent" mat-icon-button>
+                  <mat-icon >wifi</mat-icon>
+              </button>
+              <button
+                (click)="watchChange(selectedKeyInfo)"
+                *ngIf="!selectedKeyInfo.isMonitoring"
+                matTooltip="Start Watching Keys" color="accent" mat-mini-fab>
+                  <mat-icon >wifi_off</mat-icon>
+              </button>  
+              <button mat-icon-button [matMenuTriggerFor]="nodeMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>                    
+              <mat-menu #nodeMenu="matMenu">
+                <button (click)= "deleteAllClick.emit(selectedKeyInfo)" color="warn" mat-menu-item>
+                  <mat-icon>delete_forever</mat-icon>
+                  <span>Flush Keys In Database</span>
+                </button>
+              </mat-menu>
+          </div>   
+          <mat-divider></mat-divider>
+          <app-node-tree
+            (entityClick) = "nodeClicked($event)"
+            (loadMore) = "loadMoreEntity()"
+            (deleteClick) = "deleteEntity($event)"
+            (searchInputChanged)= "entitySearchChanged($event)"
+            [selectedKeyInfo]="selectedKeyInfo"
+            >
+          </app-node-tree>
+      </div>       
   </div>
   <div fxFlex>
-    <ng-content select="[keyContent]"></ng-content> 
+        <app-string-viewer
+        *ngIf="selectedKeyInfo.type == 'string'"
+        [selectedKeyInfo] = "selectedKeyInfo"
+        >
+        </app-string-viewer>
   </div> 
 </div> 

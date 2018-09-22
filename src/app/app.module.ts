@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 import { AppComponent } from './app.component';
 import { AppMaterialModule } from './material.module';
@@ -16,6 +17,7 @@ import { RootInfoComponent } from './components/root-info/root-info.component';
 import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.component';
 import { NodeRootComponent } from './components/node-root/node-root.component';
 import { NodeTreeComponent } from './components/node-tree/node-tree.component';
+import { StringViewerComponent } from './components/string-viewer/string-viewer.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,8 @@ import { NodeTreeComponent } from './components/node-tree/node-tree.component';
     AddKeyModalComponent,
     RootInfoComponent,
     NodeRootComponent,
-    NodeTreeComponent
+    NodeTreeComponent,
+    StringViewerComponent
   ],
   entryComponents: [AddRedisModalComponent, AddKeyModalComponent],
   imports: [
@@ -35,6 +38,7 @@ import { NodeTreeComponent } from './components/node-tree/node-tree.component';
     AppMaterialModule,
     FormsModule,
     ReactiveFormsModule,
+    CodemirrorModule,
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
     // StoreDevtoolsModule.instrument({

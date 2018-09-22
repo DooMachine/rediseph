@@ -71,7 +71,7 @@ export class KeyInfo {
 export class SelectedKeyInfo {
     key: string = null;
     type: string = null;
-    value: string = null;
+    value: '';
     keyScanInfo = {
         entities: [],
         cursor: '0',

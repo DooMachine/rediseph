@@ -21,7 +21,7 @@
                   <div fxLayout="row" fxLayoutAlign="space-between start" fxLayoutGap="6px">
                       
                       <button matTooltip="Add new key" color="accent" mat-icon-button>
-                        <mat-icon >device_hub</mat-icon>
+                        <mat-icon >add_box</mat-icon>
                       </button>
                       <button (click)="showRootInfo(instance)" matTooltip="Status" color="primary"mat-icon-button>
                         <mat-icon >developer_board</mat-icon>
@@ -39,7 +39,7 @@
                       <button
                         (click)="watchChange({checked: true, instance: instance})"
                         *ngIf="!instance.isMonitoring"
-                        matTooltip="Start Watching Keys" color="accent" mat-mini-fab>
+                        matTooltip="Start Watching Keys" color="accent" mat-icon-button>
                           <mat-icon >wifi_off</mat-icon>
                       </button>  
                       <button mat-icon-button [matMenuTriggerFor]="redisMenu">
@@ -80,50 +80,10 @@
                       >
                     </app-root-info>   
                   </app-redis-instance>
-                    <app-node-root *ngIf="!instance.rootSelected">       
-                      <div fxLayout="row" fxLayoutAlign="space-between stretch" fxLayoutGap="6px">            
-                          <button matTooltip="Add new value" color="accent" mat-icon-button>
-                            <mat-icon >device_hub</mat-icon>
-                          </button>
-                          <button (click)="refreshKeys(instance)"
-                            matTooltip="Refresh Keys" color="warn" mat-icon-button>
-                              <mat-icon >sync</mat-icon>
-                            </button>
-                          <button
-                            (click)="watchChange({checked: false, instance: instance})"
-                            *ngIf="instance.isMonitoring"
-                            matTooltip="Stop Watching Keys" color="accent" mat-icon-button>
-                              <mat-icon >wifi</mat-icon>
-                          </button>
-                          <button
-                            (click)="watchChange({checked: true, instance: instance})"
-                            *ngIf="!instance.isMonitoring"
-                            matTooltip="Start Watching Keys" color="accent" mat-mini-fab>
-                              <mat-icon >wifi_off</mat-icon>
-                          </button>  
-                          <button mat-icon-button [matMenuTriggerFor]="nodeMenu">
-                            <mat-icon>more_vert</mat-icon>
-                          </button>                    
-                          <mat-menu #nodeMenu="matMenu">
-                            <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
-                              <mat-icon>delete_forever</mat-icon>
-                              <span>Flush Keys In Database</span>
-                            </button>
-                            <button color="accent" mat-menu-item>
-                              <mat-icon>delete_outline</mat-icon>
-                              <span>Flush Keys in Server</span>
-                            </button>
-                          </mat-menu>
-                      </div>   
-                      <mat-divider></mat-divider>
-                      <app-node-tree
-                        (entityClick) = "nodeClicked({node: $event, redis:instance})"
-                        (loadMore) = "loadMoreEntity()"
-                        (deleteClick) = "deleteEntity({node:$event, redis: instance})"
-                        (searchInputChanged)= "entitySearchChanged($event)"
-                        [selectedKeyInfo]="instance.selectedKeyInfo"
-                        >
-                      </app-node-tree>
+                    <app-node-root *ngIf="!instance.rootSelected"
+                    [selectedKeyInfo] = "instance.selectedKeyInfo"
+                    >
+                      
                     </app-node-root>
               </mat-sidenav-content>
           </mat-sidenav-container>

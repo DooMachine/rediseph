@@ -285,7 +285,7 @@ io.on('connection', (client) => {
         const keyInfo = redisInstance.keys[data.key];
         redisInstance.selectedKeyInfo = new SelectedKeyInfo(data.key,keyInfo.type)
         if(keyInfo.type === 'string') {
-            redisInstance.selectedKeyInfo.value = redisInstance.redis.get(data.key)
+            redisInstance.selectedKeyInfo.value = await redisInstance.redis.get(data.key)
             redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE}]);
         }
         else if(keyInfo.type === 'list') {
