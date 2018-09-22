@@ -50,7 +50,6 @@ async function scanKeyEntities(redisInstance,key, type, cursor, pattern = '*', f
 
     redisInstance.redis[scanMethod](key, cursor,'MATCH', pattern, 'COUNT', fetchCount, async (err, [cursor, resp]) => {
       
-      console.log(resp);
       await callback(resp, cursor); 
     });
   }
@@ -191,9 +190,10 @@ async function handleCmdOutputActions(redisInstance, actions) {
       case cmdactions.DEL_KEYS:
         for (let i = 0; i < action.payload.keys.length; i++) {
           const delkey = action.payload.keys[i];
-          console.log(delkey);
+          redisInstance.newSelectedKeyInfo = redisInstance.newSelectedKeyInfo.filter(p=>p.key != delkey);
           delete redisInstance.keys[delkey];
         }
+        ioActions.push({type: monitoractions.SELECTED_NODES_UPDATED,})
         ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
         break;
       case cmdactions.SET_KEY:

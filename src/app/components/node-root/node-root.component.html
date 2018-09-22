@@ -8,7 +8,8 @@
       </ng-template>
       <div *ngIf="keyInfo.type == 'string'" fxFlex>
           <app-string-viewer          
-            [selectedKeyInfo] = "keyInfo"
+            [selectedKeyInfo] = "keyInfo"            
+            (saveChanges)= "updateStringValue.emit({value: $event, keyInfo:keyInfo})"
           >
           </app-string-viewer>
         </div> 

@@ -12,6 +12,7 @@ export class NodeRootComponent implements OnInit {
   @Input() redisId: string;
   @Output() keyTabChanged = new EventEmitter();
   @Output() closeKeyInfo = new EventEmitter();
+  @Output() updateStringValue = new EventEmitter();
   keyInfoHost: SelectedKeyInfoHost;
 
   @Input('selectedKeyInfoHosts')

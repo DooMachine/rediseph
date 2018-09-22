@@ -1,7 +1,5 @@
 <div class="string-viewer-menu">
-  <div fxLayout="row" fxLayoutAlign="space-between center" fxLayoutGap="0px">   
-    
-
+  <div fxLayout="row" fxLayoutAlign="space-between center" fxLayoutGap="0px">
     <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="10px">
       <div fxLayout="row" fxLayoutAlign="end start" fxLayoutGap="2px">
           <button color="accent" [disabled]="isRealtime" mat-stroked-button>Save Changes</button>
@@ -17,6 +15,6 @@
 <ngx-codemirror 
   [autoFocus]="true"
   [name]="key"
-  [(ngModel)]="stringValue" 
+  [(ngModel)]="stringValue"
   [options]="editorOptions"
 ></ngx-codemirror>

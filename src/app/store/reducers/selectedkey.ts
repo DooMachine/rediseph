@@ -50,7 +50,8 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
         case keyActions.SelectedKeyActionTypes.REMOEVE_SELECTED_KEY_SUCCESS: {
             const prev = state.entities[action.payload.redisId];
             const newKeyInfo = Object.assign({}, prev);
-            newKeyInfo.keyInfos = newKeyInfo.keyInfos.filter(p => p.key !== action.payload.key);
+            newKeyInfo.keyInfos = action.payload.updatedKeys;
+            newKeyInfo.selectedTabIndex = prev.selectedTabIndex;
             return adapter.updateOne({id: action.payload.redisId,
                 changes: {keyInfos: newKeyInfo.keyInfos, selectedTabIndex: newKeyInfo.selectedTabIndex - 1 }}, state);
         }

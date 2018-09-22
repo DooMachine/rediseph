@@ -148,7 +148,17 @@ io.on('connection', (client) => {
                                         selectedKeyInfo: redisInstance.selectedKeyInfo.find(p=>p.key == action.key)
                                     });
                                 break;
-                            }                               
+                            }     
+                            case monitoractions.SELECTED_NODES_UPDATED:
+                            {
+                                console.log("Selected keys added/deleted/updated")
+                                io.to(redisInstance.roomId).emit(actions.DESELECT_NODE_KEY_SUCCESS,
+                                     {
+                                        redisId: redisInstance.roomId,
+                                        selectedKeyInfo: redisInstance.selectedKeyInfo
+                                    });       
+                                break;
+                            }                          
                             default:
                                 break;
                         }
@@ -334,7 +344,8 @@ io.on('connection', (client) => {
                 {error: 'This should not happen!'})
         }
         redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key != data.key);
-        io.to(redisInstance.roomId).emit(actions.DESELECT_NODE_KEY_SUCCESS, {redisId: redisInstance.roomId, key: data.key});       
+        console.log(redisInstance.selectedKeyInfo);
+        redisInstance.ioStreamer.next({type: monitoractions.SELECTED_NODES_UPDATED})
 
     });
     /**

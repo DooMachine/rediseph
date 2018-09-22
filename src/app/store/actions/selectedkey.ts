@@ -49,7 +49,7 @@ export class RemoveSelectedKey implements Action {
 export class RemoveSelectedKeySuccess implements Action {
     readonly type = SelectedKeyActionTypes.REMOEVE_SELECTED_KEY_SUCCESS;
 
-    constructor(public payload: {key: string, redisId: string}) { }
+    constructor(public payload: {updatedKeys: Array<SelectedKeyInfo>, redisId: string}) { }
 }
 export class ChangeTabIndex implements Action {
     readonly type = SelectedKeyActionTypes.CHANGE_TAB_INDEX;

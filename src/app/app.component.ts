@@ -9,7 +9,7 @@ import { selectAllRedisInstances, getSelectedRedisIndex, selectAllSelectedKeyHos
 import { MatDialogRef, MatDialog } from '@angular/material';
 import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
 import { RedisNode } from './models/redis-node';
-import { buildDELQuery } from './utils/commandutils';
+import { buildDELQuery, buildSETQuery } from './utils/commandutils';
 
 @Component({
   selector: 'app-root',
@@ -102,5 +102,9 @@ export class AppComponent implements OnInit {
   }
   closeKeyInfo($event) {
     this.store.dispatch(new keyActions.RemoveSelectedKey($event));
+  }
+  updateStringKeyValue($event) {
+    const args = buildSETQuery($event.info);
+    this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redis.id, command: args}));
   }
 }

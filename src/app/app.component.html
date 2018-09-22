@@ -86,6 +86,7 @@
                     [selectedTabIndex] = "selectedTabIndex$ | async"
                     (keyTabChanged) = "changeKeyTabIndex({redisId: instance.id, index: $event})"
                     (closeKeyInfo) = "closeKeyInfo({redisId: instance.id, selectedKeyInfo: $event})"
+                    (updateStringValue) = "updateStringKeyValue({info: $event, redisId: instance.id})"
                     >
                       
                     </app-node-root>
