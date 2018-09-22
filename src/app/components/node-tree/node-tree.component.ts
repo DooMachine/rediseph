@@ -24,13 +24,15 @@ export class NodeTreeComponent {
 
   pattern: string;
   hasMoreKeys: boolean;
+  sele: any;
   @Output() entityClick = new EventEmitter();
   @Output() deleteClick = new EventEmitter();
   @Output() loadMore = new EventEmitter();
 
   @Input('selectedKeyInfo')
-  set selectedKeyInfo(selectedKeyInfo: KeyInfo) {
-    console.log(selectedKeyInfo);
+  set selectedKeyInfo(val: KeyInfo) {
+    console.log(val);
+    this.sele = val;
   }
 
   constructor() { }

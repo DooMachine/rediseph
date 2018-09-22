@@ -5,6 +5,7 @@ const uuid = require('uuid');
 const Redis = require('ioredis');
 const redisutils = require('./library/redisutils')
 const RedisInstance = require('./library/redisinstance')
+const SelectedKeyInfo = require('./library/selectedkeyinfo');
 const actions = require('./library/actions');
 const monitoractions = require('./library/monitoractions');
 const config = require('config');
@@ -107,7 +108,7 @@ io.on('connection', (client) => {
                             return;
                     }
                 }
-                const redisInstance = new RedisInstance(roomId, connectionInfo,redis);
+                const redisInstance = new RedisInstance(roomId, connectionInfo, redis);
                 /**
                  * When we get commands, process them and send must done actions to iostreamer
                  */
@@ -140,7 +141,7 @@ io.on('connection', (client) => {
                             {
                                 console.log("Emitin updated")
                                 console.log("redisInstance.selectedKeyInfo")
-                                io.to(redisInstance.roomId).emit(action.SELECTED_NODE_UPDATED,
+                                io.to(redisInstance.roomId).emit(actions.SELECTED_NODE_UPDATED,
                                     {
                                         redisId: redisInstance.roomId,
                                         selectedKeyInfo: redisInstance.selectedKeyInfo
@@ -239,6 +240,9 @@ io.on('connection', (client) => {
             }
         })
     });
+    /**
+     * When user searchs a pattern or key, set cursor 0 and scan with pattern.
+     */
     client.on(actions.SET_SEARCH_QUERY, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisInstanceId);
         if (!redisInstance) {
@@ -279,14 +283,12 @@ io.on('connection', (client) => {
                 {error: 'This should not happen!'})
         }
         const keyInfo = redisInstance.keys[data.key];
-        redisInstance.selectedKeyInfo.key = data.key;
-        redisInstance.selectedKeyInfo.type = keyInfo.type;
-        console.log(keyInfo);
+        redisInstance.selectedKeyInfo = new SelectedKeyInfo(data.key,keyInfo.type)
         if(keyInfo.type === 'string') {
             redisInstance.selectedKeyInfo.value = redisInstance.redis.get(data.key)
             redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE}]);
         }
-        if(keyInfo.type === 'list') {
+        else if(keyInfo.type === 'list') {
             redisutils.handleListEntityScan(redisInstance, 
                 async (entities) => {
                     redisInstance.selectedKeyInfo.keyScanInfo.entities = entities;
@@ -295,8 +297,7 @@ io.on('connection', (client) => {
                 });
             redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE}]);
         }
-        else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hset') {
-            console.log(keyInfo);
+        else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hash') {
             redisInstance.selectedKeyInfo.keyScanInfo.previousCursors.push("0");
             redisutils.scanKeyEntities(redisInstance,
                 redisInstance.selectedKeyInfo.keyScanInfo.cursor,

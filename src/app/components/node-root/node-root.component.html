@@ -1,10 +1,9 @@
-<mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
-    <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
-        
-        <ng-content #tree></ng-content>     
-             
-    </mat-sidenav>
-    <mat-sidenav-content fxFlex class="inner-sidenav-content" fullscreen>
-        <ng-content #keyContent></ng-content>         
-    </mat-sidenav-content>
-</mat-sidenav-container>
+ 
+<div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="4px">
+  <div [fxFlex]="15">
+    <ng-content ></ng-content>    
+  </div>
+  <div fxFlex>
+    <ng-content select="[keyContent]"></ng-content> 
+  </div> 
+</div> 

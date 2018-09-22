@@ -18,9 +18,10 @@
 }
 .inner-sidenav-content {
     max-height: 93vh;
+    margin:0 !important;
 }
 mat-sidenav {
-    padding:8px;
+    padding:0 8px;
     border-right: 1px solid wheat;
 }
 .tab-icon {

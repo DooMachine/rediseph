@@ -1,6 +1,7 @@
 
 
 const Subject = require('rxjs').Subject;
+const SelectedKeyInfo = require('./selectedkeyinfo');
 
 module.exports = class RedisInstance {
     constructor(roomId,connectionInfo,redis) {
@@ -12,6 +13,8 @@ module.exports = class RedisInstance {
         this.keys= {},
         this.connectedClientCount = 1;
         this.isMonitoring=false,
+        // hscan, zscan etc.
+        this.selectedKeyInfo = new SelectedKeyInfo(null,null)
         this.keyInfo= {
             pattern: '',
             hasMoreKeys: true,
@@ -19,21 +22,6 @@ module.exports = class RedisInstance {
             previousCursors: [],
             pageIndex:0,
             pageSize: process.env.SCAN_PAGE_SIZE || 8,
-        },
-        // hscan, zscan etc.
-        this.selectedKeyInfo = {
-            key:null,
-            type:null,
-            value: null,
-            keyScanInfo: {
-                entities: [],
-                cursor: "0",
-                hasMoreEntities: true,
-                previousCursors: [],
-                pageIndex: 0,
-                pageSize:process.env.SCAN_PAGE_SIZE || 20,
-                pattern: '*'
-            }
-        }
+        }        
     }
   }

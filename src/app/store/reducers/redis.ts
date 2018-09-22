@@ -2,7 +2,7 @@ import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import * as redisActions from '../actions/redis';
 import { RedisInstance, KeyInfo, SelectedKeyInfo } from 'src/app/models/redis';
 import { TableInfo, OrderType} from '../../models/table-helpers';
-import { buildRedisTree } from 'src/app/utils/redisutils';
+import { buildRedisTree, buildEntityModel } from 'src/app/utils/redisutils';
 
 /**
  * State to keep RedisInstances
@@ -137,6 +137,9 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         }
         case redisActions.RedisActionTypes.SELECTED_NODE_UPDATED:
         {
+            if (action.payload.selectedKeyInfo.type !== 'string') {
+                action.payload.selectedKeyInfo.keyScanInfo.entities = buildEntityModel(action.payload.selectedKeyInfo);
+            }
             return adapter.updateOne({id: action.payload.redisId,
                     changes: {selectedKeyInfo: action.payload.selectedKeyInfo}}, state);
         }

@@ -11,36 +11,10 @@
        (click)="clickSearch()">
         <mat-icon>search</mat-icon>
       </button>
-  </mat-form-field> 
-  
-  <mat-tree [dataSource]="nestedDataSource" [treeControl]="nestedTreeControl" class="example-tree">
-      <mat-tree-node      
-        [ngClass]="isSelected(node) ? 'selectedNode' : ''"
-       *matTreeNodeDef="let node" matTreeNodeToggle>
-        <li fxLayout="row" fxLayoutAlign="space-between center" class="mat-tree-node">
-          <div  class="selector-area" (click)="!isSelected(node) ? entityClick.emit(node) : return">
-            <button  color="primary" mat-icon-button disabled>
-              <mat-icon>
-                {{typeIconMap[node.type]}}
-              </mat-icon></button>        
-            {{node.key}} 
-          </div>
-          <div class="menu-area">
-            <button mat-icon-button [matMenuTriggerFor]="nodeMenu">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #nodeMenu="matMenu">
-              <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
-                <mat-icon>delete_forever</mat-icon>
-                <span>Delete Key</span>
-              </button>
-            </mat-menu>
-          </div>
-        </li>
-      </mat-tree-node>
-    </mat-tree>
+  </mat-form-field>
 
-    <button color="warn" *ngIf="hasMoreKeys" mat-stroked-button (click)="loadMore.emit()">
-      Load More
-      <mat-icon>loading</mat-icon>
-    </button>
+  <button color="warn" *ngIf="hasMoreKeys" mat-stroked-button (click)="loadMore.emit()">
+    Load More
+    <mat-icon>loading</mat-icon>
+  </button>
+  

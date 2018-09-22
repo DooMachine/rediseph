@@ -40,22 +40,20 @@ async function scanKeyEntities(redisInstance , cursor, pattern = '*', fetchCount
   }
   const key = redisInstance.selectedKeyInfo.key;
   const type = redisInstance.selectedKeyInfo.type;
+  console.log(type);
   const SCAN_TYPE_MAP = {
     set:'sscan',
-    hset:'hscan',
+    hash:'hscan',
     zset:'zscan'
   }
   async function iterEntityScanNext () {
-    
-    const entities = [];
-    let newCursor = "0";
+
     const scanMethod = SCAN_TYPE_MAP[type];
 
     redisInstance.redis[scanMethod](key, cursor,'MATCH', pattern, 'COUNT', fetchCount, async (err, [cursor, resp]) => {
-      newCursor = cursor;
-      entities = resp;
-      console.log(entities);
-      await callback(entities, newCursor); 
+      
+      console.log(resp);
+      await callback(resp, cursor); 
     });
   }
   await iterEntityScanNext();
@@ -64,8 +62,8 @@ async function handleListEntityScan(redisInstance, callback) {
 
   const selectedKeyInfo = redisInstance.selectedKeyInfo;
   const start = selectedKeyInfo.keyScanInfo.pageIndex* selectedKeyInfo.keyScanInfo.pageSize;
-  const end = start + selectedKeyInfo.keyScanInfo.pageSize;
-
+  const end = start + selectedKeyInfo.keyScanInfo.pageSize -1;
+  console.log(selectedKeyInfo.key, start, end)
   redisInstance.redis.lrange(selectedKeyInfo.key, start, end, async (err,resp) => {
     await callback(resp);
   })

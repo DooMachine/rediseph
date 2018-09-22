@@ -69,9 +69,9 @@ export class KeyInfo {
 }
 
 export class SelectedKeyInfo {
-    key = null;
-    type = null;
-    value = null;
+    key: string = null;
+    type: string = null;
+    value: string = null;
     keyScanInfo = {
         entities: [],
         cursor: '0',

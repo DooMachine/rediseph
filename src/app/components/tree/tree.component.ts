@@ -1,11 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
-import { RedisNode, RedisNodeHost } from '../../models/redis-node';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { RedisNode } from '../../models/redis-node';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
-import { searchFilterNodes } from 'src/app/utils/redisutils';
 
 @Component({
   selector: 'app-tree',
@@ -15,6 +13,7 @@ import { searchFilterNodes } from 'src/app/utils/redisutils';
 })
 export class TreeComponent {
 
+  constructor() { }
   @Output() searchInputChanged = new EventEmitter();
   searchInputControl: FormControl = new FormControl();
   searchInputControlSub: Subscription;
@@ -51,7 +50,6 @@ export class TreeComponent {
   isSelected = (nodeData: RedisNode) => nodeData.key === this.selectedNodeKey;
   isExpanded = (nodeData: RedisNode) => this.expandedNodeKeys.indexOf(nodeData.key) !== -1;
   private _getChildren = (node: RedisNode) => node.children;
-  constructor() { }
 
   clickSearch() {
     this.searchInputChanged.emit(this.searchInputControl.value);
