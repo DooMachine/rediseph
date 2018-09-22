@@ -9,16 +9,22 @@ import { SelectedKeyInfo } from '../../models/redis';
 export class StringViewerComponent implements OnInit {
   constructor() { }
   isRealtime = false;
-  editorOptions = {theme: 'vs-dark', language: 'text/plain' };
+  editorOptions = {
+    lineNumbers: false,
+    theme: 'material',
+    mode: 'json'
+  };
   stringValue = '';
+  key = '';
   @Input('selectedKeyInfo')
   set value(v: SelectedKeyInfo) {
     this.stringValue = v.value || '';
+    this.key = v.key;
     this.isRealtime = v.isMonitoring;
     if (v.value.startsWith('{')) {
-      this.editorOptions.language = 'json';
+      this.editorOptions.mode = 'json';
     } else if (v.value.startsWith('<')) {
-      this.editorOptions.language = 'html';
+      this.editorOptions.mode = 'text/html';
     }
   }
 

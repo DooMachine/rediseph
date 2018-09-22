@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, from } from 'rxjs';
-import { switchMap, mergeMap, tap } from 'rxjs/operators';
+import { switchMap, mergeMap, tap, withLatestFrom } from 'rxjs/operators';
 import { Action } from '@ngrx/store';
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { RedisSocketService } from '../services/redissocket.service';
@@ -30,7 +30,7 @@ export class RedisEffects {
             switchMap((resp) =>  {
                     return from([
                         new redisActions.ConnectRedisInstanceSuccess(resp),
-                        new keyActions.AddSelectedKeyHost({redisId: resp.redisInfo.id})
+                        new keyActions.AddSelectedKeyHost({redisId: resp.redisInfo.id, selectedKeys: resp.selectedKeyInfo})
                     ]);
                 }
             )
@@ -140,6 +140,23 @@ export class RedisEffects {
             switchMap((resp) =>  {
                     console.log(resp);
                     return of(new redisActions.SetSelectedNodeSuccess(resp));
+                }
+            )
+        );
+    @Effect({dispatch: false})
+    deselectKey$ = this.actions$
+        .pipe(
+            ofType(keyActions.SelectedKeyActionTypes.REMOEVE_SELECTED_KEY),
+            switchMap((action: keyActions.RemoveSelectedKey) => {
+                this.redisService.deselectNode(action.payload.redisId, action.payload.selectedKeyInfo.key);
+                return of();
+            }),
+        );
+    @Effect()
+    deselectKeySuccess$: Observable<Action> =
+        this.redisService.nodeDeselected$.pipe( // listen to the socket for REDIS UPDATES
+            switchMap((resp) =>  {
+                    return of(new keyActions.RemoveSelectedKeySuccess(resp));
                 }
             )
         );

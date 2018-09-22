@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { SelectedKeyInfoHost } from '../../models/redis';
 
 @Component({
@@ -10,10 +10,12 @@ import { SelectedKeyInfoHost } from '../../models/redis';
 export class NodeRootComponent implements OnInit {
   @Input() selectedTabIndex: number;
   @Input() redisId: string;
+  @Output() keyTabChanged = new EventEmitter();
+  @Output() closeKeyInfo = new EventEmitter();
   keyInfoHost: SelectedKeyInfoHost;
 
   @Input('selectedKeyInfoHosts')
-   set selectedKeyInfos(keyInfoHosts: Array<SelectedKeyInfoHost>) {
+   set selectedKeyInfoHosts(keyInfoHosts: Array<SelectedKeyInfoHost>) {
     this.keyInfoHost = keyInfoHosts.find(p => p.redisId === this.redisId);
   }
   private typeIconMap = {

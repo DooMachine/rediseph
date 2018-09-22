@@ -71,6 +71,7 @@ export class KeyInfo {
 export class SelectedKeyInfoHost {
   keyInfos: Array<SelectedKeyInfo> = [];
   redisId: string;
+  selectedTabIndex = 0;
 }
 export class SelectedKeyInfo {
     key: string = null;

@@ -1,10 +1,10 @@
  
-<mat-tab-group  [@.disabled]="true">
+<mat-tab-group color="warn" [selectedIndex]="keyInfoHost.selectedTabIndex" (selectedIndexChange)="keyTabChanged.emit($event)" [@.disabled]="true">
     <mat-tab [@.disabled]="true" *ngFor=" let keyInfo of (keyInfoHost?.keyInfos)">
       <ng-template mat-tab-label>
         <mat-icon [matTooltip]="keyInfo.type" color="primary" class="tab-icon">{{typeIconMap[keyInfo.type]}}</mat-icon>
           {{keyInfo.key}}
-        <mat-icon matTooltip="Close" (click)="closeKeyInfo(keyInfo)" class="tab-icon">close</mat-icon>
+        <mat-icon matTooltip="Close" (click)="closeKeyInfo.emit(keyInfo)" class="tab-icon">close</mat-icon>
       </ng-template>
       <div *ngIf="keyInfo.type == 'string'" fxFlex>
           <app-string-viewer          

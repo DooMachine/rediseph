@@ -15,6 +15,7 @@ export class RedisSocketService {
     stoppedWatchChanges$: Observable<any>;
     nodeKeySelected$: Observable<any>;
     selectedNodeUpdated$: Observable<any>;
+    nodeDeselected$: Observable<any>;
 
     constructor(private socket: SocketService) {
         // Every socket REDIS event has it's own observable, will be used by ngrx effects
@@ -26,6 +27,7 @@ export class RedisSocketService {
         this.stoppedWatchChanges$ = this.socket.listen('[Redis] STOPPED_WATCH_CHANGES');
         this.nodeKeySelected$ = this.socket.listen('[Redis] SET_SELECTED_NODE_SUCCESS');
         this.selectedNodeUpdated$ = this.socket.listen('[Redis] SELECTED_NODE_UPDATED');
+        this.nodeDeselected$ = this.socket.listen('[Redis] DESELECT_NODE_KEY_SUCCESS');
     }
 
     // These methods will be called by ngrx effects (do not use directly in the components)
@@ -55,5 +57,8 @@ export class RedisSocketService {
     }
     setSelectedNode(redisId, key) {
         this.socket.emit('[Redis] SET_SELECTED_NODE', {redisId: redisId, key: key});
+    }
+    deselectNode(redisId, key) {
+        this.socket.emit('[Redis] DESELECT_NODE_KEY', {redisId: redisId, key: key});
     }
 }

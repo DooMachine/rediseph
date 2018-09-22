@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import { MonacoEditorModule } from 'ngx-monaco-editor';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 import { AppComponent } from './app.component';
 import { AppMaterialModule } from './material.module';
@@ -40,13 +40,13 @@ import { environment } from '../environments/environment';
     AppMaterialModule,
     FormsModule,
     ReactiveFormsModule,
-    MonacoEditorModule.forRoot(),
+    CodemirrorModule,
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
-    // StoreDevtoolsModule.instrument({
-    //   maxAge: 25, // Retains last 25 states
-    //   logOnly: environment.production, // Restrict extension to log-only mode
-    // }),
+    StoreDevtoolsModule.instrument({
+      maxAge: 25, // Retains last 25 states
+      logOnly: environment.production, // Restrict extension to log-only mode
+    }),
     RedisStoreModule,
   ],
   providers: [StorageService],

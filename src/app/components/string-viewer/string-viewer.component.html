@@ -14,7 +14,9 @@
     </div>
   </div>  
 </div>
-<ngx-monaco-editor  
-  class="redis-code-editor"
-  [options]="editorOptions" 
-  [(ngModel)]="stringValue"></ngx-monaco-editor>
+<ngx-codemirror 
+  [autoFocus]="true"
+  [name]="key"
+  [(ngModel)]="stringValue" 
+  [options]="editorOptions"
+></ngx-codemirror>

@@ -56,13 +56,12 @@ async function scanKeyEntities(redisInstance,key, type, cursor, pattern = '*', f
   }
   await iterEntityScanNext();
 }
-async function handleListEntityScan(redisInstance,key, callback) {
+async function handleListEntityScan(redisInstance,newSelectedKeyInfo, callback) {
 
-  const selectedKeyInfo = redisInstance.selectedKeyInfo.find(p=>p.key==key);
-  const start = selectedKeyInfo.keyScanInfo.pageIndex* selectedKeyInfo.keyScanInfo.pageSize;
-  const end = start + selectedKeyInfo.keyScanInfo.pageSize -1;
-  console.log(selectedKeyInfo.key, start, end)
-  redisInstance.redis.lrange(selectedKeyInfo.key, start, end, async (err,resp) => {
+  const start = newSelectedKeyInfo.keyScanInfo.pageIndex* newSelectedKeyInfo.keyScanInfo.pageSize;
+  const end = start + newSelectedKeyInfo.keyScanInfo.pageSize -1;
+  console.log(newSelectedKeyInfo.key, start, end)
+  redisInstance.redis.lrange(newSelectedKeyInfo.key, start, end, async (err,resp) => {
     await callback(resp);
   })
 }

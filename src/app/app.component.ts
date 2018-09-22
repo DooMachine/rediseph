@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { State } from './store/reducers/redis';
 import { Store, select } from '@ngrx/store';
 import * as redisActions from './store/actions/redis';
+import * as keyActions from './store/actions/selectedkey';
 import { RedisInstance, ConnectServerModel, SelectedKeyInfo, SelectedKeyInfoHost } from './models/redis';
 import { Observable } from 'rxjs';
 import { selectAllRedisInstances, getSelectedRedisIndex, selectAllSelectedKeyHosts } from './store/reducers';
@@ -21,6 +22,7 @@ export class AppComponent implements OnInit {
   redisInstances$: Observable<RedisInstance[]>;
   selectedKeyInfoHosts$: Observable<SelectedKeyInfoHost[]>;
   selectedRedisIndex$: Observable<number>;
+  selectedTabIndex$: Observable<number>;
   constructor(private readonly store: Store<State>, private dialog: MatDialog) {
   }
 
@@ -93,5 +95,12 @@ export class AppComponent implements OnInit {
     } else {
       this.store.dispatch(new redisActions.StopWatchChanges($event.instance));
     }
+  }
+
+  changeKeyTabIndex($event) {
+    this.store.dispatch(new keyActions.ChangeTabIndex($event));
+  }
+  closeKeyInfo($event) {
+    this.store.dispatch(new keyActions.RemoveSelectedKey($event));
   }
 }

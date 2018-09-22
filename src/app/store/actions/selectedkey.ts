@@ -7,8 +7,14 @@ import { SelectedKeyInfo } from 'src/app/models/redis';
  */
 export enum SelectedKeyActionTypes {
     ADD_SELECTED_KEY_HOST= '[SelectedKey] ADD_SELECTED_KEY_HOST',
+
     ADD_SELECTED_KEY = '[SelectedKey] ADD_SELECTED_KEY',
-    ADD_SELECTED_KEY_SUCCESS = '[SelectedKey] ADD_SELECTED_KEY_SUCCESS'
+    ADD_SELECTED_KEY_SUCCESS = '[SelectedKey] ADD_SELECTED_KEY_SUCCESS',
+
+    REMOEVE_SELECTED_KEY = '[SelectedKey] REMOEVE_SELECTED_KEY',
+    REMOEVE_SELECTED_KEY_SUCCESS = '[SelectedKey] REMOEVE_SELECTED_KEY_SUCCESS',
+
+    CHANGE_TAB_INDEX = '[SelectedKe] CHANGE_TAB_INDEX',
 }
 
 /**
@@ -19,7 +25,7 @@ export enum SelectedKeyActionTypes {
 export class AddSelectedKeyHost implements Action {
     readonly type = SelectedKeyActionTypes.ADD_SELECTED_KEY_HOST;
 
-    constructor(public payload: {redisId: string}) { }
+    constructor(public payload: {redisId: string, selectedKeys: Array<SelectedKeyInfo>}) { }
 }
 
 export class AddSelectedKey implements Action {
@@ -34,6 +40,22 @@ export class AddSelectedKeySuccess implements Action {
     constructor(public payload: {selectedKeyInfo: SelectedKeyInfo, redisId: string}) { }
 }
 
+export class RemoveSelectedKey implements Action {
+    readonly type = SelectedKeyActionTypes.REMOEVE_SELECTED_KEY;
+
+    constructor(public payload: {selectedKeyInfo: SelectedKeyInfo, redisId: string}) { }
+}
+
+export class RemoveSelectedKeySuccess implements Action {
+    readonly type = SelectedKeyActionTypes.REMOEVE_SELECTED_KEY_SUCCESS;
+
+    constructor(public payload: {key: string, redisId: string}) { }
+}
+export class ChangeTabIndex implements Action {
+    readonly type = SelectedKeyActionTypes.CHANGE_TAB_INDEX;
+
+    constructor(public payload: {redisId: string, index: number}) { }
+}
 /**
  * Export a type alias of all actions in this action group
  * so that reducers can easily compose action types
@@ -41,4 +63,7 @@ export class AddSelectedKeySuccess implements Action {
 export type SelectedKeyActions
                         = AddSelectedKeyHost
                         | AddSelectedKey
-                        | AddSelectedKeySuccess;
+                        | AddSelectedKeySuccess
+                        | RemoveSelectedKey
+                        | RemoveSelectedKeySuccess
+                        | ChangeTabIndex;

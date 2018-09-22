@@ -70,7 +70,8 @@ io.on('connection', (client) => {
                     isMonitoring: previousConnectedRedis.isMonitoring,
                     keyInfo:previousConnectedRedis.keyInfo,
                     keys: previousConnectedRedis.keys,
-                    serverInfo: previousConnectedRedis.redis.serverInfo
+                    serverInfo: previousConnectedRedis.redis.serverInfo,
+                    selectedKeyInfo: previousConnectedRedis.selectedKeyInfo
                 })
         } else {
             let roomId = uuid();
@@ -133,7 +134,7 @@ io.on('connection', (client) => {
                                     isMonitoring: redisInstance.isMonitoring,
                                     keyInfo:redisInstance.keyInfo,
                                     keys: redisInstance.keys,
-                                    serverInfo: redisInstance.redis.serverInfo
+                                    serverInfo: redisInstance.redis.serverInfo,
                                 });
                                 break; 
                             }      
@@ -173,7 +174,8 @@ io.on('connection', (client) => {
                                 isMonitoring: redisInstance.isMonitoring,
                                 keyInfo:redisInstance.keyInfo,
                                 keys: keys,
-                                serverInfo: redis.serverInfo
+                                serverInfo: redis.serverInfo,
+                                selectedKeyInfo: []
                             })
                 });
             });
@@ -232,13 +234,12 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
-        await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {
-            // if it is not monitoring we should take care of it
-            if(!redisInstance.isMonitoring) {
-                console.log("Exe CB")
-                redisInstance.cmdStreamer.next(nextActions);
-            }
-        })
+        // if it is not monitoring we should take care of it
+        if(!redisInstance.isMonitoring) {
+            await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {                
+                redisInstance.cmdStreamer.next(nextActions);                
+            })
+        }
     });
     /**
      * When user searchs a pattern or key, set cursor 0 and scan with pattern.
@@ -282,6 +283,10 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
+        // If user already selected
+        if(redisInstance.selectedKeyInfo.find(p=>p.key==data.key)) {
+            return;
+        }
         const keyInfo = redisInstance.keys[data.key];
         const newSelectedKeyInfo = new SelectedKeyInfo(data.key,keyInfo.type,redisInstance.roomId);
         if(newSelectedKeyInfo.type === 'string') {
@@ -290,7 +295,7 @@ io.on('connection', (client) => {
             redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE, key:newSelectedKeyInfo.key}]);
         }
         else if(newSelectedKeyInfo.type === 'list') {
-            redisutils.handleListEntityScan(redisInstance, data.key,
+            redisutils.handleListEntityScan(redisInstance, newSelectedKeyInfo,
                 async (entities) => {
                     newSelectedKeyInfo.entities = entities;
                     newSelectedKeyInfo.pageIndex++;
@@ -316,6 +321,21 @@ io.on('connection', (client) => {
         }
         
         
+    });
+
+    /**
+     * When users close key tab in client:
+     * Remove From cache and update clients
+     */
+    client.on(actions.DESELECT_NODE_KEY, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
+        if (!redisInstance) {
+            client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                {error: 'This should not happen!'})
+        }
+        redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key != data.key);
+        io.to(redisInstance.roomId).emit(actions.DESELECT_NODE_KEY_SUCCESS, {redisId: redisInstance.roomId, key: data.key});       
+
     });
     /**
      * Scan from last cursor with pagesize.
