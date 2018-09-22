@@ -8,7 +8,7 @@ import { SelectedKeyInfoHost } from '../../models/redis';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodeRootComponent implements OnInit {
-  @Input() selectedTabIndex: number;
+  selectedTabIndex: number;
   @Input() redisId: string;
   @Output() keyTabChanged = new EventEmitter();
   @Output() closeKeyInfo = new EventEmitter();
@@ -18,6 +18,8 @@ export class NodeRootComponent implements OnInit {
   @Input('selectedKeyInfoHosts')
    set selectedKeyInfoHosts(keyInfoHosts: Array<SelectedKeyInfoHost>) {
     this.keyInfoHost = keyInfoHosts.find(p => p.redisId === this.redisId);
+    const sIndex = this.keyInfoHost.keyInfos.findIndex(p => p.key === this.keyInfoHost.selectedTabIndexKey);
+    this.selectedTabIndex = sIndex === -1 ? 0 : sIndex;
   }
   private typeIconMap = {
     list: 'list',

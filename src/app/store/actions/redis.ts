@@ -31,7 +31,6 @@ export enum RedisActionTypes {
     SHOW_ROOT_INFO = '[Redis] SHOW_ROOT_INFO',
     SET_SELECTED_NODE = '[Redis] SET_SELECTED_NODE',
     SET_SELECTED_NODE_SUCCESS = '[Redis] SET_SELECTED_NODE_SUCCESS',
-    SELECTED_NODE_UPDATED = '[Redis] SELECTED_NODE_UPDATED',
 
     SET_SELECTED_REDIS_INDEX = '[Redis] SET_SELECTED_REDIS_INDEX',
     EXPAND_TOGGLE_NODE = '[Redis] EXPAND_TOGGLE_NODE',
@@ -129,11 +128,7 @@ export class SetSelectedNodeSuccess implements Action {
 
     constructor(public payload: {redisId: number, key: string}) { }
 }
-export class SelectedNodeUpdated implements Action {
-    readonly type = RedisActionTypes.SELECTED_NODE_UPDATED;
 
-    constructor(public payload: {redisId: number, selectedKeyInfo: SelectedKeyInfo}) { }
-}
 export class ShowRootInfo implements Action {
     readonly type = RedisActionTypes.SHOW_ROOT_INFO;
 
@@ -159,7 +154,6 @@ export type RedisActions
                         | ConnectRedisInstanceFail
                         | RedisInstanceUpdated
                         | SetSelectedNode
-                        | SelectedNodeUpdated
                         | ExecuteCommand
                         | ShowRootInfo
                         | SetSearchQuery

@@ -1,5 +1,4 @@
 import * as fromRedis from './redis';
-import * as fromRedisTree from './redistree';
 import * as fromKeys from './selectedkey';
 
 import { ActionReducerMap,
@@ -15,7 +14,6 @@ import { environment } from 'src/environments/environment';
 export interface State {
     redis: fromRedis.State;
     selectedKey: fromKeys.State;
-    redisTree: fromRedisTree.State;
 }
 /**
  * Root reducer
@@ -23,7 +21,6 @@ export interface State {
 export const reducers: ActionReducerMap<State> = {
     redis: fromRedis.reducer,
     selectedKey: fromKeys.reducer,
-    redisTree: fromRedisTree.reducer
 };
 
 /**

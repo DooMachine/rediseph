@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
   redisInstances$: Observable<RedisInstance[]>;
   selectedKeyInfoHosts$: Observable<SelectedKeyInfoHost[]>;
   selectedRedisIndex$: Observable<number>;
-  selectedTabIndex$: Observable<number>;
   constructor(private readonly store: Store<State>, private dialog: MatDialog) {
   }
 
@@ -98,7 +97,7 @@ export class AppComponent implements OnInit {
   }
 
   changeKeyTabIndex($event) {
-    this.store.dispatch(new keyActions.ChangeTabIndex($event));
+    this.store.dispatch(new keyActions.ChangeTabIndexKey($event));
   }
   closeKeyInfo($event) {
     this.store.dispatch(new keyActions.RemoveSelectedKey($event));

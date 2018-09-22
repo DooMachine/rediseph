@@ -135,10 +135,6 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             return adapter.updateOne({id: action.payload.redis.id,
                     changes: {keyInfo: change , rootSelected: false}}, state);
         }
-        case redisActions.RedisActionTypes.SELECTED_NODE_UPDATED:
-        {
-            return state;
-        }
         case redisActions.RedisActionTypes.SHOW_ROOT_INFO:
         {
             return adapter.updateOne({id: action.payload.id, changes: {rootSelected: true}}, state);

@@ -14,7 +14,9 @@ export enum SelectedKeyActionTypes {
     REMOEVE_SELECTED_KEY = '[SelectedKey] REMOEVE_SELECTED_KEY',
     REMOEVE_SELECTED_KEY_SUCCESS = '[SelectedKey] REMOEVE_SELECTED_KEY_SUCCESS',
 
-    CHANGE_TAB_INDEX = '[SelectedKe] CHANGE_TAB_INDEX',
+    SELECTED_NODE_KEY_UPDATED = '[SelectedKey] SELECTED_NODE_KEY_UPDATED',
+
+    CHANGE_TAB_INDEX_KEY = '[SelectedKe] CHANGE_TAB_INDEX_KEY',
 }
 
 /**
@@ -46,13 +48,20 @@ export class RemoveSelectedKey implements Action {
     constructor(public payload: {selectedKeyInfo: SelectedKeyInfo, redisId: string}) { }
 }
 
+
 export class RemoveSelectedKeySuccess implements Action {
     readonly type = SelectedKeyActionTypes.REMOEVE_SELECTED_KEY_SUCCESS;
 
-    constructor(public payload: {updatedKeys: Array<SelectedKeyInfo>, redisId: string}) { }
+    constructor(public payload: {key: string, redisId: string}) { }
 }
-export class ChangeTabIndex implements Action {
-    readonly type = SelectedKeyActionTypes.CHANGE_TAB_INDEX;
+
+export class SelectedNodeKeyUpdated implements Action {
+    readonly type = SelectedKeyActionTypes.SELECTED_NODE_KEY_UPDATED;
+
+    constructor(public payload: {keyInfo: SelectedKeyInfo, redisId: string}) { }
+}
+export class ChangeTabIndexKey implements Action {
+    readonly type = SelectedKeyActionTypes.CHANGE_TAB_INDEX_KEY;
 
     constructor(public payload: {redisId: string, index: number}) { }
 }
@@ -65,5 +74,6 @@ export type SelectedKeyActions
                         | AddSelectedKey
                         | AddSelectedKeySuccess
                         | RemoveSelectedKey
+                        | SelectedNodeKeyUpdated
                         | RemoveSelectedKeySuccess
-                        | ChangeTabIndex;
+                        | ChangeTabIndexKey;

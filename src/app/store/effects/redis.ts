@@ -153,8 +153,8 @@ export class RedisEffects {
             }),
         );
     @Effect()
-    deselectKeySuccess$: Observable<Action> =
-        this.redisService.nodeDeselected$.pipe( // listen to the socket for REDIS UPDATES
+    deselectNodeSuccess$: Observable<Action> =
+        this.redisService.deselectNodeSuccess$.pipe( // listen to the socket for SELECTED KEY UPDATES
             switchMap((resp) =>  {
                     return of(new keyActions.RemoveSelectedKeySuccess(resp));
                 }
@@ -162,9 +162,9 @@ export class RedisEffects {
         );
     @Effect()
     selectedNodeUpdated$: Observable<Action> =
-        this.redisService.selectedNodeUpdated$.pipe( // listen to the socket for SELECTED KEY UPDATES
+        this.redisService.selectedNodeKeyUpdated$.pipe( // listen to the socket for SELECTED KEY UPDATES
             switchMap((resp) =>  {
-                    return of(new keyActions.AddSelectedKeySuccess(resp));
+                    return of(new keyActions.SelectedNodeKeyUpdated(resp));
                 }
             )
         );

@@ -3,12 +3,14 @@ const socketio = require('socket.io');
 const _ = require('lodash');
 const uuid = require('uuid');
 const Redis = require('ioredis');
+const config = require('config');
+
+
 const redisutils = require('./library/redisutils')
 const RedisInstance = require('./library/redisinstance')
 const SelectedKeyInfo = require('./library/selectedkeyinfo');
 const actions = require('./library/actions');
 const monitoractions = require('./library/monitoractions');
-const config = require('config');
 
 const port = process.env.PORT || 3003;
 const env = process.env.NODE_ENV || "development";
@@ -137,22 +139,31 @@ io.on('connection', (client) => {
                                     serverInfo: redisInstance.redis.serverInfo,
                                 });
                                 break; 
-                            }      
-                            case monitoractions.UPDATE_SELECTED_NODE:
+                            }    
+                            case monitoractions.SELECTED_NODE_UPDATED: 
                             {
-                                console.log("Emitin updated")
-                                console.log("redisInstance.selectedKeyInfo")
+                                console.log("Selected Key Updated");
                                 io.to(redisInstance.roomId).emit(actions.SELECTED_NODE_UPDATED,
                                     {
-                                        redisId: redisInstance.roomId,
-                                        selectedKeyInfo: redisInstance.selectedKeyInfo.find(p=>p.key == action.key)
-                                    });
+                                       redisId: redisInstance.roomId,
+                                       keyInfo: redisInstance.selectedKeyInfo.find(p=>p.key == action.key)
+                                   });
                                 break;
-                            }     
+                            }  
+                            case monitoractions.NODE_DESELECTED: 
+                            {
+                                console.log("Selected Key Deleted");
+                                io.to(redisInstance.roomId).emit(actions.DESELECTED_NODE_SUCCESS,
+                                    {
+                                       redisId: redisInstance.roomId,
+                                       key: action.key
+                                   });
+                                break;
+                            }                        
                             case monitoractions.SELECTED_NODES_UPDATED:
                             {
                                 console.log("Selected keys added/deleted/updated")
-                                io.to(redisInstance.roomId).emit(actions.DESELECT_NODE_KEY_SUCCESS,
+                                io.to(redisInstance.roomId).emit(actions.SELECTED_NODES_UPDATED,
                                      {
                                         redisId: redisInstance.roomId,
                                         selectedKeyInfo: redisInstance.selectedKeyInfo
@@ -302,7 +313,7 @@ io.on('connection', (client) => {
         if(newSelectedKeyInfo.type === 'string') {
             newSelectedKeyInfo.value = await redisInstance.redis.get(newSelectedKeyInfo.key)
             redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-            redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE, key:newSelectedKeyInfo.key}]);
+            redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, key:newSelectedKeyInfo.key}]);
         }
         else if(newSelectedKeyInfo.type === 'list') {
             redisutils.handleListEntityScan(redisInstance, newSelectedKeyInfo,
@@ -311,7 +322,7 @@ io.on('connection', (client) => {
                     newSelectedKeyInfo.pageIndex++;
                     newSelectedKeyInfo.hasMorePage = entities.length == newSelectedKeyInfo.keyScanInfo.pageSize;
                     redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-                    redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE, key:newSelectedKeyInfo.key}]);
+                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, key:newSelectedKeyInfo.key}]);
                 });
         }
         else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hash') {
@@ -325,8 +336,8 @@ io.on('connection', (client) => {
                     newSelectedKeyInfo.keyScanInfo.cursor = cursor;
                     newSelectedKeyInfo.keyScanInfo.pageIndex++;
                     newSelectedKeyInfo.hasMorePage = cursor !== "0";
-                    redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);                    
-                    redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE, key:newSelectedKeyInfo.key}]);
+                    redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
+                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, key:newSelectedKeyInfo.key}]);
             })
         }
         
@@ -343,9 +354,8 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
-        redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key != data.key);
-        console.log(redisInstance.selectedKeyInfo);
-        redisInstance.ioStreamer.next({type: monitoractions.SELECTED_NODES_UPDATED})
+        redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key !== data.key);
+        redisInstance.ioStreamer.next([{type: monitoractions.NODE_DESELECTED, key:data.key}]);
 
     });
     /**
