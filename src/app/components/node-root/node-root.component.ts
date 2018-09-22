@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
-import { SelectedKeyInfo } from '../../models/redis';
+import { SelectedKeyInfoHost } from '../../models/redis';
 
 @Component({
   selector: 'app-node-root',
@@ -8,9 +8,21 @@ import { SelectedKeyInfo } from '../../models/redis';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodeRootComponent implements OnInit {
-  @Input() selectedKeyInfos: Array<SelectedKeyInfo>;
   @Input() selectedTabIndex: number;
   @Input() redisId: string;
+  keyInfoHost: SelectedKeyInfoHost;
+
+  @Input('selectedKeyInfoHosts')
+   set selectedKeyInfos(keyInfoHosts: Array<SelectedKeyInfoHost>) {
+    this.keyInfoHost = keyInfoHosts.find(p => p.redisId === this.redisId);
+  }
+  private typeIconMap = {
+    list: 'list',
+    set: 'settings_ethernet',
+    zset: 'format_list_numbered',
+    hash: 'subject',
+    string: 'text_fields'
+  };
   constructor() { }
 
   ngOnInit() {

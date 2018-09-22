@@ -137,11 +137,7 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         }
         case redisActions.RedisActionTypes.SELECTED_NODE_UPDATED:
         {
-            if (action.payload.selectedKeyInfo.type !== 'string') {
-                action.payload.selectedKeyInfo.keyScanInfo.entities = buildEntityModel(action.payload.selectedKeyInfo);
-            }
-            return adapter.updateOne({id: action.payload.redisId,
-                    changes: {selectedKeyInfo: action.payload.selectedKeyInfo}}, state);
+            return state;
         }
         case redisActions.RedisActionTypes.SHOW_ROOT_INFO:
         {

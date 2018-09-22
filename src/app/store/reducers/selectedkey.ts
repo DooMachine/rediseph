@@ -1,6 +1,7 @@
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import * as keyActions from '../actions/selectedkey';
 import { SelectedKeyInfoHost } from '../../models/redis';
+import { buildEntityModel } from '../../utils/redisutils';
 
 /**
  * State to keep SelectedKeyInfoHosts
@@ -40,8 +41,12 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
         case keyActions.SelectedKeyActionTypes.ADD_SELECTED_KEY_SUCCESS: {
             const prev = state.entities[action.payload.redisId];
             const newKeyInfo = Object.assign({}, prev);
+            if (action.payload.selectedKeyInfo.type !== 'string') {
+                action.payload.selectedKeyInfo.keyScanInfo.entities = buildEntityModel(action.payload.selectedKeyInfo);
+            }
             newKeyInfo.keyInfos.push(action.payload.selectedKeyInfo);
-            return adapter.upsertOne(newKeyInfo, state);
+            console.log(newKeyInfo.keyInfos);
+            return adapter.updateOne({id: action.payload.redisId, changes: {keyInfos: newKeyInfo.keyInfos}}, state);
         }
         default:
             return state;

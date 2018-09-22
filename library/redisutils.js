@@ -33,14 +33,12 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
   await scanNext();
 }
 
-async function scanKeyEntities(redisInstance , cursor, pattern = '*', fetchCount = 40, callback) {
+async function scanKeyEntities(redisInstance,key, type, cursor, pattern = '*', fetchCount = 40, callback) {
   if (pattern === "" || pattern == null)
   {
     pattern = '*';
   }
-  const key = redisInstance.selectedKeyInfo.key;
-  const type = redisInstance.selectedKeyInfo.type;
-  console.log(type);
+  
   const SCAN_TYPE_MAP = {
     set:'sscan',
     hash:'hscan',
@@ -58,9 +56,9 @@ async function scanKeyEntities(redisInstance , cursor, pattern = '*', fetchCount
   }
   await iterEntityScanNext();
 }
-async function handleListEntityScan(redisInstance, callback) {
+async function handleListEntityScan(redisInstance,key, callback) {
 
-  const selectedKeyInfo = redisInstance.selectedKeyInfo;
+  const selectedKeyInfo = redisInstance.selectedKeyInfo.find(p=>p.key==key);
   const start = selectedKeyInfo.keyScanInfo.pageIndex* selectedKeyInfo.keyScanInfo.pageSize;
   const end = start + selectedKeyInfo.keyScanInfo.pageSize -1;
   console.log(selectedKeyInfo.key, start, end)

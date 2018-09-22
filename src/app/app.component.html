@@ -81,7 +81,8 @@
                     </app-root-info>   
                   </app-redis-instance>
                     <app-node-root *ngIf="!instance.rootSelected"
-                    [selectedKeyInfos] = "selectedKeyInfos$ | async"
+                    [redisId] ="instance.id"
+                    [selectedKeyInfoHosts] = "selectedKeyInfoHosts$ | async"
                     >
                       
                     </app-node-root>

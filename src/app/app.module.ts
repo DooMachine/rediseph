@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { AppMaterialModule } from './material.module';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
+import { StoreDevtoolsModule} from '@ngrx/store-devtools';
 import { RedisStoreModule } from './store/store.module';
 import { StorageService } from './services/storage.service';
 import { TreeComponent } from './components/tree/tree.component';
@@ -18,6 +19,7 @@ import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.c
 import { NodeRootComponent } from './components/node-root/node-root.component';
 import { NodeTreeComponent } from './components/node-tree/node-tree.component';
 import { StringViewerComponent } from './components/string-viewer/string-viewer.component';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [

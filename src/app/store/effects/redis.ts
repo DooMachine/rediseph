@@ -147,7 +147,7 @@ export class RedisEffects {
     selectedNodeUpdated$: Observable<Action> =
         this.redisService.selectedNodeUpdated$.pipe( // listen to the socket for SELECTED KEY UPDATES
             switchMap((resp) =>  {
-                    return of(new keyActions.AddSelectedKey(resp.selectedKeyInfo));
+                    return of(new keyActions.AddSelectedKeySuccess(resp));
                 }
             )
         );

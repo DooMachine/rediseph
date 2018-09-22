@@ -290,7 +290,7 @@ io.on('connection', (client) => {
             redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_SELECTED_NODE, key:newSelectedKeyInfo.key}]);
         }
         else if(newSelectedKeyInfo.type === 'list') {
-            redisutils.handleListEntityScan(redisInstance, 
+            redisutils.handleListEntityScan(redisInstance, data.key,
                 async (entities) => {
                     newSelectedKeyInfo.entities = entities;
                     newSelectedKeyInfo.pageIndex++;
@@ -301,7 +301,7 @@ io.on('connection', (client) => {
         }
         else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hash') {
             newSelectedKeyInfo.keyScanInfo.previousCursors.push("0");
-            redisutils.scanKeyEntities(redisInstance,
+            redisutils.scanKeyEntities(redisInstance, data.key, keyInfo.type,
                 newSelectedKeyInfo.keyScanInfo.cursor,
                 newSelectedKeyInfo.keyScanInfo.pattern,
                 newSelectedKeyInfo.keyScanInfo.pageSize,
