@@ -4,12 +4,12 @@ import { RedisNode } from './redis-node';
 import { environment } from '../../environments/environment';
 
 export enum DataType {
-  string = 'string', list = 'list', set = 'set', hashmap = 'hashmap', sortedset = 'sortedset'
+  string = 'String', list = 'List', set = 'Set', hashmap = 'Hash Map', sortedset = 'Sorted Set'
 }
-export interface AddKeyModel {
-  key: string;
-  isSubKey: boolean;
-  parentKey: boolean;
+export class AddKeyModel {
+  key = '';
+  isSubKey = false;
+  parentKey: '';
   type: DataType;
   values: {
     string: string,

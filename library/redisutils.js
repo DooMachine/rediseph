@@ -20,14 +20,16 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
       
       for (let i = 0; i < fetchkeys.length; i++) { // process types
         const key = fetchkeys[i];
-        pipeline.type(key);
+        pipeline.type(key, (_,type)=> {
+          keyRoot[fetchkeys[i]] = { type:type }
+        })
+
+        pipeline.pttl(key,(_,exp) => {
+          keyRoot[fetchkeys[i]].exp = exp;
+        });
       }
-      pipeline.exec().then(async (keyTypes) => {
-        for (let i = 0; i < fetchkeys.length; i++) {
-          keyRoot[fetchkeys[i]] = { type: keyTypes[i][1] }          
-        }
-        await callback(keyRoot, newCursor); 
-      })
+      await pipeline.exec()      
+      await callback(keyRoot, newCursor); 
     });
   }
   await scanNext();
@@ -89,11 +91,11 @@ async function handleMonitorCommands (redisInstance,monitorCommands, callback) {
         const keyObj = redisInstance.keys[key];
         if(keyObj) {
           selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === key);
-          if (!!selectedKey) {
+          if (selectedKey) {
             selectedKey.value= await redisInstance.redis.get(key);
+            selectedKey.exp = await redisInstance.redis.pttl(key);
             ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: key})
           }
-          ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
         } else {
           const newValue = {
             type : 'string'
@@ -101,7 +103,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, callback) {
           redisInstance.keys[key] = newValue;
           ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
         }
-      }      
+      }   
     } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
       redisInstance.keys = {};
       ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
@@ -118,7 +120,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, callback) {
             ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
           }
         }
-      }else if (command == 'rename') {
+      } else if (command == 'rename') {
         key = args[1];
         newKey = args[2];
         const existingnewKey = await redisInstance.redis.get(newKey);
@@ -132,9 +134,8 @@ async function handleMonitorCommands (redisInstance,monitorCommands, callback) {
         }
       }    
     }
-  }
-  
-  callback(ioActions);
+  }  
+  return callback(ioActions);
 }
 
 async function handleCommandExecution(redisInstance,commands, callback) {
@@ -192,22 +193,42 @@ async function handleCmdOutputActions(redisInstance, actions) {
     const action = actions[i];
     switch (action.type) {
       case cmdactions.DEL_KEYS:
+        let shouldUpdateLocalTree = false;
+        let shouldUpdateSelectedNodes = false;
         for (let i = 0; i < action.payload.keys.length; i++) {
           const delkey = action.payload.keys[i];
-          redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key != delkey);
-          delete redisInstance.keys[delkey];
+          localKey = redisInstance.keys[delkey];
+          if(localKey) {
+            delete redisInstance.keys[delkey];
+            shouldUpdateLocalTree = true;
+          }
+          if(redisInstance.selectedKeyInfo.findIndex(p=>p.key == delkey) != -1) {
+            shouldUpdateSelectedNodes = true;
+            redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key != delkey);
+          }
         }
-        ioActions.push({type: monitoractions.SELECTED_NODES_UPDATED})
-        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        if (shouldUpdateLocalTree) {          
+          ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        }
+        if(shouldUpdateSelectedNodes) {          
+          ioActions.push({type: monitoractions.SELECTED_NODES_UPDATED})
+        }
         break;
       case cmdactions.SET_KEY:
         selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === action.payload.key);
-        if (!!selectedKey) {
+        if (selectedKey) {
           selectedKey.value= await redisInstance.redis.get(action.payload.key);
+          selectedKey.exp= await redisInstance.redis.pttl(action.payload.key);
           ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: action.payload.key})
         } else {
-          redisInstance.keys[action.payload.key] = {type: 'string'}
-          ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+          const treeKey = redisInstance.keys[action.payload.key];
+          if (!treeKey) {
+            redisInstance.keys[action.payload.key] = {
+              type: 'string',
+              exp: await redisInstance.redis.pttl(action.payload.key)
+            }
+            ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+          } 
         }
         break;
       case cmdactions.SET_KEYS:
@@ -223,7 +244,7 @@ async function handleCmdOutputActions(redisInstance, actions) {
         break;
     }
   }
-  return _.uniq(ioActions);
+  return ioActions;
 }
 
 

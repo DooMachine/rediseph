@@ -126,6 +126,7 @@ io.on('connection', (client) => {
                  * Get actions according to monitor or user commands, execute modifications to all redis users.
                  */
                 redisInstance.ioStreamer.subscribe(async (acts)=> {
+                    acts = _.uniq(acts, 'type');
                     for (let i = 0; i < acts.length; i++) {
                         const action = acts[i];
                         switch (action.type) {
@@ -212,25 +213,25 @@ io.on('connection', (client) => {
     client.on(actions.WATCH_CHANGES, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId)
         
-        // We stop real-time data from monitor, we need to track local changes.
         redisInstance.redis.monitor(async (err, monitor) => {
             redisInstance.isMonitoring = true;
             redisInstance.monitor = monitor;
             let storedArgs = [];
-            let interval$ = Rx.interval(2100);
-            interval$.subscribe( (_) => { 
-                console.log(storedArgs);  
+            let interval$ = Rx.interval(1100);
+            interval$.subscribe((time) => {
                 if (storedArgs.length) {
-                    redisutils.handleMonitorCommands(redisInstance,storedArgs,async (nextActions) => {
+                    const toCmdArgs = [...storedArgs];
+                    storedArgs = [];
+                    redisutils.handleMonitorCommands(redisInstance, toCmdArgs, async (nextActions) => {
                         redisInstance.ioStreamer.next(nextActions);
                     })
-                    storedArgs = [];
-                }                
+                }
             });            
             monitor.on('monitor', async (time, args, source, database) => {
+                console.log("I Monitored")
                 if (database === redisInstance.connectionInfo.db.toString()) {                    
-                    storedArgs.push(args);                            
-                } 
+                    storedArgs.push(args);
+                }
             });
         });
         
@@ -243,21 +244,12 @@ io.on('connection', (client) => {
         
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId)
         if(redisInstance.isMonitoring) {
+            redisInstance.isMonitoring = false;
             if(redisInstance.monitor) {
-                redisInstance.isMonitoring = false;
                 redisInstance.monitor.disconnect();
                 delete redisInstance.monitor;
             }
-        }
-        // We stop real-time data from monitor, we need to track local changes.
-        redisInstance.cmdStreamer.subscribe(async (actions) => {
-            if(redisInstance.isMonitoring) {
-                console.log("Already Monitoring")
-                return;
-            }
-            const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
-            redisInstance.ioStreamer.next(ioActions);
-        })
+        }        
         io.to(data.redisId).emit(actions.STOPPED_WATCH_CHANGES, data.redisId)
     });
     /**
@@ -271,7 +263,8 @@ io.on('connection', (client) => {
         }
         // if it is not monitoring we should take care of it        
         await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {  
-            if(!redisInstance.isMonitoring) {              
+            if(!redisInstance.isMonitoring) { 
+                console.log("TOCMD STREAMER")             
                 redisInstance.cmdStreamer.next(nextActions); 
             }
         })
