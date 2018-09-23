@@ -104,6 +104,6 @@ export class AppComponent implements OnInit {
   }
   updateStringKeyValue($event) {
     const args = buildSETQuery($event.info);
-    this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redis.id, command: args}));
+    this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }
 }

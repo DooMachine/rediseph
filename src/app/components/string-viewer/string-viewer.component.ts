@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { SelectedKeyInfo } from '../../models/redis';
 
 @Component({
@@ -8,6 +8,8 @@ import { SelectedKeyInfo } from '../../models/redis';
 })
 export class StringViewerComponent implements OnInit {
   constructor() { }
+  @Output() saveNewValue = new EventEmitter();
+
   isRealtime = false;
   editorOptions = {
     lineNumbers: false,
@@ -27,7 +29,9 @@ export class StringViewerComponent implements OnInit {
       this.editorOptions.mode = 'text/html';
     }
   }
-
+  saveStringKeyValue() {
+    this.saveNewValue.emit(this.stringValue);
+  }
   ngOnInit() {
   }
 

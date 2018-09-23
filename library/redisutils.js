@@ -65,9 +65,7 @@ async function handleListEntityScan(redisInstance,newSelectedKeyInfo, callback) 
   })
 }
 async function handleMonitorCommand (redisInstance,args, callback) {
-  let actions = [];
-  console.log("s-5")
-  console.log(new Date().getMilliseconds())
+  let ioActions = [];
   command = args[0].toLowerCase();
   if(command === 'del') {
     keys = args.splice(1);
@@ -80,7 +78,7 @@ async function handleMonitorCommand (redisInstance,args, callback) {
       }
     }      
     if (localTreeUpdated) {
-      actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+      ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
     }    
   }
   else if(command === 'set') {
@@ -88,18 +86,23 @@ async function handleMonitorCommand (redisInstance,args, callback) {
       key = args[1];
       const keyObj = redisInstance.keys[key];
       if(keyObj) {
-        actions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === key);
+        if (!!selectedKey) {
+          selectedKey.value= args[2];
+          ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: key})
+        }
+        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
       } else {
         const newValue = {
           type : 'string'
         }
         redisInstance.keys[key] = newValue;
-        actions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
       }
     }      
   } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
     redisInstance.keys = {};
-    actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+    ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
   } else if (shouldTreeScanCommands.indexOf(command) != -1) {
     if (command == 'renamenx') {      
       key = args[1];
@@ -110,7 +113,7 @@ async function handleMonitorCommand (redisInstance,args, callback) {
         if(keyObj) {
           redisInstance.keys[newKey] = redisInstance.keys[key];
           delete redisInstance.keys[key];
-          actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+          ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
         }
       }
     }else if (command == 'rename') {
@@ -122,15 +125,12 @@ async function handleMonitorCommand (redisInstance,args, callback) {
         if (!existingnewKey) {
             redisInstance.keys[newKey] = redisInstance.keys[key];
             delete redisInstance.keys[key];
-            actions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+            ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
         }
       }
     }    
-  console.log("s-9")
   }
-  console.log("s-11")
-  console.log(new Date().getMilliseconds())
-  callback(actions);
+  callback(ioActions);
 }
 
 async function handleCommandExecution(redisInstance,commands, callback) {
@@ -153,7 +153,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       {
         pipeline.set(args[0],args[1] ,(err,result) => {
           if (result) {
-            nextActions.push({type: cmdactions.SET_KEY, payload:{key: args[0]}})
+            nextActions.push({type: cmdactions.SET_KEY, payload:{key: args[0], value: args[1]}})
           }
         })
         break;
@@ -197,8 +197,14 @@ async function handleCmdOutputActions(redisInstance, actions) {
         ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
         break;
       case cmdactions.SET_KEY:
-        redisInstance.keys[action.payload.key] = {type: 'string'}
-        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === action.payload.key);
+        if (!!selectedKey) {
+          selectedKey.value= action.payload.value;
+          ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: action.payload.key})
+        } else {
+          redisInstance.keys[action.payload.key] = {type: 'string'}
+          ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        }
         break;
       case cmdactions.SET_KEYS:
         const newKeyAndTypes = {}

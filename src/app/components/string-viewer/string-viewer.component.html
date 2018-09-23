@@ -2,7 +2,7 @@
   <div fxLayout="row" fxLayoutAlign="space-between center" fxLayoutGap="0px">
     <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="10px">
       <div fxLayout="row" fxLayoutAlign="end start" fxLayoutGap="2px">
-          <button color="accent" [disabled]="isRealtime" mat-stroked-button>Save Changes</button>
+          <button color="accent" (click)="saveStringKeyValue()" [disabled]="isRealtime" mat-stroked-button>Save Changes</button>
       </div>
       <button
         *ngIf="!isRealtime"

@@ -212,8 +212,6 @@ io.on('connection', (client) => {
         redisInstance.redis.monitor(async (err, monitor) => {
             redisInstance.monitor = monitor;
             monitor.on('monitor', async (time, args, source, database) => {
-                // TODO: Store commands and handle every x seconds/milliseconds then pipeexecute needed actions.
-                console.log("monitoring")
                 redisutils.handleMonitorCommand(redisInstance, args, async (acts) => {
                     redisInstance.ioStreamer.next(acts);
                 });
@@ -260,6 +258,18 @@ io.on('connection', (client) => {
             await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {                
                 redisInstance.cmdStreamer.next(nextActions);                
             })
+        } else {
+            const allLines = [];
+            for (let i = 0; i < data.args.length; i++) {
+                const line = [];
+                const lineArgs = data.args[i];
+                line.push(lineArgs[0])    
+                for (let q = 0; q < lineArgs[1].length; q++) {
+                    line.push(lineArgs[1][q]);                    
+                }  
+                allLines.push(line);          
+            }
+            await redisInstance.redis.call(allLines);
         }
     });
     /**
