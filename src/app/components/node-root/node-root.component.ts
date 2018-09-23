@@ -18,7 +18,9 @@ export class NodeRootComponent implements OnInit {
   @Input('selectedKeyInfoHosts')
    set selectedKeyInfoHosts(keyInfoHosts: Array<SelectedKeyInfoHost>) {
     this.keyInfoHost = keyInfoHosts.find(p => p.redisId === this.redisId);
-    const sIndex = this.keyInfoHost.keyInfos.findIndex(p => p.key === this.keyInfoHost.selectedTabIndexKey);
+    const sIndex = this.keyInfoHost.keyInfos
+      .findIndex(p => p.key === this.keyInfoHost.selectedKeyQueue[this.keyInfoHost.selectedKeyQueue.length - 1]);
+
     this.selectedTabIndex = sIndex === -1 ? 0 : sIndex;
   }
   private typeIconMap = {

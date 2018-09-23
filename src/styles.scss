@@ -45,3 +45,9 @@ $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 .CodeMirror {
   min-width: 360px;
 }
+mat-nested-tree-node ul {
+  padding-left: 15px;
+}
+mat-nested-tree-node .mat-tree-node {
+  height: 25px;
+}

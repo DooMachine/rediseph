@@ -38,7 +38,7 @@ export class TreeComponent {
   @Output() expandClick = new EventEmitter();
   @Output() deleteClick = new EventEmitter();
   @Output() loadMore = new EventEmitter();
-
+  @Output() addFolderKey = new EventEmitter();
   @Input('redisTree')
   set redisTree(tree: any) {
     this.nestedTreeControl = new NestedTreeControl<RedisNode>(this._getChildren);

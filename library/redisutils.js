@@ -247,6 +247,99 @@ async function handleCmdOutputActions(redisInstance, actions) {
   return ioActions;
 }
 
+async function addNewKey(redisInstance, model, callback) {
+  // export enum DataType {
+  //   string = 'String', list = 'List', set = 'Set', hashmap = 'Hash Map', sortedset = 'Sorted Set'
+  // }
+  const typeMap = {
+    'String': 'string',
+    'Hash Map': 'hset',
+    'List': 'list',
+    'Sorted Set': 'zset',
+    'Set': 'set'
+  }
+  const newType = typeMap[model.type];
+  let ioActions = [
+      {type: monitoractions.UPDATE_LOCAL_TREE}
+    ];
+  const pipeline = redisInstance.redis.pipeline();
+  if (newType==='string')
+  {
+    pipeline.set(model.key, "Modify This Value").get(model.key).exec(async (e,res) => {      
+      redisInstance.keys[model.key] = {type: newType}
+      const newKeyInfo = {
+        key: model.key,
+        type: 'string',
+        value: res[1][1],
+      }
+      redisInstance.selectedKeyInfo.push(newKeyInfo)
+      ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo: newKeyInfo })   
+      callback(ioActions);   
+    })
+  }
+  else if(newType == 'list')
+  {
+    redisInstance.redis.lpush(model.key, 'Modify This Value', async (e,res) => {
+      
+      redisInstance.keys[model.key] = {type: newType}
+      const newKeyInfo = {
+        type: 'list',
+        key: model.key,
+        keyScanInfo: {
+          pageSize: 20,
+          pageIndex: 0,
+          hasMoreEntities: false,    
+      }};
+      newKeyInfo.keyScanInfo.entities = await redisInstance.redis.lrange(model.key,0,19);
+      redisInstance.selectedKeyInfo.push(newKeyInfo)
+      ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
+      callback(ioActions);
+      
+    })
+  }
+  else if(newType == 'set' || newType == 'hset' || newType == 'zset')
+  {
+    const commandMap = {
+      'set': 'sadd',
+      'hset': 'hset',
+      'zset': 'zadd',
+    }
+    const addLine = [commandMap[newType]]
+    if(newType == 'set') {
+      addLine.push(1)
+    }
+    if(newType == 'hset') {
+      addLine.push("my_key")
+    }
+    addLine.push("my_value");
+    redisInstance.redis.call(addLine, async (e,res) => {      
+      redisInstance.keys[model.key] = {type: newType}
+      const newKeyInfo = {
+        key: model.key,
+        type: newType,
+        keyScanInfo: {
+          pageSize: 20,
+          pageIndex: 0,
+          cursor: "",
+          pattern:"*",
+          hasMoreEntities: false,            
+      }}
+      const SCAN_TYPE_MAP = {
+        set:'sscan',
+        hash:'hscan',
+        zset:'zscan'
+      }
+      const scanMethod = SCAN_TYPE_MAP[newType];
+      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {      
+        newKeyInfo.entities = resp; 
+        newKeyInfo.cursor = cursor;
+        redisInstance.selectedKeyInfo.push(newKeyInfo);
+        ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
+        callback(ioActions);
+      });
+    })
+  }
+}
 
 const shouldRemoveTreeCommands = [
   'flushall','flushdb',
@@ -281,6 +374,7 @@ const refreshNeedCommands = ['set',
     refreshNeedCommands,
     scanRedisTree,
     scanKeyEntities,
+    addNewKey,
     handleListEntityScan,
     handleMonitorCommands,
     handleCommandExecution,

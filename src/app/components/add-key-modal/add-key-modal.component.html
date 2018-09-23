@@ -1,3 +1,24 @@
-<p>
-  add-key-modal works!
-</p>
+<div matDialogTitle>
+  <span>Add Key</span>
+</div>
+<div mat-dialog-content>
+  <mat-form-field>
+    <input matInput placeholder="Key" [(ngModel)]="data.key">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-select placeholder="Type" [(ngModel)]="data.type" name="type">
+      <mat-option *ngFor="let type of selectOptions" [value]="type">
+        {{type}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <div class="mat-dialog-content">
+      <ul class="err-area">
+        <li *ngFor="let err of errors">{{err}}</li>
+      </ul>
+    </div>
+</div>
+<div mat-dialog-actions fxLayout="row" fxLayoutAlign="space-around center" fxLayoutGap="4px">
+    <button mat-button  matDialogClose (click)="onNoClick()">Cancel</button>
+    <button mat-stroked-button color="primary" (click)="onSubmit()" cdkFocusInitial>Add</button>
+</div>

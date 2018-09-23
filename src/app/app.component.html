@@ -20,7 +20,7 @@
               <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
                   <div fxLayout="row" fxLayoutAlign="space-between start" fxLayoutGap="6px">
                       
-                      <button matTooltip="Add new key" color="accent" mat-icon-button>
+                      <button matTooltip="Add new key" (click)="addNewKey(null, instance.id)" color="accent" mat-icon-button>
                         <mat-icon >add_box</mat-icon>
                       </button>
                       <button (click)="showRootInfo(instance)" matTooltip="Status" color="accent" mat-icon-button>
@@ -67,6 +67,7 @@
                     (searchInputChanged)= "setNodeSearchQuert({redis: instance, query:$event})"
                     [searchText]= "instance.keyInfo.pattern"
                     (expandClick)= "expandClicked({node: $event, redis:instance})"
+                    (addFolderKey) = "addNewKey($event,instance.id)"
                     [redisTree]="instance.tree"
                     >
                   </app-tree>

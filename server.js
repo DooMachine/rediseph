@@ -141,7 +141,16 @@ io.on('connection', (client) => {
                                     serverInfo: redisInstance.redis.serverInfo,
                                 });
                                 break; 
-                            }    
+                            }
+                            case monitoractions.NEW_KEY_ADDED:
+                            {
+                                io.to(redisInstance.roomId).emit(actions.NEW_KEY_ADDED,
+                                {
+                                    redisId: redisInstance.roomId,
+                                    keyInfo: action.keyInfo
+                                })
+                                break;
+                            }
                             case monitoractions.SELECTED_NODE_UPDATED: 
                             {
                                 console.log("Selected Key Updated");
@@ -206,6 +215,14 @@ io.on('connection', (client) => {
                 });
             });
         }        
+    });
+
+    client.on(actions.ADD_NEW_KEY, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.payload.redisId)
+        redisutils.addNewKey(redisInstance, data.payload, async (ioActions) => {
+            console.log(ioActions);
+            redisInstance.ioStreamer.next(ioActions);
+        })        
     });
     /**
      * Tell redis to MONITOR all commands in, process them and set ioStreamer.

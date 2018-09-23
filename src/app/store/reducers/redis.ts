@@ -75,6 +75,11 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
                  selectedInstanceId: action.payload.redisInfo.id
                 };
         }
+        case redisActions.RedisActionTypes.NEW_KEY_ADDED:
+        {
+            return adapter.updateOne({id: action.payload.redisId,
+                changes: { rootSelected: false }}, state);
+        }
         case redisActions.RedisActionTypes.DISCONNECT_REDIS_INSTANCE:
         {
             return state;

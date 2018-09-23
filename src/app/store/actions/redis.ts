@@ -1,5 +1,5 @@
 import { Action } from '@ngrx/store';
-import { RedisInstance, ConnectServerModel, SelectedKeyInfo } from '../../models/redis';
+import { RedisInstance, ConnectServerModel, SelectedKeyInfo, AddKeyModel } from '../../models/redis';
 import { RedisNode } from '../../models/redis-node';
 
 /**
@@ -10,6 +10,10 @@ export enum RedisActionTypes {
     CONNECT_REDIS_INSTANCE = '[Redis] CONNECT_REDIS_INSTANCE',
     CONNECT_REDIS_INSTANCE_SUCCESS = '[Redis] CONNECT_REDIS_INSTANCE_SUCCESS',
     CONNECT_REDIS_INSTANCE_FAIL = '[Redis] CONNECT_REDIS_INSTANCE_FAIL',
+
+    ADD_NEW_KEY = '[Redis] ADD_NEW_KEY',
+    NEW_KEY_ADDED = '[Redis] NEW_KEY_ADDED',
+
 
     REFRESH_LOADED_KEYS = '[Redis] REFRESH_LOADED_KEYS',
 
@@ -60,7 +64,16 @@ export class ConnectRedisInstanceFail implements Action {
 
     constructor(public payload: RedisInstance) { }
 }
+export class AddNewKey implements Action {
+    readonly type = RedisActionTypes.ADD_NEW_KEY;
 
+    constructor(public payload: AddKeyModel) { }
+}
+export class NewKeyAdded implements Action {
+    readonly type = RedisActionTypes.NEW_KEY_ADDED;
+
+    constructor(public payload: {keyInfo: SelectedKeyInfo, redisId: string}) { }
+}
 export class RefreshLoadedKeys implements Action  {
     readonly type = RedisActionTypes.REFRESH_LOADED_KEYS;
 
@@ -152,6 +165,8 @@ export type RedisActions
                         = ConnectRedisInstance
                         | ConnectRedisInstanceSuccess
                         | ConnectRedisInstanceFail
+                        | AddNewKey
+                        | NewKeyAdded
                         | RedisInstanceUpdated
                         | SetSelectedNode
                         | ExecuteCommand

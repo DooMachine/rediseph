@@ -7,16 +7,11 @@ export enum DataType {
   string = 'String', list = 'List', set = 'Set', hashmap = 'Hash Map', sortedset = 'Sorted Set'
 }
 export class AddKeyModel {
+  redisId = '';
   key = '';
   isSubKey = false;
   parentKey: '';
   type: DataType;
-  values: {
-    string: string,
-    list: Array<string>,
-    hashmap: Map<string, string>,
-    sortedset: Map<string, number>,
-  };
 }
 /**
  * add server model
@@ -72,7 +67,7 @@ export class KeyInfo {
 export class SelectedKeyInfoHost {
   keyInfos: Array<SelectedKeyInfo> = [];
   redisId: string;
-  selectedTabIndexKey = '';
+  selectedKeyQueue: Array<string> = [];
 }
 export class SelectedKeyInfo {
     key: string = null;

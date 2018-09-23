@@ -3,13 +3,14 @@ import { State } from './store/reducers/redis';
 import { Store, select } from '@ngrx/store';
 import * as redisActions from './store/actions/redis';
 import * as keyActions from './store/actions/selectedkey';
-import { RedisInstance, ConnectServerModel, SelectedKeyInfo, SelectedKeyInfoHost } from './models/redis';
+import { RedisInstance, ConnectServerModel, SelectedKeyInfo, SelectedKeyInfoHost, AddKeyModel, DataType } from './models/redis';
 import { Observable } from 'rxjs';
 import { selectAllRedisInstances, getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from './store/reducers';
 import { MatDialogRef, MatDialog } from '@angular/material';
 import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
 import { RedisNode } from './models/redis-node';
 import { buildDELQuery, buildSETQuery } from './utils/commandutils';
+import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -71,6 +72,25 @@ export class AppComponent implements OnInit {
     dialogRef.afterClosed().subscribe((res) => {
       if (res) {
         this.store.dispatch(new redisActions.ConnectRedisInstance(res));
+      }
+    });
+  }
+  addNewKey(parentFolderKey: string, redisId: string) {
+    const model: AddKeyModel = {
+      redisId: redisId,
+      key : parentFolderKey || '',
+      isSubKey : parentFolderKey === null,
+      parentKey: '',
+      type: DataType.string,
+    };
+    const dialogRef = this.dialog.open(AddKeyModalComponent, {
+      data: model,
+      width: '290px'
+    });
+
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res) {
+        this.store.dispatch(new redisActions.AddNewKey(res));
       }
     });
   }

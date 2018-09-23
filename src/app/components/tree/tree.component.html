@@ -62,7 +62,7 @@
                 <mat-icon>delete_forever</mat-icon>
                 <span>Delete Key</span>
               </button>
-              <button color="accent" mat-menu-item>
+              <button (click)="addFolderKey.emit(node.key)" color="accent" mat-menu-item>
                 <mat-icon>device_hub</mat-icon>
                 <span>Add New Key (Folder)</span>
               </button>

@@ -63,7 +63,7 @@ export class SelectedNodeKeyUpdated implements Action {
 export class ChangeTabIndexKey implements Action {
     readonly type = SelectedKeyActionTypes.CHANGE_TAB_INDEX_KEY;
 
-    constructor(public payload: {redisId: string, index: number}) { }
+    constructor(public payload: {redisId: string, index: number | string}) { }
 }
 /**
  * Export a type alias of all actions in this action group

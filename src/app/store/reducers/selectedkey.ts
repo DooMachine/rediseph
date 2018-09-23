@@ -31,7 +31,7 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
     switch (action.type) {
         case keyActions.SelectedKeyActionTypes.ADD_SELECTED_KEY_HOST: {
             const newhost: SelectedKeyInfoHost = {redisId : action.payload.redisId,
-                 keyInfos: action.payload.selectedKeys, selectedTabIndexKey: '' };
+                 keyInfos: action.payload.selectedKeys, selectedKeyQueue: [] };
             return adapter.addOne(newhost, state);
         }
         case keyActions.SelectedKeyActionTypes.ADD_SELECTED_KEY: {
@@ -44,9 +44,10 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
                 action.payload.selectedKeyInfo.keyScanInfo.entities = buildEntityModel(action.payload.selectedKeyInfo);
             }
             newKeyInfo.keyInfos.push(action.payload.selectedKeyInfo);
-            console.log(newKeyInfo.keyInfos.length);
+            newKeyInfo.selectedKeyQueue.push(action.payload.selectedKeyInfo.key);
             return adapter.updateOne({id: action.payload.redisId,
-                 changes: {keyInfos: newKeyInfo.keyInfos, selectedTabIndexKey: action.payload.selectedKeyInfo.key }}, state);
+                 changes: {keyInfos: newKeyInfo.keyInfos,
+                     selectedKeyQueue: newKeyInfo.selectedKeyQueue }}, state);
         }
         case keyActions.SelectedKeyActionTypes.REMOEVE_SELECTED_KEY_SUCCESS:
         {
@@ -54,18 +55,10 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
             const newKeyInfo = Object.assign({}, prev);
             newKeyInfo.keyInfos = newKeyInfo.keyInfos.filter(p => p.key !== action.payload.key);
             // if selected tab closes change index to previous key.
-            if (prev.selectedTabIndexKey === action.payload.key) {
-                const keyIndex = prev.keyInfos.findIndex(p => p.key === action.payload.key);
-                if (keyIndex !== 0) {
-                    newKeyInfo.selectedTabIndexKey = newKeyInfo.keyInfos[keyIndex - 1].key;
-                } else {
-                    newKeyInfo.selectedTabIndexKey = '';
-                }
-            } else {
-                newKeyInfo.selectedTabIndexKey = prev.selectedTabIndexKey;
-            }
+            newKeyInfo.selectedKeyQueue = prev.selectedKeyQueue.filter(p => p !== action.payload.key);
+
             return adapter.updateOne({id: action.payload.redisId,
-                changes: {keyInfos: newKeyInfo.keyInfos, selectedTabIndexKey: newKeyInfo.selectedTabIndexKey }}, state);
+                changes: {keyInfos: newKeyInfo.keyInfos, selectedKeyQueue: newKeyInfo.selectedKeyQueue }}, state);
         }
         case keyActions.SelectedKeyActionTypes.SELECTED_NODE_KEY_UPDATED: {
             const prev = state.entities[action.payload.redisId];
@@ -82,19 +75,27 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
                     }
                     return p;
                 });
-                newKeyInfo.selectedTabIndexKey = prev.selectedTabIndexKey;
+                newKeyInfo.selectedKeyQueue = prev.selectedKeyQueue;
             } else {
                 newKeyInfo.keyInfos.push(keyInfo);
-                newKeyInfo.selectedTabIndexKey = keyInfo.key;
+                newKeyInfo.selectedKeyQueue.push(keyInfo.key);
             }
             return adapter.updateOne({id: action.payload.redisId,
-                changes: {keyInfos: newKeyInfo.keyInfos, selectedTabIndexKey: newKeyInfo.selectedTabIndexKey }}, state);
+                changes: {keyInfos: newKeyInfo.keyInfos, selectedKeyQueue: newKeyInfo.selectedKeyQueue }}, state);
         }
         case keyActions.SelectedKeyActionTypes.CHANGE_TAB_INDEX_KEY: {
+            const prevQueue = state.entities[action.payload.redisId].selectedKeyQueue;
+            const newQueue = [...prevQueue];
+            if (typeof(action.payload.index) === 'string') {
+                newQueue.push(action.payload.index);
+                return adapter.updateOne({id: action.payload.redisId,
+                    changes: {selectedKeyQueue: newQueue}}, state);
+            }
             const keyInfo = state.entities[action.payload.redisId].keyInfos[action.payload.index];
             const key = keyInfo ? keyInfo.key : '';
+            newQueue.push(key);
             return adapter.updateOne({id: action.payload.redisId,
-                changes: {selectedTabIndexKey: key}}, state);
+                changes: {selectedKeyQueue: newQueue}}, state);
         }
         default:
             return state;

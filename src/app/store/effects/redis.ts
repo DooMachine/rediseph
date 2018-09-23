@@ -37,7 +37,27 @@ export class RedisEffects {
                 }
             )
         );
-
+    @Effect({dispatch: false})
+    addNewKey$ = this.actions$
+        .pipe(
+            ofType(redisActions.RedisActionTypes.ADD_NEW_KEY),
+            mergeMap((action: redisActions.AddNewKey) => {
+                this.redisService.addNewKey(action);
+                return of();
+            }),
+        );
+    @Effect()
+    newKeyAdded$: Observable<Action> =
+        this.redisService.newKeyAdded$.pipe(
+            switchMap((resp) =>  {
+                    return from([
+                        new keyActions.ChangeTabIndexKey({redisId: resp.redisId, index: resp.keyInfo.key }),
+                        new keyActions.AddSelectedKeySuccess({selectedKeyInfo: resp.keyInfo, redisId: resp.redisId}),
+                        new redisActions.NewKeyAdded({redisId: resp.redisId, keyInfo: resp.keyInfo}),
+                    ]);
+                }
+            )
+        );
     @Effect({dispatch: false})
     disconnectRedis$ = this.actions$
         .pipe(
