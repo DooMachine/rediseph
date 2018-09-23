@@ -174,11 +174,6 @@ export class RedisEffects {
     redisEvent$: Observable<Action> =
         this.redisService.redisUpdated$.pipe( // listen to the socket for REDIS UPDATES
             switchMap((resp) =>  {
-                    this.snackBar.open('Redis instance: <b>' + resp.redisInfo.ip + '</b> Updated', null, {
-                        duration: 1400,
-                        verticalPosition: 'bottom',
-                        horizontalPosition: 'left',
-                    });
                     return of(new redisActions.RedisInstanceUpdated(resp));
                 }
             )

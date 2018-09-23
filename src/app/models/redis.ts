@@ -9,6 +9,7 @@ export enum DataType {
 export interface AddKeyModel {
   key: string;
   isSubKey: boolean;
+  parentKey: boolean;
   type: DataType;
   values: {
     string: string,

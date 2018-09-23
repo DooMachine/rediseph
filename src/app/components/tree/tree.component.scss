@@ -13,6 +13,9 @@ input{
     margin-bottom: 0;
     list-style-type: none;
 }
+mat-tree-node, mat-nested-tree-node{
+    height: 25px;
+}
 .mat-tree-node{
     min-height: 0px;
 }

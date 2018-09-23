@@ -6,7 +6,7 @@
 
 $redis-app-primary: mat-palette($mat-red,800, 400, 700);
 $redis-app-accent:  mat-palette($mat-teal,500, 300, 800);
-$redis-app-warn:  mat-palette($mat-purple,800, 400, 700);
+$redis-app-warn:  mat-palette($mat-grey,800, 400, 700);
 $redis-app-theme: mat-light-theme($redis-app-primary, $redis-app-accent);
 
 $redis-typography: mat-typography-config(

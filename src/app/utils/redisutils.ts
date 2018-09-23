@@ -41,7 +41,6 @@ export const recursiveSearchNode = (node: RedisNode, query: string): RedisNode =
 export const buildRedisTree = (root) => {
 
     const tree = {};
-    console.log(root);
     const keys = Object.keys(root);
     const buildTree = (node, parts) => {
 
@@ -56,20 +55,19 @@ export const buildRedisTree = (root) => {
       }
     };
 
-    const parseTreeToArray = (node, depth) => {
+    const parseTreeToArray = (node) => {
 
       if (_.keys(node.children).length <= 0) {
-        return {key: node.key, ...root[node.key], name: node.name, depth};
+        return {key: node.key, ...root[node.key], name: node.name};
       }
       const result = {
         type: 'folder',
         key: node.key,
         name: node.name,
-        depth,
         children: []
       };
       _.each(node.children, (n) => {
-        result.children.push(parseTreeToArray(n, null));
+        result.children.push(parseTreeToArray(n));
       });
       return result;
     };
@@ -91,7 +89,7 @@ export const buildRedisTree = (root) => {
     for (let i = 0; i < newRoot.length; i++) {
       const v = newRoot[i];
       if (v.children) {
-        newRoot[i] = parseTreeToArray(v, 1);
+        newRoot[i] = parseTreeToArray(v);
       }
     }
     return newRoot;
