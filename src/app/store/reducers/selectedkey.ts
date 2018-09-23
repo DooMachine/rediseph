@@ -82,15 +82,17 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
                     }
                     return p;
                 });
+                newKeyInfo.selectedTabIndexKey = prev.selectedTabIndexKey;
             } else {
                 newKeyInfo.keyInfos.push(keyInfo);
+                newKeyInfo.selectedTabIndexKey = keyInfo.key;
             }
-            newKeyInfo.selectedTabIndexKey = prev.selectedTabIndexKey;
             return adapter.updateOne({id: action.payload.redisId,
-                changes: {keyInfos: newKeyInfo.keyInfos, selectedTabIndexKey: prev.selectedTabIndexKey }}, state);
+                changes: {keyInfos: newKeyInfo.keyInfos, selectedTabIndexKey: newKeyInfo.selectedTabIndexKey }}, state);
         }
         case keyActions.SelectedKeyActionTypes.CHANGE_TAB_INDEX_KEY: {
-            const key = state.entities[action.payload.redisId].keyInfos[action.payload.index].key;
+            const keyInfo = state.entities[action.payload.redisId].keyInfos[action.payload.index];
+            const key = keyInfo ? keyInfo.key : '';
             return adapter.updateOne({id: action.payload.redisId,
                 changes: {selectedTabIndexKey: key}}, state);
         }

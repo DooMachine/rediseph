@@ -64,72 +64,76 @@ async function handleListEntityScan(redisInstance,newSelectedKeyInfo, callback) 
     await callback(resp);
   })
 }
-async function handleMonitorCommand (redisInstance,args, callback) {
+async function handleMonitorCommands (redisInstance,monitorCommands, callback) {
   let ioActions = [];
-  command = args[0].toLowerCase();
-  if(command === 'del') {
-    keys = args.splice(1);
-    let localTreeUpdated = false;
-    for (let i = 0; i < keys.length; i++) {
-      const keyObj = redisInstance.keys[keys[i]];
-      if(keyObj) {
-        localTreeUpdated = true;
-        delete redisInstance.keys[keys[i]];
-      }
-    }      
-    if (localTreeUpdated) {
-      ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
-    }    
-  }
-  else if(command === 'set') {
-    if(args.length == 3) {
-      key = args[1];
-      const keyObj = redisInstance.keys[key];
-      if(keyObj) {
-        selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === key);
-        if (!!selectedKey) {
-          selectedKey.value= args[2];
-          ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: key})
+  for (let c = 0; c < monitorCommands.length; c++) {
+    const args = monitorCommands[c];
+    command = args[0].toLowerCase();
+    if(command === 'del') {
+      keys = args.splice(1);
+      let localTreeUpdated = false;
+      for (let i = 0; i < keys.length; i++) {
+        const keyObj = redisInstance.keys[keys[i]];
+        if(keyObj) {
+          localTreeUpdated = true;
+          delete redisInstance.keys[keys[i]];
         }
-        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
-      } else {
-        const newValue = {
-          type : 'string'
-        }
-        redisInstance.keys[key] = newValue;
-        ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
-      }
-    }      
-  } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
-    redisInstance.keys = {};
-    ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
-  } else if (shouldTreeScanCommands.indexOf(command) != -1) {
-    if (command == 'renamenx') {      
-      key = args[1];
-      newKey = args[2];
-      const existingnewKey = await redisInstance.redis.get(newKey);
-      if (!existingnewKey) {
+      }      
+      if (localTreeUpdated) {
+        ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+      }    
+    }
+    else if(command === 'set') {
+      if(args.length == 3) {
+        key = args[1];
         const keyObj = redisInstance.keys[key];
         if(keyObj) {
-          redisInstance.keys[newKey] = redisInstance.keys[key];
-          delete redisInstance.keys[key];
-          ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+          selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === key);
+          if (!!selectedKey) {
+            selectedKey.value= await redisInstance.redis.get(key);
+            ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: key})
+          }
+          ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
+        } else {
+          const newValue = {
+            type : 'string'
+          }
+          redisInstance.keys[key] = newValue;
+          ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
         }
-      }
-    }else if (command == 'rename') {
-      key = args[1];
-      newKey = args[2];
-      const existingnewKey = await redisInstance.redis.get(newKey);
-      const keyObj = redisInstance.keys[key];
-      if(keyObj) {
+      }      
+    } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
+      redisInstance.keys = {};
+      ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+    } else if (shouldTreeScanCommands.indexOf(command) != -1) {
+      if (command == 'renamenx') {      
+        key = args[1];
+        newKey = args[2];
+        const existingnewKey = await redisInstance.redis.get(newKey);
         if (!existingnewKey) {
+          const keyObj = redisInstance.keys[key];
+          if(keyObj) {
             redisInstance.keys[newKey] = redisInstance.keys[key];
             delete redisInstance.keys[key];
             ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+          }
         }
-      }
-    }    
+      }else if (command == 'rename') {
+        key = args[1];
+        newKey = args[2];
+        const existingnewKey = await redisInstance.redis.get(newKey);
+        const keyObj = redisInstance.keys[key];
+        if(keyObj) {
+          if (!existingnewKey) {
+              redisInstance.keys[newKey] = redisInstance.keys[key];
+              delete redisInstance.keys[key];
+              ioActions.push({type:  monitoractions.UPDATE_LOCAL_TREE})
+          }
+        }
+      }    
+    }
   }
+  
   callback(ioActions);
 }
 
@@ -190,16 +194,16 @@ async function handleCmdOutputActions(redisInstance, actions) {
       case cmdactions.DEL_KEYS:
         for (let i = 0; i < action.payload.keys.length; i++) {
           const delkey = action.payload.keys[i];
-          redisInstance.newSelectedKeyInfo = redisInstance.newSelectedKeyInfo.filter(p=>p.key != delkey);
+          redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key != delkey);
           delete redisInstance.keys[delkey];
         }
-        ioActions.push({type: monitoractions.SELECTED_NODES_UPDATED,})
+        ioActions.push({type: monitoractions.SELECTED_NODES_UPDATED})
         ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
         break;
       case cmdactions.SET_KEY:
         selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === action.payload.key);
         if (!!selectedKey) {
-          selectedKey.value= action.payload.value;
+          selectedKey.value= await redisInstance.redis.get(action.payload.key);
           ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: action.payload.key})
         } else {
           redisInstance.keys[action.payload.key] = {type: 'string'}
@@ -257,7 +261,7 @@ const refreshNeedCommands = ['set',
     scanRedisTree,
     scanKeyEntities,
     handleListEntityScan,
-    handleMonitorCommand,
+    handleMonitorCommands,
     handleCommandExecution,
     handleCmdOutputActions
   }

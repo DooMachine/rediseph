@@ -42,3 +42,6 @@ $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 .mat-tab-body{ transition: none; }
 .mat-ink-bar { height: 4px !important;}  
 .mat-badge-content { font-size: 11px !important; }
+.CodeMirror {
+  min-width: 360px;
+}

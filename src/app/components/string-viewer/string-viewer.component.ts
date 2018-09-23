@@ -1,10 +1,11 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { SelectedKeyInfo } from '../../models/redis';
 
 @Component({
   selector: 'app-string-viewer',
   templateUrl: './string-viewer.component.html',
   styleUrls: ['./string-viewer.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StringViewerComponent implements OnInit {
   constructor() { }
@@ -14,9 +15,10 @@ export class StringViewerComponent implements OnInit {
   editorOptions = {
     lineNumbers: false,
     theme: 'material',
-    mode: 'json'
+    mode: 'markdown'
   };
   stringValue = '';
+  newValue = '';
   key = '';
   @Input('selectedKeyInfo')
   set value(v: SelectedKeyInfo) {

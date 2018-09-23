@@ -5,7 +5,7 @@ import * as redisActions from './store/actions/redis';
 import * as keyActions from './store/actions/selectedkey';
 import { RedisInstance, ConnectServerModel, SelectedKeyInfo, SelectedKeyInfoHost } from './models/redis';
 import { Observable } from 'rxjs';
-import { selectAllRedisInstances, getSelectedRedisIndex, selectAllSelectedKeyHosts } from './store/reducers';
+import { selectAllRedisInstances, getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from './store/reducers';
 import { MatDialogRef, MatDialog } from '@angular/material';
 import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
 import { RedisNode } from './models/redis-node';
@@ -20,6 +20,7 @@ import { buildDELQuery, buildSETQuery } from './utils/commandutils';
 export class AppComponent implements OnInit {
   title = 'rediSeph';
   redisInstances$: Observable<RedisInstance[]>;
+  selectedInstanceId$: Observable<string | number>;
   selectedKeyInfoHosts$: Observable<SelectedKeyInfoHost[]>;
   selectedRedisIndex$: Observable<number>;
   constructor(private readonly store: Store<State>, private dialog: MatDialog) {
@@ -39,6 +40,7 @@ export class AppComponent implements OnInit {
     this.redisInstances$ = this.store.pipe(select(selectAllRedisInstances));
     this.selectedRedisIndex$ = this.store.pipe(select(getSelectedRedisIndex));
     this.selectedKeyInfoHosts$ = this.store.pipe(select(selectAllSelectedKeyHosts));
+    this.selectedInstanceId$ = this.store.pipe(select(getSelectedRedisId));
   }
 
   nodeClicked($event) {

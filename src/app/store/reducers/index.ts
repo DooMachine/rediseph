@@ -76,3 +76,4 @@ export const {
 } = fromKeys.adapter.getSelectors(getSelectedKeyState);
 
 export const getSelectedRedisIndex = createSelector(getRedisState, state => state.selectedInstanceIndex);
+export const getSelectedRedisId = createSelector(getRedisState, state => state.selectedInstanceId);

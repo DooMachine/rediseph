@@ -4,7 +4,8 @@ const _ = require('lodash');
 const uuid = require('uuid');
 const Redis = require('ioredis');
 const config = require('config');
-
+const Rx = require('rxjs');
+const rxop = require('rxjs/operators')
 
 const redisutils = require('./library/redisutils')
 const RedisInstance = require('./library/redisinstance')
@@ -162,6 +163,9 @@ io.on('connection', (client) => {
                             }                        
                             case monitoractions.SELECTED_NODES_UPDATED:
                             {
+                                /**
+                                 * Should we listen this in client? 
+                                 */
                                 console.log("Selected keys added/deleted/updated")
                                 io.to(redisInstance.roomId).emit(actions.SELECTED_NODES_UPDATED,
                                      {
@@ -207,14 +211,26 @@ io.on('connection', (client) => {
      */
     client.on(actions.WATCH_CHANGES, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId)
-        redisInstance.isMonitoring = true;
+        
         // We stop real-time data from monitor, we need to track local changes.
         redisInstance.redis.monitor(async (err, monitor) => {
+            redisInstance.isMonitoring = true;
             redisInstance.monitor = monitor;
+            let storedArgs = [];
+            let interval$ = Rx.interval(2100);
+            interval$.subscribe( (_) => { 
+                console.log(storedArgs);  
+                if (storedArgs.length) {
+                    redisutils.handleMonitorCommands(redisInstance,storedArgs,async (nextActions) => {
+                        redisInstance.ioStreamer.next(nextActions);
+                    })
+                    storedArgs = [];
+                }                
+            });            
             monitor.on('monitor', async (time, args, source, database) => {
-                redisutils.handleMonitorCommand(redisInstance, args, async (acts) => {
-                    redisInstance.ioStreamer.next(acts);
-                });
+                if (database === redisInstance.connectionInfo.db.toString()) {                    
+                    storedArgs.push(args);                            
+                } 
             });
         });
         
@@ -253,24 +269,13 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
-        // if it is not monitoring we should take care of it
-        if(!redisInstance.isMonitoring) {
-            await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {                
-                redisInstance.cmdStreamer.next(nextActions);                
-            })
-        } else {
-            const allLines = [];
-            for (let i = 0; i < data.args.length; i++) {
-                const line = [];
-                const lineArgs = data.args[i];
-                line.push(lineArgs[0])    
-                for (let q = 0; q < lineArgs[1].length; q++) {
-                    line.push(lineArgs[1][q]);                    
-                }  
-                allLines.push(line);          
+        // if it is not monitoring we should take care of it        
+        await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {  
+            if(!redisInstance.isMonitoring) {              
+                redisInstance.cmdStreamer.next(nextActions); 
             }
-            await redisInstance.redis.call(allLines);
-        }
+        })
+        
     });
     /**
      * When user searchs a pattern or key, set cursor 0 and scan with pattern.

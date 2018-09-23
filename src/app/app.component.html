@@ -73,21 +73,20 @@
               </mat-sidenav>
               <mat-sidenav-content fxFlex class="inner-sidenav-content" fullscreen>
                   <app-redis-instance
-                    *ngIf="instance.rootSelected;"
+                    [hidden]="!instance.rootSelected"
                     [instance] = "instance">                          
                     <app-root-info
                       [tableInfo] = "instance.info"
                       >
                     </app-root-info>   
                   </app-redis-instance>
-                    <app-node-root *ngIf="!instance.rootSelected"
-                    [redisId] ="instance.id"
+                    <app-node-root [hidden]="instance.rootSelected"
+                    [redisId] ="selectedInstanceId$ | async"
                     [selectedKeyInfoHosts] = "selectedKeyInfoHosts$ | async"
-                    (keyTabChanged) = "changeKeyTabIndex({redisId: instance.id, index: $event})"
-                    (closeKeyInfo) = "closeKeyInfo({redisId: instance.id, selectedKeyInfo: $event})"
-                    (updateStringValue) = "updateStringKeyValue({info: $event, redisId: instance.id})"
-                    >
-                      
+                    (keyTabChanged) = "changeKeyTabIndex($event)"
+                    (closeKeyInfo) = "closeKeyInfo($event)"
+                    (updateStringValue) = "updateStringKeyValue($event)"
+                    >                      
                     </app-node-root>
               </mat-sidenav-content>
           </mat-sidenav-container>

@@ -10,6 +10,7 @@ module.exports = class RedisInstance {
         this.redis= redis,
         this.cmdStreamer= new Subject(),
         this.ioStreamer= new Subject(),
+        this.monitorDebouncer = new Subject(),
         this.keys= {},
         this.connectedClientCount = 1;
         this.isMonitoring=false,

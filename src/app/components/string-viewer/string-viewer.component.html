@@ -1,6 +1,14 @@
 <div class="string-viewer-menu">
-  <div fxLayout="row" fxLayoutAlign="space-between center" fxLayoutGap="0px">
-    <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="10px">
+  <div fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="8px">
+      <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="3px" fxLayoutWrap>   
+        <ngx-codemirror 
+          [autoFocus]="true"
+          [name]="key"
+          [(ngModel)]="stringValue"
+          [options]="editorOptions"
+        ></ngx-codemirror>
+      </div>
+    <div fxLayout="row" fxLayoutAlign="end center" fxLayoutGap="10px">
       <div fxLayout="row" fxLayoutAlign="end start" fxLayoutGap="2px">
           <button color="accent" (click)="saveStringKeyValue()" [disabled]="isRealtime" mat-stroked-button>Save Changes</button>
       </div>
@@ -12,9 +20,3 @@
     </div>
   </div>  
 </div>
-<ngx-codemirror 
-  [autoFocus]="true"
-  [name]="key"
-  [(ngModel)]="stringValue"
-  [options]="editorOptions"
-></ngx-codemirror>

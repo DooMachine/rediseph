@@ -1,15 +1,15 @@
  
-<mat-tab-group color="warn" (selectedIndexChange)="keyTabChanged.emit($event)" [selectedIndex]="selectedTabIndex">
+<mat-tab-group color="warn" (selectedIndexChange)="keyTabChanged.emit({redisId: redisId, index: $event})" [selectedIndex]="selectedTabIndex">
     <mat-tab [attr.key]="keyInfo.key" *ngFor=" let keyInfo of (keyInfoHost?.keyInfos); let i = index">
       <ng-template mat-tab-label>
         <mat-icon [matTooltip]="keyInfo.type" color="primary" class="tab-icon">{{typeIconMap[keyInfo.type]}}</mat-icon>
-          {{keyInfo.key}} {{selectedTabIndex }}
-        <mat-icon matTooltip="Close" (click)="closeKeyInfo.emit(keyInfo)" class="tab-icon">close</mat-icon>
+          {{keyInfo.key}}
+        <mat-icon matTooltip="Close" (click)="closeKeyInfo.emit({redisId: redisId, selectedKeyInfo: keyInfo})" class="tab-icon">close</mat-icon>
       </ng-template>
       <div *ngIf="keyInfo.type == 'string'" fxFlex>
           <app-string-viewer
             [selectedKeyInfo] = "keyInfo"
-            (saveNewValue)= "updateStringValue.emit({value: $event, keyInfo:keyInfo})"
+            (saveNewValue)= "updateStringValue.emit({info: {value: $event, keyInfo:keyInfo}, redisId: redisId})"
           >
           </app-string-viewer>
         </div> 

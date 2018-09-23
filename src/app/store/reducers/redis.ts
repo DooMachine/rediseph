@@ -10,6 +10,7 @@ import { buildRedisTree, buildEntityModel } from 'src/app/utils/redisutils';
 export interface State extends EntityState<RedisInstance> {
     selectedInstanceIndex: number;
     isLoading: boolean;
+    selectedInstanceId: string | number;
 }
 /**
  * Entity adapter for RedisInstance State
@@ -23,7 +24,8 @@ export const adapter: EntityAdapter<RedisInstance> = createEntityAdapter<RedisIn
  */
 export const initialState: State = adapter.getInitialState({
     isLoading: false,
-    selectedInstanceIndex: null
+    selectedInstanceIndex: null,
+    selectedInstanceId: '',
 });
 /**
  * Reducer for RedisInstance Store
@@ -69,7 +71,8 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             action.payload.redisInfo.selectedKeyInfo = new SelectedKeyInfo();
             return {
                 ...adapter.addOne(action.payload.redisInfo, state),
-                 selectedInstanceIndex: state.ids.length
+                 selectedInstanceIndex: state.ids.length,
+                 selectedInstanceId: action.payload.redisInfo.id
                 };
         }
         case redisActions.RedisActionTypes.DISCONNECT_REDIS_INSTANCE:
@@ -152,9 +155,11 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
         }
         case redisActions.RedisActionTypes.SET_SELECTED_REDIS_INDEX:
         {
+            const id = state.ids[action.payload];
             return {
                 ...state,
-                selectedInstanceIndex: action.payload
+                selectedInstanceIndex: action.payload,
+                selectedInstanceId : id || ''
             };
         }
         default:

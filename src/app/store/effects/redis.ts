@@ -6,12 +6,14 @@ import { Actions, Effect, ofType } from '@ngrx/effects';
 import { RedisSocketService } from '../services/redissocket.service';
 import * as redisActions from '../actions/redis';
 import * as keyActions from '../actions/selectedkey';
+import { MatSnackBar } from '@angular/material';
 
 @Injectable()
 export class RedisEffects {
     constructor(
         private actions$: Actions,
-        private redisService: RedisSocketService
+        private redisService: RedisSocketService,
+        public snackBar: MatSnackBar
     ) {}
 
     @Effect({dispatch: false})
@@ -172,6 +174,11 @@ export class RedisEffects {
     redisEvent$: Observable<Action> =
         this.redisService.redisUpdated$.pipe( // listen to the socket for REDIS UPDATES
             switchMap((resp) =>  {
+                    this.snackBar.open('Redis instance: <b>' + resp.redisInfo.ip + '</b> Updated', null, {
+                        duration: 1400,
+                        verticalPosition: 'bottom',
+                        horizontalPosition: 'left',
+                    });
                     return of(new redisActions.RedisInstanceUpdated(resp));
                 }
             )
