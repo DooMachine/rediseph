@@ -253,7 +253,7 @@ async function addNewKey(redisInstance, model, callback) {
   // }
   const typeMap = {
     'String': 'string',
-    'Hash Map': 'hset',
+    'Hash Map': 'hash',
     'List': 'list',
     'Sorted Set': 'zset',
     'Set': 'set'
@@ -283,41 +283,44 @@ async function addNewKey(redisInstance, model, callback) {
       
       redisInstance.keys[model.key] = {type: newType}
       const newKeyInfo = {
-        type: 'list',
+        type: newType,
         key: model.key,
         keyScanInfo: {
+          entities: [],
           pageSize: 20,
           pageIndex: 0,
           hasMoreEntities: false,    
       }};
-      newKeyInfo.keyScanInfo.entities = await redisInstance.redis.lrange(model.key,0,19);
-      redisInstance.selectedKeyInfo.push(newKeyInfo)
-      ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
-      callback(ioActions);
-      
+      redisInstance.redis.lrange(model.key,0,19, async (err,resp) => {
+        newKeyInfo.keyScanInfo.entities = resp;
+        redisInstance.selectedKeyInfo.push(newKeyInfo)
+        ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
+        callback(ioActions);     
+      }); 
     })
   }
-  else if(newType == 'set' || newType == 'hset' || newType == 'zset')
+  else if(newType == 'set' || newType == 'hash' || newType == 'zset')
   {
     const commandMap = {
-      'set': 'sadd',
-      'hset': 'hset',
-      'zset': 'zadd',
+      set: 'sadd',
+      hash: 'hset',
+      zset: 'zadd',
     }
-    const addLine = [commandMap[newType]]
-    if(newType == 'set') {
+    const addLine = [model.key]
+    if(newType == 'zset') {
       addLine.push(1)
     }
-    if(newType == 'hset') {
+    if(newType == 'hash') {
       addLine.push("my_key")
     }
     addLine.push("my_value");
-    redisInstance.redis.call(addLine, async (e,res) => {      
+    redisInstance.redis.call(commandMap[newType],addLine, async (e,res) => { 
       redisInstance.keys[model.key] = {type: newType}
       const newKeyInfo = {
         key: model.key,
         type: newType,
         keyScanInfo: {
+          entities : [],
           pageSize: 20,
           pageIndex: 0,
           cursor: "",
@@ -330,11 +333,11 @@ async function addNewKey(redisInstance, model, callback) {
         zset:'zscan'
       }
       const scanMethod = SCAN_TYPE_MAP[newType];
-      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {      
-        newKeyInfo.entities = resp; 
-        newKeyInfo.cursor = cursor;
+      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {         
+        newKeyInfo.keyScanInfo.entities = resp; 
+        newKeyInfo.keyScanInfo.cursor = cursor;
         redisInstance.selectedKeyInfo.push(newKeyInfo);
-        ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
+        ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo: newKeyInfo })
         callback(ioActions);
       });
     })

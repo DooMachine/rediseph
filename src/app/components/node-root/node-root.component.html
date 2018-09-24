@@ -3,7 +3,7 @@
     <mat-tab [attr.key]="keyInfo.key" *ngFor=" let keyInfo of (keyInfoHost?.keyInfos); let i = index">
       <ng-template mat-tab-label>
         <mat-icon [matTooltip]="keyInfo.type" color="primary" class="tab-icon">{{typeIconMap[keyInfo.type]}}</mat-icon>
-          {{keyInfo.key}} {{selectedTabIndex}}
+          {{keyInfo.key}}
         <mat-icon matTooltip="Close" (click)="closeKeyInfo.emit({redisId: redisId, selectedKeyInfo: keyInfo})" class="tab-icon">close</mat-icon>
       </ng-template>
       <div *ngIf="keyInfo.type == 'string'" fxFlex>
