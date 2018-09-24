@@ -109,6 +109,17 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
             return adapter.updateOne({id: action.payload.redisId,
                 changes: {selectedKeyQueue: newQueue}}, state);
         }
+        case keyActions.SelectedKeyActionTypes.SET_SELECTED_ENTITY_INDEX:
+        {
+            const prev = state.entities[action.payload.redisId];
+            const newInf = Object.assign({}, prev);
+            newInf.keyInfos.map((p) => {
+                if (p.key === action.payload.key) {
+                    p.keyScanInfo.selectedEntityIndex = action.payload.index;
+                }
+            });
+            return adapter.updateOne({id: action.payload.redisId, changes: {keyInfos: newInf.keyInfos}}, state);
+        }
         default:
             return state;
     }

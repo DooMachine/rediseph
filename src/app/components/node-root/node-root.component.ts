@@ -13,6 +13,7 @@ export class NodeRootComponent implements OnInit {
   @Output() keyTabChanged = new EventEmitter();
   @Output() closeKeyInfo = new EventEmitter();
   @Output() updateStringValue = new EventEmitter();
+  @Output() selectEntityIndex = new EventEmitter();
   keyInfoHost: SelectedKeyInfoHost;
 
   @Input('selectedKeyInfoHosts')

@@ -337,8 +337,7 @@ async function addNewKey(redisInstance, model, callback) {
         zset:'zscan'
       }
       const scanMethod = SCAN_TYPE_MAP[newType];
-      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {  
-        console.log(resp)       
+      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {      
         newKeyInfo.keyScanInfo.entities = resp;
         newKeyInfo.keyScanInfo.hasMoreEntities = cursor != "0" 
         newKeyInfo.keyScanInfo.cursor = cursor;

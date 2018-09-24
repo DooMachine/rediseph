@@ -43,9 +43,9 @@
     </tr>
   </thead>
   <tbody>
-    <tr  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
-      <td *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
-      <td [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''" [ngClass]="col == 'score' ? 'scoreCol' : ''" [matTooltip]="entity[col]" [matTooltipShowDelay]="300" *ngFor="let col of displayedColumns">{{entity[col] | ellipsis: 20}}</td>
+    <tr class="clickableEntity" *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
+      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
+      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''" [ngClass]="col == 'score' ? 'scoreCol' : ''" [matTooltip]="entity[col]" [matTooltipShowDelay]="300" *ngFor="let col of displayedColumns">{{entity[col] | ellipsis: 20}}</td>
       <button  matTooltip="Delete" (click)="deleteEntity(entity)" mat-icon-button>
         <mat-icon>delete</mat-icon>
       </button>

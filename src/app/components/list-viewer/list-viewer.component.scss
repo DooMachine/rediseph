@@ -8,10 +8,11 @@
     border-right: 1px solid #b3b3b3;
 }
 td {
-    font-size: 13px;
+    font-size: 12px;
     border-bottom: #b3b3b3 1px solid;
-    padding: 4px 2px;
-    text-overflow: ellipsis;    
+    padding: 1px 2px;
+    text-overflow: ellipsis;  
+    border-radius: 5px;  
 }
 table{
     padding: 4px 20px;
@@ -24,5 +25,8 @@ mat-expansion-panel {
     max-width: 100%;
 }
 .selectedEntity {
-    background: #b3b3b3;
+    background: #ffdddd;
+}
+.clickableEntity {
+    cursor: pointer;
 }

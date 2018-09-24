@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { SelectedKeyInfo } from '../../models/redis';
 import { MatTableDataSource } from '@angular/material';
 
@@ -9,6 +9,7 @@ import { MatTableDataSource } from '@angular/material';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListViewerComponent implements OnInit {
+  @Output() selectEntityIndex = new EventEmitter();
 
   isSelectible = false;
   multipleActions = [];
@@ -37,8 +38,8 @@ export class ListViewerComponent implements OnInit {
       }
       case 'zset':
       {
-        this.displayedColumns.push('score');
         this.displayedColumns.push('value');
+        this.displayedColumns.push('score');
         break;
       }
       case 'hash':

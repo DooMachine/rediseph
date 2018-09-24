@@ -42,4 +42,9 @@ export class AppComponent implements OnInit {
     const args = buildSETQuery($event.info);
     this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }
+  selectEntityIndex($event) {
+    console.log($event);
+    this.store.dispatch(new keyActions.SetSelectedEntityIndex({redisId: $event.redisId,
+      key: $event.info.keyInfo.key, index: $event.info.index}));
+  }
 }
