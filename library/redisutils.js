@@ -295,7 +295,7 @@ async function addNewKey(redisInstance, model, callback) {
         newKeyInfo.keyScanInfo.entities = resp;
         redisInstance.selectedKeyInfo.push(newKeyInfo)
         ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
-        callback(ioActions);     
+        callback(ioActions);
       }); 
     })
   }
@@ -333,7 +333,8 @@ async function addNewKey(redisInstance, model, callback) {
         zset:'zscan'
       }
       const scanMethod = SCAN_TYPE_MAP[newType];
-      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {         
+      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {  
+        console.log(resp)       
         newKeyInfo.keyScanInfo.entities = resp; 
         newKeyInfo.keyScanInfo.cursor = cursor;
         redisInstance.selectedKeyInfo.push(newKeyInfo);

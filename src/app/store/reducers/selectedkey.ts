@@ -30,6 +30,12 @@ export const initialState: State = adapter.getInitialState({
 export function reducer(state = initialState, action: keyActions.SelectedKeyActions): State {
     switch (action.type) {
         case keyActions.SelectedKeyActionTypes.ADD_SELECTED_KEY_HOST: {
+            for (let i = 0; i < action.payload.selectedKeys.length; i++) {
+                const sKey = action.payload.selectedKeys[i];
+                if (sKey.type !== 'string') {
+                    sKey.keyScanInfo.entities = buildEntityModel(sKey);
+                }
+            }
             const newhost: SelectedKeyInfoHost = {redisId : action.payload.redisId,
                  keyInfos: action.payload.selectedKeys, selectedKeyQueue: [] };
             return adapter.addOne(newhost, state);

@@ -103,15 +103,15 @@ export const buildEntityModel = (keyInfo: SelectedKeyInfo) => {
     }
   } else if (keyInfo.type === 'set') {
     for (let i = 0; i < keyInfo.keyScanInfo.entities.length; i++) {
-      fixedEntities.push({index: i, value: keyInfo.keyScanInfo.entities[i]});
+      fixedEntities.push({value: keyInfo.keyScanInfo.entities[i]});
     }
   } else if (keyInfo.type === 'list') {
     for (let i = 0; i < keyInfo.keyScanInfo.entities.length; i++) {
-      fixedEntities.push({index: i, value: keyInfo.keyScanInfo.entities[i]});
+      fixedEntities.push({value: keyInfo.keyScanInfo.entities[i]});
     }
   } else if (keyInfo.type === 'hash') {
     for (let i = 0; i < keyInfo.keyScanInfo.entities.length - 1; i += 2) {
-      fixedEntities.push({index: i, value: keyInfo.keyScanInfo.entities[i]});
+      fixedEntities.push({hash: keyInfo.keyScanInfo.entities[i + 1], value: keyInfo.keyScanInfo.entities[i]});
     }
   }
   return fixedEntities;

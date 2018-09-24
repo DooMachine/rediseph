@@ -20,6 +20,8 @@ import { NodeRootComponent } from './components/node-root/node-root.component';
 import { NodeTreeComponent } from './components/node-tree/node-tree.component';
 import { StringViewerComponent } from './components/string-viewer/string-viewer.component';
 import { environment } from '../environments/environment';
+import { ListViewerComponent } from './components/list-viewer/list-viewer.component';
+import { EllipsisPipe } from './pipes/ellipsis.pipe';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,10 @@ import { environment } from '../environments/environment';
     RootInfoComponent,
     NodeRootComponent,
     NodeTreeComponent,
-    StringViewerComponent
+    StringViewerComponent,
+    ListViewerComponent,
+
+    EllipsisPipe
   ],
   entryComponents: [AddRedisModalComponent, AddKeyModalComponent],
   imports: [

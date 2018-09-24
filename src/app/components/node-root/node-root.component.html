@@ -6,13 +6,28 @@
           {{keyInfo.key}}
         <mat-icon matTooltip="Close" (click)="closeKeyInfo.emit({redisId: redisId, selectedKeyInfo: keyInfo})" class="tab-icon">close</mat-icon>
       </ng-template>
-      <div *ngIf="keyInfo.type == 'string'" fxFlex>
-          <app-string-viewer
+      <div *ngIf="keyInfo.type == 'string'; else setView" fxFlex>
+        <app-string-viewer
+          [selectedKeyInfo] = "keyInfo"
+          (saveNewValue)= "updateStringValue.emit({info: {value: $event, keyInfo:keyInfo}, redisId: redisId})"
+        >
+        </app-string-viewer>
+      </div> 
+      <ng-template #setView>
+        <mat-sidenav-container fxFlex fxLayout="row" fxLayoutAlign="start stretch" fxLayoutGap="12px">
+          <mat-sidenav opened mode="side">            
+            <app-list-viewer
+            fxFlex
             [selectedKeyInfo] = "keyInfo"
             (saveNewValue)= "updateStringValue.emit({info: {value: $event, keyInfo:keyInfo}, redisId: redisId})"
-          >
-          </app-string-viewer>
-        </div> 
+            >
+          </app-list-viewer> 
+          </mat-sidenav>
+          <mat-sidenav-content>
+            Sidnav 
+          </mat-sidenav-content>
+        </mat-sidenav-container>
+      </ng-template>
     </mat-tab>
 </mat-tab-group>
   

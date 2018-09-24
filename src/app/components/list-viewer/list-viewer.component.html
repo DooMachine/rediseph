@@ -1,0 +1,19 @@
+<mat-list>
+    <mat-list-item  fxLayoutGap="2px">
+      <div fxLayout="row" fxLayoutAlign="space-between start">
+      <small class="list-small-font" *ngFor="let col of displayedColumns">
+        {{col}}
+      </small>
+    </div>
+    </mat-list-item>
+    <div *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities">
+      <mat-list-item  fxLayoutGap="2px">
+        <div fxLayout="row" fxLayoutAlign="space-between start">
+        <small  class="list-small-font" *ngFor="let col of displayedColumns">
+          {{entity[col] | ellipsis: 20}}
+        </small>
+      </div>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+    </div>
+  </mat-list>
