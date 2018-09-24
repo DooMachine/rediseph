@@ -47,7 +47,7 @@ export const buildRedisTree = (root) => {
       const key = parts[0] + (parts.length === 1 ? '' : ':');
       node.children[key] = node.children[key] || {
         key: node.key + key,
-        name: key + (parts.length === 1 ? '' : '*'),
+        displayName: key + (parts.length === 1 ? '' : '*'),
         children: {},
       };
       if (parts.length > 1) {
@@ -58,12 +58,12 @@ export const buildRedisTree = (root) => {
     const parseTreeToArray = (node) => {
 
       if (_.keys(node.children).length <= 0) {
-        return {key: node.key, ...root[node.key], name: node.name};
+        return {key: node.key, ...root[node.key], displayName: node.displayName};
       }
       const result = {
         type: 'folder',
         key: node.key,
-        name: node.name,
+        displayName: node.displayName,
         children: []
       };
       _.each(node.children, (n) => {
@@ -71,28 +71,28 @@ export const buildRedisTree = (root) => {
       });
       return result;
     };
-    const newRoot = [];
+    const nodeTree = [];
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       const parts = keys[i].split(':');
       if (parts.length <= 1) {
-        newRoot.push({key, ...root[key], depth: 1, name: key});
+        nodeTree.push({key, ...root[key], depth: 1, displayName: key});
       } else {
         if (!tree[parts[0]]) {
-          tree[parts[0]] = {key: parts[0] + ':', children: {}, name: parts[0] + ':*'};
-          newRoot.push(tree[parts[0]]);
+          tree[parts[0]] = {key: parts[0] + ':', children: {}, displayName: parts[0] + ':*'};
+          nodeTree.push(tree[parts[0]]);
         }
         buildTree(tree[parts[0]], parts.slice(1));
       }
     }
 
-    for (let i = 0; i < newRoot.length; i++) {
-      const v = newRoot[i];
+    for (let i = 0; i < nodeTree.length; i++) {
+      const v = nodeTree[i];
       if (v.children) {
-        newRoot[i] = parseTreeToArray(v);
+        nodeTree[i] = parseTreeToArray(v);
       }
     }
-    return newRoot;
+    return nodeTree;
   };
 
 export const buildEntityModel = (keyInfo: SelectedKeyInfo) => {

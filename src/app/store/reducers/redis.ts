@@ -116,25 +116,32 @@ export function reducer(state = initialState, action: redisActions.RedisActions)
             keyInfo.pattern = action.payload.keyInfo.pattern,
             keyInfo.cursor = action.payload.keyInfo.cursor;
             keyInfo.hasMoreKeys = action.payload.keyInfo.hasMoreKeys;
-            action.payload.redisInfo.keyInfo = keyInfo;
 
-            return adapter.upsertOne(action.payload.redisInfo, state);
+            return adapter.updateOne({id: action.payload.redisInfo.id,
+                 changes:
+                 {
+                     keyInfo: keyInfo,
+                     info: tableInfo,
+                     expandedNodeKeys: previous.expandedNodeKeys,
+                     tree : buildRedisTree(action.payload.keys),
+                }
+                }, state);
         }
         case redisActions.RedisActionTypes.WATCH_CHANGES:
         {
-            return {...adapter.updateOne({id: action.payload.id, changes: {working: true}}, state)};
+            return adapter.updateOne({id: action.payload.id, changes: {working: true}}, state);
         }
         case redisActions.RedisActionTypes.WATCHING_CHANGES:
         {
-            return {...adapter.updateOne({id: action.payload, changes: {isMonitoring: true, working: false}}, state)};
+            return adapter.updateOne({id: action.payload, changes: {isMonitoring: true, working: false}}, state);
         }
         case redisActions.RedisActionTypes.STOP_WATCH_CHANGES:
         {
-            return {...adapter.updateOne({id: action.payload.id, changes: {working: true}}, state)};
+            return adapter.updateOne({id: action.payload.id, changes: {working: true}}, state);
         }
         case redisActions.RedisActionTypes.STOPPED_WATCH_CHANGES:
         {
-            return {...adapter.updateOne({id: action.payload, changes: {isMonitoring: false, working: false}}, state)};
+            return adapter.updateOne({id: action.payload, changes: {isMonitoring: false, working: false}}, state);
         }
         case redisActions.RedisActionTypes.SET_SELECTED_NODE:
         {

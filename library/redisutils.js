@@ -291,8 +291,12 @@ async function addNewKey(redisInstance, model, callback) {
           pageIndex: 0,
           hasMoreEntities: false,    
       }};
-      redisInstance.redis.lrange(model.key,0,19, async (err,resp) => {
+      const start = (newKeyInfo.keyScanInfo.pageIndex * newKeyInfo.keyScanInfo.pageSize);
+      const end = start + newKeyInfo.keyScanInfo.pageSize -1;
+      redisInstance.redis.lrange(model.key,start,end, async (err,resp) => {
         newKeyInfo.keyScanInfo.entities = resp;
+        newKeyInfo.keyScanInfo.hasMoreEntities = resp.length !=  newKeyInfo.keyScanInfo.pageSize;
+        newKeyInfo.keyScanInfo.pageIndex ++;
         redisInstance.selectedKeyInfo.push(newKeyInfo)
         ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
         callback(ioActions);
@@ -335,8 +339,10 @@ async function addNewKey(redisInstance, model, callback) {
       const scanMethod = SCAN_TYPE_MAP[newType];
       redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {  
         console.log(resp)       
-        newKeyInfo.keyScanInfo.entities = resp; 
+        newKeyInfo.keyScanInfo.entities = resp;
+        newKeyInfo.keyScanInfo.hasMoreEntities = cursor != "0" 
         newKeyInfo.keyScanInfo.cursor = cursor;
+        newKeyInfo.keyScanInfo.pageIndex ++;
         redisInstance.selectedKeyInfo.push(newKeyInfo);
         ioActions.push({type: monitoractions.NEW_KEY_ADDED, keyInfo: newKeyInfo })
         callback(ioActions);

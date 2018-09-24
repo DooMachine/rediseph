@@ -22,10 +22,13 @@ import { StringViewerComponent } from './components/string-viewer/string-viewer.
 import { environment } from '../environments/environment';
 import { ListViewerComponent } from './components/list-viewer/list-viewer.component';
 import { EllipsisPipe } from './pipes/ellipsis.pipe';
+import { CapitalizePipe } from './pipes/capitalize.pipe';
+import { RootContainerComponent } from './components/root-container/root-container.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    RootContainerComponent,
     TreeComponent,
     RedisInstanceComponent,
     AddRedisModalComponent,
@@ -36,7 +39,8 @@ import { EllipsisPipe } from './pipes/ellipsis.pipe';
     StringViewerComponent,
     ListViewerComponent,
 
-    EllipsisPipe
+    EllipsisPipe,
+    CapitalizePipe
   ],
   entryComponents: [AddRedisModalComponent, AddKeyModalComponent],
   imports: [

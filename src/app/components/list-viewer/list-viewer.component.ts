@@ -9,14 +9,22 @@ import { MatTableDataSource } from '@angular/material';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListViewerComponent implements OnInit {
+
   isSelectible = false;
   multipleActions = [];
   _selectedKeyInfo: SelectedKeyInfo;
   displayedColumns = [];
+  formModel: any = {
+    formType: '',
+    addValue : '',
+    listAddType: 'head',
+    score: 0,
+    formErrors : [],
+  };
   @Input('selectedKeyInfo')
   set selectedKeyInfo(v: SelectedKeyInfo) {
     this._selectedKeyInfo = v;
-    console.log(v.keyScanInfo.entities);
+    this.formModel.formType = v.type;
     this.isSelectible = v.type === 'set' || v.type === 'zset' || v.type === 'hset';
     if (this.isSelectible) {
       this.multipleActions.push({name: 'Delete', color: 'warn'});
@@ -24,33 +32,46 @@ export class ListViewerComponent implements OnInit {
     switch (v.type) {
       case 'set':
       {
+        this.displayedColumns.push('value');
         break;
       }
       case 'zset':
       {
         this.displayedColumns.push('score');
+        this.displayedColumns.push('value');
         break;
       }
-      case 'hset':
+      case 'hash':
       {
         this.displayedColumns.push('hash');
         break;
       }
       case 'list':
       {
+        this.displayedColumns.push('value');
         break;
       }
       default:
         break;
     }
-    this.displayedColumns.push('value');
   }
 
   constructor() { }
 
   ngOnInit() {
   }
-
+  placeholderMap(type) {
+    const mapper = {
+      list: 'Value',
+      hash: 'Hash Key',
+      set: 'Value',
+      zset: 'Value',
+    };
+    return mapper[type];
+  }
+  submitNewValue() {
+    console.log(this.formModel);
+  }
   selectEntity(entity) {
     console.log(entity);
   }

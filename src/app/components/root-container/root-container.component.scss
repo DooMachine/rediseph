@@ -1,0 +1,32 @@
+
+.nav-sidenav {
+    width: 50px;
+    background: #5a5a5a;
+}
+.menu-icon {
+    color:rgb(232, 232, 232);
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+}
+.inner-sidenav-container {
+    height: 100%;
+}
+.inner-sidenav {
+    position: relative;
+    overflow-y: auto;
+}
+.inner-sidenav-content {
+    max-height: 93vh;
+    margin:0 !important;
+}
+mat-sidenav {
+    padding:0 8px;
+    border-right: 1px solid wheat;
+}
+.tab-icon {
+    margin:0 6px;
+}
+.new-tab-label{
+    min-width: 50px;    
+}
