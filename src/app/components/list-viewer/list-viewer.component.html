@@ -39,13 +39,13 @@
   <thead>
     <tr>
       <th *ngIf="_selectedKeyInfo?.type == 'list'">Index</th>
-      <th *ngFor="let col of displayedColumns;" >{{col | capitalize}} </th>      
+      <th [ngClass]="col == 'score' ? 'scoreCol' : ''" *ngFor="let col of displayedColumns;" >{{col | capitalize}} </th>      
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
+    <tr  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
       <td *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
-      <td [matTooltip]="entity[col]" showDelay="300" *ngFor="let col of displayedColumns">{{entity[col] | ellipsis: 20}}</td>
+      <td [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''" [ngClass]="col == 'score' ? 'scoreCol' : ''" [matTooltip]="entity[col]" [matTooltipShowDelay]="300" *ngFor="let col of displayedColumns">{{entity[col] | ellipsis: 20}}</td>
       <button  matTooltip="Delete" (click)="deleteEntity(entity)" mat-icon-button>
         <mat-icon>delete</mat-icon>
       </button>

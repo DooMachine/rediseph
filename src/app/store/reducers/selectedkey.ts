@@ -36,8 +36,11 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
                     sKey.keyScanInfo.entities = buildEntityModel(sKey);
                 }
             }
+            action.payload.selectedKeys.map((kh) => {
+                kh.keyScanInfo.selectedEntityIndex = 0;
+            });
             const newhost: SelectedKeyInfoHost = {redisId : action.payload.redisId,
-                 keyInfos: action.payload.selectedKeys, selectedKeyQueue: [] };
+                 keyInfos: action.payload.selectedKeys, selectedKeyQueue: [], };
             return adapter.addOne(newhost, state);
         }
         case keyActions.SelectedKeyActionTypes.ADD_SELECTED_KEY: {
@@ -47,7 +50,9 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
             const prev = state.entities[action.payload.redisId];
             const newKeyInfo = Object.assign({}, prev);
             if (action.payload.selectedKeyInfo.type !== 'string') {
+                action.payload.selectedKeyInfo.keyScanInfo.selectedEntityIndex = 0;
                 action.payload.selectedKeyInfo.keyScanInfo.entities = buildEntityModel(action.payload.selectedKeyInfo);
+                action.payload.selectedKeyInfo.keyScanInfo.hasMoreEntities =  action.payload.selectedKeyInfo.keyScanInfo.hasMoreEntities;
             }
             newKeyInfo.keyInfos.push(action.payload.selectedKeyInfo);
             newKeyInfo.selectedKeyQueue.push(action.payload.selectedKeyInfo.key);
@@ -72,6 +77,7 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
             const keyInfo = action.payload.keyInfo;
             if (keyInfo.type !== 'string') {
                 keyInfo.keyScanInfo.entities = buildEntityModel(keyInfo);
+                keyInfo.keyScanInfo.hasMoreEntities = action.payload.keyInfo.keyScanInfo.hasMoreEntities;
             }
             // If exist update if not add.
             if (newKeyInfo.keyInfos.findIndex(p => p.key === keyInfo.key) !== -1) {

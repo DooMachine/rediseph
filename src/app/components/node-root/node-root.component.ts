@@ -18,6 +18,9 @@ export class NodeRootComponent implements OnInit {
   @Input('selectedKeyInfoHosts')
    set selectedKeyInfoHosts(keyInfoHosts: Array<SelectedKeyInfoHost>) {
     this.keyInfoHost = keyInfoHosts.find(p => p.redisId === this.redisId);
+    if (!this.keyInfoHost ) {
+      return;
+    }
     const sIndex = this.keyInfoHost.keyInfos
       .findIndex(p => p.key === this.keyInfoHost.selectedKeyQueue[this.keyInfoHost.selectedKeyQueue.length - 1]);
 

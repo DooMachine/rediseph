@@ -89,13 +89,15 @@ io.on('connection', (client) => {
             });
             
             redis.on('error', async (e) => {           
-                client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
-                    {redisInfo: connectionInfo, error: 'Cannot connect redis instance!'})
+                io.to(roomId).emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                    {redisInfo: connectionInfo, error: e})
                 redis.disconnect();
+                db.redisInstances = db.redisInstances.filter(p=>p.roomId != roomId);
             });
             redis.once('end', async ()=> {                
                 io.to(roomId).emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
-                    {redisInfo: connectionInfo, error: 'Connection end with redis instance!'})
+                    {redisInfo: connectionInfo, error: 'Connection with redis server ENDED!'});
+                db.redisInstances = db.redisInstances.filter(p=>p.roomId != roomId);
             })
           
             redis.on('ready', async () => {
@@ -220,7 +222,6 @@ io.on('connection', (client) => {
     client.on(actions.ADD_NEW_KEY, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.payload.redisId)
         redisutils.addNewKey(redisInstance, data.payload, async (ioActions) => {
-            console.log(ioActions);
             redisInstance.ioStreamer.next(ioActions);
         })        
     });
@@ -234,9 +235,11 @@ io.on('connection', (client) => {
             redisInstance.isMonitoring = true;
             redisInstance.monitor = monitor;
             let storedArgs = [];
-            let interval$ = Rx.interval(1100);
+            // We Process monitor commands every 1.3 sec, because redis server can be so busy.
+            let interval$ = Rx.interval(1300);
             interval$.subscribe((time) => {
                 if (storedArgs.length) {
+                    // duplicate so we can keep new commands while "handleMonitorCommands" handling processing.
                     const toCmdArgs = [...storedArgs];
                     storedArgs = [];
                     redisutils.handleMonitorCommands(redisInstance, toCmdArgs, async (nextActions) => {

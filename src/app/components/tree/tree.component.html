@@ -18,11 +18,12 @@
       [ngClass]="isSelected(node) ? 'selectedNode' : ''"
      *matTreeNodeDef="let node" matTreeNodeToggle>
       <li fxLayout="row" fxLayoutAlign="space-between center" class="mat-tree-node">
-        <div  class="selector-area" (click)="!isSelected(node) ? nodeClick.emit(node) : return">
-          <button  color="primary" mat-icon-button disabled>
-            <mat-icon>
+        <div class="selector-area" (click)="!isSelected(node) ? nodeClick.emit(node) : return">
+          <button color="primary" mat-icon-button disabled>
+            <mat-icon [matTooltip]="node.type">
               {{typeIconMap[node.type]}}
-            </mat-icon></button>        
+            </mat-icon>
+          </button>        
           {{node.displayName | ellipsis: 16}} 
         </div>
         <div class="menu-area">

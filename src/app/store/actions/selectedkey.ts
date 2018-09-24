@@ -17,6 +17,8 @@ export enum SelectedKeyActionTypes {
     SELECTED_NODE_KEY_UPDATED = '[SelectedKey] SELECTED_NODE_KEY_UPDATED',
 
     CHANGE_TAB_INDEX_KEY = '[SelectedKe] CHANGE_TAB_INDEX_KEY',
+
+    SET_SELECTED_ENTITY_INDEX = '[SelectedKe] SET_SELECTED_ENTITY_INDEX'
 }
 
 /**
@@ -65,6 +67,11 @@ export class ChangeTabIndexKey implements Action {
 
     constructor(public payload: {redisId: string, index: number | string}) { }
 }
+export class SetSelectedEntityIndex implements Action {
+    readonly type = SelectedKeyActionTypes.SET_SELECTED_ENTITY_INDEX;
+
+    constructor(public payload: {redisId: string, key: string, index: number}) { }
+}
 /**
  * Export a type alias of all actions in this action group
  * so that reducers can easily compose action types
@@ -76,4 +83,5 @@ export type SelectedKeyActions
                         | RemoveSelectedKey
                         | SelectedNodeKeyUpdated
                         | RemoveSelectedKeySuccess
-                        | ChangeTabIndexKey;
+                        | ChangeTabIndexKey
+                        | SetSelectedEntityIndex;

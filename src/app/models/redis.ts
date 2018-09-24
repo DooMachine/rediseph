@@ -81,7 +81,8 @@ export class SelectedKeyInfo {
         previousCursors: [],
         pageIndex: 0,
         pageSize: environment.SCAN_PAGE_SIZE || 20,
-        pattern: ''
+        pattern: '',
+        selectedEntityIndex: 0,
     };
 }
 /**
