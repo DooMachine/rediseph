@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
-import { SelectedKeyInfo } from '../../models/redis';
+import { SelectedKeyInfo, NewEntityModel } from '../../models/redis';
 import { MatTableDataSource } from '@angular/material';
 
 @Component({
@@ -10,12 +10,13 @@ import { MatTableDataSource } from '@angular/material';
 })
 export class ListViewerComponent implements OnInit {
   @Output() selectEntityIndex = new EventEmitter();
-
+  @Output() newValueAdd = new EventEmitter();
   isSelectible = false;
   multipleActions = [];
   _selectedKeyInfo: SelectedKeyInfo;
   displayedColumns = [];
-  formModel: any = {
+  formModel: NewEntityModel = {
+    key: '',
     formType: '',
     addValue : '',
     listAddType: 'head',
@@ -26,6 +27,7 @@ export class ListViewerComponent implements OnInit {
   set selectedKeyInfo(v: SelectedKeyInfo) {
     this._selectedKeyInfo = v;
     this.formModel.formType = v.type;
+    this.formModel.key = v.key;
     this.isSelectible = v.type === 'set' || v.type === 'zset' || v.type === 'hset';
     if (this.isSelectible) {
       this.multipleActions.push({name: 'Delete', color: 'warn'});
@@ -71,9 +73,10 @@ export class ListViewerComponent implements OnInit {
     return mapper[type];
   }
   submitNewValue() {
-    console.log(this.formModel);
-  }
-  selectEntity(entity) {
-    console.log(entity);
+    this.formModel.formErrors = [];
+    if (!this.formModel.addValue) {
+      this.formModel.formErrors.push('Value required');
+    }
+    this.newValueAdd.emit(this.formModel);
   }
 }

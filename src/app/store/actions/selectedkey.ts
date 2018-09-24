@@ -14,11 +14,13 @@ export enum SelectedKeyActionTypes {
     REMOEVE_SELECTED_KEY = '[SelectedKey] REMOEVE_SELECTED_KEY',
     REMOEVE_SELECTED_KEY_SUCCESS = '[SelectedKey] REMOEVE_SELECTED_KEY_SUCCESS',
 
+    EXECUTE_QUERY_ON_SELECTED_KEY = '[SelectedKey] EXECUTE_QUERY_ON_SELECTED_KEY',
+
     SELECTED_NODE_KEY_UPDATED = '[SelectedKey] SELECTED_NODE_KEY_UPDATED',
 
     CHANGE_TAB_INDEX_KEY = '[SelectedKe] CHANGE_TAB_INDEX_KEY',
 
-    SET_SELECTED_ENTITY_INDEX = '[SelectedKe] SET_SELECTED_ENTITY_INDEX'
+    SET_SELECTED_ENTITY_INDEX = '[SelectedKe] SET_SELECTED_ENTITY_INDEX',
 }
 
 /**
@@ -57,6 +59,11 @@ export class RemoveSelectedKeySuccess implements Action {
     constructor(public payload: {key: string, redisId: string}) { }
 }
 
+export class ExecuteQueryOnSelectedKey implements Action {
+    readonly type = SelectedKeyActionTypes.EXECUTE_QUERY_ON_SELECTED_KEY;
+
+    constructor(public payload: {command: any, redisId: string}) { }
+}
 export class SelectedNodeKeyUpdated implements Action {
     readonly type = SelectedKeyActionTypes.SELECTED_NODE_KEY_UPDATED;
 
@@ -84,4 +91,5 @@ export type SelectedKeyActions
                         | SelectedNodeKeyUpdated
                         | RemoveSelectedKeySuccess
                         | ChangeTabIndexKey
-                        | SetSelectedEntityIndex;
+                        | SetSelectedEntityIndex
+                        | ExecuteQueryOnSelectedKey;

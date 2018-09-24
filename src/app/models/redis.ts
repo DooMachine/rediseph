@@ -92,3 +92,12 @@ export interface RedisInfo {
   key: string;
   value: string;
 }
+
+export interface NewEntityModel {
+  key: string;
+  formType: string;
+  addValue: string;
+  listAddType: string;
+  score: number | null;
+  formErrors: Array<string>;
+}

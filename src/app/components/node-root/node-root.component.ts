@@ -10,6 +10,7 @@ import { SelectedKeyInfoHost } from '../../models/redis';
 export class NodeRootComponent implements OnInit {
   selectedTabIndex: number;
   @Input() redisId: string;
+  @Output() newValueAdd = new EventEmitter();
   @Output() keyTabChanged = new EventEmitter();
   @Output() closeKeyInfo = new EventEmitter();
   @Output() updateStringValue = new EventEmitter();

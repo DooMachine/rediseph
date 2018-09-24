@@ -3,13 +3,10 @@ import { State } from './store/reducers/redis';
 import { Store, select } from '@ngrx/store';
 import * as redisActions from './store/actions/redis';
 import * as keyActions from './store/actions/selectedkey';
-import { RedisInstance, ConnectServerModel, SelectedKeyInfoHost, AddKeyModel, DataType } from './models/redis';
+import { SelectedKeyInfoHost } from './models/redis';
 import { Observable } from 'rxjs';
-import { selectAllRedisInstances, getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from './store/reducers';
-import { MatDialog } from '@angular/material';
-import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-modal.component';
-import { buildDELQuery, buildSETQuery } from './utils/commandutils';
-import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.component';
+import { getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from './store/reducers';
+import { buildSETQuery, buildNewEntityQuery } from './utils/commandutils';
 
 @Component({
   selector: 'app-root',
@@ -46,5 +43,11 @@ export class AppComponent implements OnInit {
     console.log($event);
     this.store.dispatch(new keyActions.SetSelectedEntityIndex({redisId: $event.redisId,
       key: $event.info.keyInfo.key, index: $event.info.index}));
+  }
+  addNewEntity($event) {
+    console.log($event);
+    const args = buildNewEntityQuery($event.model);
+    // So we should track only selected keys.
+    this.store.dispatch(new keyActions.ExecuteQueryOnSelectedKey({redisId: $event.redisId, command: args}));
   }
 }
