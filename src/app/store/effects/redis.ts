@@ -85,6 +85,14 @@ export class RedisEffects {
             }),
         );
     @Effect({dispatch: false})
+    erroeExecutingCommand$: Observable<Action> =
+        this.redisService.errorExecutingCommand$.pipe(
+            switchMap((resp) => {
+                this.snackBar.open(resp.error ? resp.error.message : 'Could not uptade redis!', 'Ok', { duration: 2000 });
+                return of();
+            })
+        );
+    @Effect({dispatch: false})
     loadNextPage$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.LOAD_NEXT_PAGE),

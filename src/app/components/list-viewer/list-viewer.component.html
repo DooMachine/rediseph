@@ -50,33 +50,38 @@
       <mat-icon>search</mat-icon>
     </button>
 </mat-form-field> 
-<table>
-  <thead>
-    <tr>
-      <th *ngIf="_selectedKeyInfo?.type == 'list'">Index</th>
-      <th [ngClass]="col == 'score' ? 'scoreCol' : ''" *ngFor="let col of displayedColumns;" >{{col | capitalize}} </th>      
-    </tr>
-  </thead>
-  <tbody>
-    <tr class="clickableEntity" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''"  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
-      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
-      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})"
-       [matTooltip]="entity[col]" [matTooltipShowDelay]="300"
-        *ngFor="let col of displayedColumns">
-        {{entity[col] | ellipsis: 20}}
-      </td>
-      <button  matTooltip="Delete" (click)="deleteEntity.emit({entity: entity, keyInfo: _selectedKeyInfo})" mat-icon-button>
-        <mat-icon>delete</mat-icon>
-      </button>
-    </tr>
-    <tr *ngIf="_selectedKeyInfo?.keyScanInfo.hasMoreEntities">
-      <button class="loadKey"  mat-stroked-button (click)="loadMore(_selectedKeyInfo)">
-        Load More
-        <mat-icon>details</mat-icon>
-      </button> 
-    </tr>
-  </tbody>
-</table>
+<div fxLayout="column" fxLayoutAlign="start stretch"  class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th *ngIf="_selectedKeyInfo?.type == 'list'">Index</th>
+        <th [ngClass]="col == 'score' ? 'scoreCol' : ''" *ngFor="let col of displayedColumns;" >{{col | capitalize}} </th>      
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="clickableEntity" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''"  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
+        <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
+        <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})"
+        [matTooltip]="entity[col]" [matTooltipShowDelay]="300"
+          *ngFor="let col of displayedColumns">
+          {{entity[col] | ellipsis: 20}}
+        </td>
+        <td>
+          <button  class="t-icon" matTooltip="Delete"
+          (click)="deleteEntity.emit({entity: entity, keyInfo: _selectedKeyInfo})" mat-icon-button>
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="_selectedKeyInfo?.keyScanInfo.hasMoreEntities">
+        <button class="loadKey"  mat-stroked-button (click)="loadMore(_selectedKeyInfo)">
+          Load More
+          <mat-icon>details</mat-icon>
+        </button> 
+      </tr>
+    </tbody>
+  </table>
+</div>
 </div>
 
 

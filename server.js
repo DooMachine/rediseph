@@ -11,7 +11,7 @@ const redisutils = require('./library/redisutils')
 const RedisInstance = require('./library/redisinstance')
 const SelectedKeyInfo = require('./library/selectedkeyinfo');
 const actions = require('./library/actions');
-const monitoractions = require('./library/monitoractions');
+const ioActions = require('./library/ioactions');
 
 const port = process.env.PORT || 3003;
 const env = process.env.NODE_ENV || "development";
@@ -119,12 +119,7 @@ io.on('connection', (client) => {
                  * When we get commands, process them and send must done actions to iostreamer
                  */
                 redisInstance.cmdStreamer.subscribe(async (actions) => {
-                    if (redisInstance.isMonitoring) 
-                        return;
-                    const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
-                    console.log("ioActions");
-                    console.log(ioActions);
-                    redisInstance.ioStreamer.next(ioActions);
+                    
                 })
                 /**
                  * Get actions according to monitor or user commands, execute modifications to all redis users.
@@ -134,7 +129,7 @@ io.on('connection', (client) => {
                     for (let i = 0; i < acts.length; i++) {
                         const action = acts[i];
                         switch (action.type) {
-                            case monitoractions.UPDATE_LOCAL_TREE:
+                            case ioActions.UPDATE_LOCAL_TREE:
                             {
                                 io.to(redisInstance.roomId).emit(actions.REDIS_INSTANCE_UPDATED,
                                 {
@@ -146,7 +141,7 @@ io.on('connection', (client) => {
                                 });
                                 break; 
                             }
-                            case monitoractions.NEW_KEY_ADDED:
+                            case ioActions.NEW_KEY_ADDED:
                             {
                                 io.to(redisInstance.roomId).emit(actions.NEW_KEY_ADDED,
                                 {
@@ -155,7 +150,7 @@ io.on('connection', (client) => {
                                 })
                                 break;
                             }
-                            case monitoractions.SELECTED_NODE_UPDATED: 
+                            case ioActions.SELECTED_NODE_UPDATED: 
                             {
                                 console.log("Selected Key Updated");
                                 io.to(redisInstance.roomId).emit(actions.SELECTED_NODE_UPDATED,
@@ -165,7 +160,7 @@ io.on('connection', (client) => {
                                    });
                                 break;
                             }  
-                            case monitoractions.NODE_DESELECTED: 
+                            case ioActions.NODE_DESELECTED: 
                             {
                                 console.log("Selected Key Deleted");
                                 io.to(redisInstance.roomId).emit(actions.DESELECTED_NODE_SUCCESS,
@@ -175,7 +170,7 @@ io.on('connection', (client) => {
                                    });
                                 break;
                             }                        
-                            case monitoractions.SELECTED_NODES_UPDATED:
+                            case ioActions.SELECTED_NODES_UPDATED:
                             {
                                 /**
                                  * Should we listen this in client? 
@@ -187,7 +182,15 @@ io.on('connection', (client) => {
                                         selectedKeyInfo: redisInstance.selectedKeyInfo
                                     });       
                                 break;
-                            }                          
+                            }          
+                            case ioActions.ERROR_EXECUTING_COMMAND:
+                            {
+                                // Only sender should see error
+                                client.emit(actions.ERROR_EXECUTING_COMMAND,
+                                    {
+                                        error: action.error,
+                                    })
+                            }                
                             default:
                                 break;
                         }
@@ -223,8 +226,8 @@ io.on('connection', (client) => {
 
     client.on(actions.ADD_NEW_KEY, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.payload.redisId)
-        redisutils.addNewKey(redisInstance, data.payload, async (ioActions) => {
-            redisInstance.ioStreamer.next(ioActions);
+        redisutils.addNewKey(redisInstance, data.payload, async (nextIoActions) => {
+            redisInstance.ioStreamer.next(nextIoActions);
         })        
     });
     /**
@@ -277,20 +280,15 @@ io.on('connection', (client) => {
     /**
      * Executing raw commands
      */
-    client.on(actions.EXECUTE_COMMAND, (data) => {
+    client.on(actions.EXECUTE_COMMAND, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
         // if it is not monitoring we should take care of it        
-        redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {
-            console.log(nextActions);
-            console.log("nextActions")
-            if(!redisInstance.isMonitoring) { 
-                console.log("TOCMD STREAMER")             
-                redisInstance.cmdStreamer.next(nextActions); 
-            }
+        await redisutils.handleCommandExecution(redisInstance, data.args, (nextIoActions) => {         
+            redisInstance.ioStreamer.next(nextIoActions);
         })
         
     });
@@ -323,7 +321,7 @@ io.on('connection', (client) => {
                 redisInstance.keyInfo.pageIndex++;
                 redisInstance.keyInfo.hasMoreKeys = cursor !== "0";
                 
-                redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}]);
+                redisInstance.ioStreamer.next([{type: ioActions.UPDATE_LOCAL_TREE}]);
         })
     });
     /**
@@ -345,7 +343,7 @@ io.on('connection', (client) => {
         if(newSelectedKeyInfo.type === 'string') {
             newSelectedKeyInfo.value = await redisInstance.redis.get(newSelectedKeyInfo.key)
             redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-            redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
+            redisInstance.ioStreamer.next([{type: ioActions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
         }
         else if(newSelectedKeyInfo.type === 'list') {
             redisutils.handleListEntityScan(redisInstance, newSelectedKeyInfo,
@@ -354,7 +352,7 @@ io.on('connection', (client) => {
                     newSelectedKeyInfo.pageIndex++;
                     newSelectedKeyInfo.hasMorePage = entities.length == newSelectedKeyInfo.keyScanInfo.pageSize;
                     redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
+                    redisInstance.ioStreamer.next([{type: ioActions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
                 });
         }
         else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hash') {
@@ -364,14 +362,14 @@ io.on('connection', (client) => {
                 newSelectedKeyInfo.keyScanInfo.pattern,
                 newSelectedKeyInfo.keyScanInfo.pageSize,
                 async (entities, cursor) => {
-                    console.log("CURSOR ENTITY")
-                    console.log(cursor)
                     newSelectedKeyInfo.keyScanInfo.entities = entities;
                     newSelectedKeyInfo.keyScanInfo.cursor = cursor;
                     newSelectedKeyInfo.keyScanInfo.pageIndex++;
+                    console.log("crs");
+                    console.log(cursor)
                     newSelectedKeyInfo.keyScanInfo.hasMoreEntities = cursor != "0";
                     redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
+                    redisInstance.ioStreamer.next([{type: ioActions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
             })
         }
         
@@ -389,7 +387,7 @@ io.on('connection', (client) => {
                 {error: 'This should not happen!'})
         }
         redisInstance.selectedKeyInfo = redisInstance.selectedKeyInfo.filter(p=>p.key !== data.key);
-        redisInstance.ioStreamer.next([{type: monitoractions.NODE_DESELECTED, key:data.key}]);
+        redisInstance.ioStreamer.next([{type: ioActions.NODE_DESELECTED, key:data.key}]);
 
     });
     /**
@@ -414,7 +412,7 @@ io.on('connection', (client) => {
                 redisInstance.keyInfo.cursor = cursor;
                 redisInstance.keyInfo.pageIndex++;
                 redisInstance.keyInfo.hasMoreKeys = cursor !== "0";
-                redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}])                
+                redisInstance.ioStreamer.next([{type: ioActions.UPDATE_LOCAL_TREE}])                
         })
     });
     client.on(actions.UPDATE_ENTITY_PAGINATION, async (data) => {
@@ -446,7 +444,7 @@ io.on('connection', (client) => {
                 keyInfo.keyScanInfo.cursor = cursor;
                 keyInfo.keyScanInfo.pageIndex++;
                 keyInfo.keyScanInfo.hasMoreEntities = cursor != "0";
-                redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo: keyInfo}])                
+                redisInstance.ioStreamer.next([{type: ioActions.SELECTED_NODE_UPDATED, keyInfo: keyInfo}])                
         })
     });
     /**
@@ -472,7 +470,7 @@ io.on('connection', (client) => {
                 redisInstance.keyInfo.pageIndex++;
                 redisInstance.keyInfo.hasMoreKeys = cursor !== "0";
                 
-                redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}])  
+                redisInstance.ioStreamer.next([{type: ioActions.UPDATE_LOCAL_TREE}])  
         })
     });
     /**
@@ -506,6 +504,7 @@ io.on('connection', (client) => {
             if(connectedRedisInstance) {
                 connectedRedisInstance.connectedClientCount--;
                 if(redisInstance.connectedClientCount < 1) {
+                    connectedRedisInstance.redis.disconnect();
                     db.redisInstances = db.redisInstances.filter(p=>p.roomId == room);
                 }
             }            
