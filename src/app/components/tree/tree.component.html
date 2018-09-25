@@ -35,6 +35,10 @@
               <mat-icon>delete_forever</mat-icon>
               <span>Delete Key</span>
             </button>
+            <button (click)="renameKey.emit(node.key)" color="accent" mat-menu-item>
+              <mat-icon>pencil</mat-icon>
+              <span>Rename(TODO)</span>
+            </button>
           </mat-menu>
         </div>
       </li>
@@ -63,7 +67,7 @@
             <mat-menu #nodeMenu="matMenu">
               <button (click)= "deleteClick.emit(node)" color="warn" mat-menu-item>
                 <mat-icon>delete_forever</mat-icon>
-                <span>Delete Key</span>
+                <span>Delete Folder (With sub keys)</span>
               </button>
               <button (click)="addFolderKey.emit(node.key)" color="accent" mat-menu-item>
                 <mat-icon>device_hub</mat-icon>

@@ -1,0 +1,21 @@
+<h1 mat-dialog-title>Remove from {{data.key}}</h1>
+<div mat-dialog-content>
+  <mat-form-field>
+      <input matInput placeholder="Value" [readonly]="true" [(ngModel)]="data.value">
+    </mat-form-field>
+  <mat-form-field>
+    <input matInput type="number" required  placeholder="Count" [(ngModel)]="data.count">
+  </mat-form-field>
+</div>
+<ul>
+  <li>Count > 0: Remove elements equal to value moving from head to tail count times.</li>
+  <li>Count < 0: Remove elements equal to value moving from tail to head |count| times.</li>
+  <li>Count = 0: Remove all elements equal to value.</li>  
+</ul>
+<small>
+    For example, Count as -2 and Value "hello" will remove the two from tail.
+</small>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="null">Cancel</button>
+  <button mat-raised-button color="warn" (click)="onConfirm()">Delete</button>
+</div>

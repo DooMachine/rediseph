@@ -22,12 +22,12 @@ export const buildDELQuery = (node: RedisNode ): Array<any> => {
 };
 export const buildNewEntityQuery = (model: NewEntityModel): Array<any> => {
     const args = [];
+    const lineArgs = [];
+    const cmdArgs = [];
     switch (model.formType) {
         case 'set':
         {
-            const lineArgs = [];
             lineArgs.push('sadd');
-            const cmdArgs = [];
             cmdArgs.push(model.key);
             cmdArgs.push(model.addValue);
             lineArgs.push(cmdArgs);
@@ -36,10 +36,8 @@ export const buildNewEntityQuery = (model: NewEntityModel): Array<any> => {
         }
         case 'hash':
         {
-            const lineArgs = [];
             // maybe hset?
             lineArgs.push('hmset');
-            const cmdArgs = [];
             cmdArgs.push(model.key);
             cmdArgs.push(model.addValue);
             cmdArgs.push('Edit this');
@@ -49,9 +47,7 @@ export const buildNewEntityQuery = (model: NewEntityModel): Array<any> => {
         }
         case 'zset':
         {
-            const lineArgs = [];
             lineArgs.push('zadd');
-            const cmdArgs = [];
             cmdArgs.push(model.key);
             cmdArgs.push(model.score);
             cmdArgs.push(model.addValue);
@@ -61,13 +57,11 @@ export const buildNewEntityQuery = (model: NewEntityModel): Array<any> => {
         }
         case 'list':
         {
-            const lineArgs = [];
             if (model.listAddType === 'head') {
                 lineArgs.push('lpush');
             } else {
                 lineArgs.push('rpush');
             }
-            const cmdArgs = [];
             cmdArgs.push(model.key);
             cmdArgs.push(model.addValue);
             lineArgs.push(cmdArgs);
@@ -78,4 +72,45 @@ export const buildNewEntityQuery = (model: NewEntityModel): Array<any> => {
             break;
     }
     return args;
+};
+export const buildDeleteFromNodeQuery = (info: any) => {
+    const args = [];
+    const lineArgs = [];
+    const cmdArgs = [];
+    switch (info.keyInfo.type) {
+        case 'zset':
+        {
+            lineArgs.push('zrem');
+            cmdArgs.push(info.keyInfo.key);
+            cmdArgs.push(info.entity.value);
+            lineArgs.push(cmdArgs);
+            args.push(lineArgs);
+            break;
+        }
+        case 'set':
+        {
+            lineArgs.push('srem');
+            cmdArgs.push(info.keyInfo.key);
+            cmdArgs.push(info.entity.value);
+            lineArgs.push(cmdArgs);
+            args.push(lineArgs);
+            break;
+        }
+        case 'hash':
+        {
+            lineArgs.push('hdel');
+            cmdArgs.push(info.keyInfo.key);
+            cmdArgs.push(info.entity.value);
+            lineArgs.push(cmdArgs);
+            args.push(lineArgs);
+            break;
+        }
+        default:
+            break;
+    }
+    return args;
+};
+
+export const buildLREMQuery = (result: any): Array<any> =>  {
+    return [['lrem', [result.key , result.count, result.value]]];
 };

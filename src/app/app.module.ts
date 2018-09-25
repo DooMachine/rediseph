@@ -24,6 +24,7 @@ import { ListViewerComponent } from './components/list-viewer/list-viewer.compon
 import { EllipsisPipe } from './pipes/ellipsis.pipe';
 import { CapitalizePipe } from './pipes/capitalize.pipe';
 import { RootContainerComponent } from './components/root-container/root-container.component';
+import { LremDialogComponent } from './components/lrem-dialog/lrem-dialog.component';
 
 @NgModule({
   declarations: [
@@ -38,11 +39,12 @@ import { RootContainerComponent } from './components/root-container/root-contain
     NodeTreeComponent,
     StringViewerComponent,
     ListViewerComponent,
+    LremDialogComponent,
 
     EllipsisPipe,
     CapitalizePipe
   ],
-  entryComponents: [AddRedisModalComponent, AddKeyModalComponent],
+  entryComponents: [AddRedisModalComponent, AddKeyModalComponent, LremDialogComponent],
   imports: [
     BrowserModule,
     NoopAnimationsModule,

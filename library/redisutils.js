@@ -230,7 +230,8 @@ async function handleCommandExecution(redisInstance,commands, callback) {
           }
         })
         break;
-      }   
+      }
+      // TODO: ADD REMOVE CASES.
       default:
         break;
     }
@@ -245,6 +246,8 @@ async function handleCommandExecution(redisInstance,commands, callback) {
 }
 
 async function handleCmdOutputActions(redisInstance, actions) {
+  console.log("coutpo");
+  console.log(actions);
   let nextIoActions = [];
   for (let i = 0; i < actions.length; i++) {
     const action = actions[i];

@@ -6,7 +6,9 @@ import * as keyActions from './store/actions/selectedkey';
 import { SelectedKeyInfoHost } from './models/redis';
 import { Observable } from 'rxjs';
 import { getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from './store/reducers';
-import { buildSETQuery, buildNewEntityQuery } from './utils/commandutils';
+import { buildSETQuery, buildNewEntityQuery, buildDeleteFromNodeQuery, buildLREMQuery } from './utils/commandutils';
+import { LremDialogComponent } from './components/lrem-dialog/lrem-dialog.component';
+import { MatDialog } from '@angular/material';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +21,7 @@ export class AppComponent implements OnInit {
   selectedInstanceId$: Observable<string | number>;
   selectedKeyInfoHosts$: Observable<SelectedKeyInfoHost[]>;
   selectedRedisIndex$: Observable<number>;
-  constructor(private readonly store: Store<State>) {
+  constructor(private readonly store: Store<State>, private dialog: MatDialog) {
   }
 
   ngOnInit(): void {
@@ -54,5 +56,28 @@ export class AppComponent implements OnInit {
   }
   deleteEntity($event) {
     console.log($event);
+    if ($event.info.keyInfo.type === 'list') {
+      this.openLREMModal($event);
+    } else { // remove from set hset zset
+      const args = buildDeleteFromNodeQuery($event.info);
+      this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
+    }
+  }
+  openLREMModal($event) {
+    const lremModel = {
+      value: $event.info.entity.value,
+      key: $event.info.keyInfo.key,
+      count: 0,
+    };
+    const ref = this.dialog.open(LremDialogComponent, {
+      width: '650px',
+      data: lremModel,
+    });
+    ref.afterClosed().subscribe(result => {
+      if (result) {
+        const args = buildLREMQuery(result);
+        this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
+      }
+    });
   }
 }
