@@ -205,5 +205,4 @@ export class RedisEffects {
                 of(new redisActions.ConnectRedisInstanceFail(resp))
             )
         );
-
 }

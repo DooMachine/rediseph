@@ -122,6 +122,8 @@ io.on('connection', (client) => {
                     if (redisInstance.isMonitoring) 
                         return;
                     const ioActions = await redisutils.handleCmdOutputActions(redisInstance,actions);
+                    console.log("ioActions");
+                    console.log(ioActions);
                     redisInstance.ioStreamer.next(ioActions);
                 })
                 /**
@@ -275,14 +277,16 @@ io.on('connection', (client) => {
     /**
      * Executing raw commands
      */
-    client.on(actions.EXECUTE_COMMAND, async (data) => {
+    client.on(actions.EXECUTE_COMMAND, (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
         if (!redisInstance) {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
         // if it is not monitoring we should take care of it        
-        await redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {  
+        redisutils.handleCommandExecution(redisInstance, data.args, (nextActions) => {
+            console.log(nextActions);
+            console.log("nextActions")
             if(!redisInstance.isMonitoring) { 
                 console.log("TOCMD STREAMER")             
                 redisInstance.cmdStreamer.next(nextActions); 

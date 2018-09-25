@@ -47,7 +47,6 @@ export class AppComponent implements OnInit {
   addNewEntity($event) {
     console.log($event);
     const args = buildNewEntityQuery($event.model);
-    // So we should track only selected keys.
-    this.store.dispatch(new keyActions.ExecuteQueryOnSelectedKey({redisId: $event.redisId, command: args}));
+    this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }
 }

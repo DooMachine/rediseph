@@ -2,6 +2,12 @@ const _ = require('lodash');
 const monitoractions = require('./monitoractions');
 const cmdactions = require('./cmdactions');
 
+const SCAN_TYPE_MAP = {
+  set:'sscan',
+  hash:'hscan',
+  zset:'zscan'
+}
+
 
 async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 100, callback) {
   if (pattern === "" || pattern == null)
@@ -41,11 +47,7 @@ async function scanKeyEntities(redisInstance,key, type, cursor, pattern = '*', f
     pattern = '*';
   }
   
-  const SCAN_TYPE_MAP = {
-    set:'sscan',
-    hash:'hscan',
-    zset:'zscan'
-  }
+  
   async function iterEntityScanNext () {
 
     const scanMethod = SCAN_TYPE_MAP[type];
@@ -178,11 +180,53 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         })
         break;
       }
+      case 'sadd':
+      {
+        pipeline.sadd(args[0],args.splice(1), async (e, result) => {
+          if(result) {
+            nextActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0]}})
+          }
+        })
+        break;
+      }
+      case 'zadd':
+      {
+        pipeline.zadd(args[0],args.splice(1), async (e, result) => {
+          if(result) {
+            nextActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0]}})
+          }
+        })
+      }
+      case 'hmset':
+      {
+        pipeline.hmset(args[0],args.splice(1), async (e, result) => {
+          if(result) {
+            nextActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0]}})
+          }
+        })
+      }
+      case 'lpush':
+      {
+        pipeline.lpush(args[0],args.splice(1), async (e, result) => {
+          if(result) {
+            nextActions.push({type: cmdactions.ADD_SINGLE_FROM_LIST_HEAD, payload: {key: args[0]}})
+          }
+        })
+      }   
+      case 'rpush':
+      {
+        pipeline.rpush(args[0],args.splice(1), async (e, result) => {
+          if(result) {
+            nextActions.push({type: cmdactions.ADD_SINGLE_FROM_LIST_TAIL, payload: {key: args[0]}})
+          }
+        })
+      }   
       default:
         break;
     }
   }  
   pipeline.exec((_, results) => {
+    console.log(nextActions);
     callback(nextActions); 
   })
 }
@@ -193,6 +237,7 @@ async function handleCmdOutputActions(redisInstance, actions) {
     const action = actions[i];
     switch (action.type) {
       case cmdactions.DEL_KEYS:
+      {
         let shouldUpdateLocalTree = false;
         let shouldUpdateSelectedNodes = false;
         for (let i = 0; i < action.payload.keys.length; i++) {
@@ -214,7 +259,9 @@ async function handleCmdOutputActions(redisInstance, actions) {
           ioActions.push({type: monitoractions.SELECTED_NODES_UPDATED})
         }
         break;
+      }
       case cmdactions.SET_KEY:
+      {
         selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === action.payload.key);
         if (selectedKey) {
           selectedKey.value= await redisInstance.redis.get(action.payload.key);
@@ -231,7 +278,9 @@ async function handleCmdOutputActions(redisInstance, actions) {
           } 
         }
         break;
+      }
       case cmdactions.SET_KEYS:
+      {
         const newKeyAndTypes = {}
         for (let i = 0; i < action.payload.keys.length; i++) {
           const key = action.payload.keys[i];      
@@ -239,7 +288,67 @@ async function handleCmdOutputActions(redisInstance, actions) {
         }
         redisInstance.keys = Object.assign({},redisInstance.keys,newKeyAndTypes);
         ioActions.push({type: monitoractions.UPDATE_LOCAL_TREE})
-        break;    
+        break;
+      }
+      case cmdactions.ADD_SINGLE_FROM_LIST_HEAD:
+      {
+        const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
+        if (selectedKey) {
+          await redisInstance.redis.lrange(
+              action.payload.key,
+              0,
+              0,
+            (e,resp) => {
+              selectedKey.keyScanInfo.entities = resp.concat(selectedKey.keyScanInfo.entities);
+              ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: selectedKey.key});
+          })
+        }
+        break;
+      }
+      case cmdactions.ADD_SINGLE_FROM_LIST_TAIL:
+      {
+        const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
+        if (selectedKey) {
+          await redisInstance.redis.lrange(
+              action.payload.key,
+              -1,
+              -1,
+            (e,resp) => {
+              selectedKey.keyScanInfo.entities.push(resp);
+              ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: selectedKey.key});
+          })
+        }
+        break;
+      }
+      case cmdactions.GET_NEXT_SCAN_ENTITY:
+      {
+        const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
+        if (selectedKey) {
+          const scanMethod = SCAN_TYPE_MAP[selectedKey.type]
+          let count = 1;
+          const cursorWasZero = selectedKey.keyScanInfo.cursor == '0';
+          if (cursorWasZero) {
+            count = selectedKey.keyScanInfo.pageSize +1;
+          }  
+          await redisInstance.redis[scanMethod](
+              selectedKey.key,
+              selectedKey.keyScanInfo.cursor,
+              'MATCH', "*",
+              'COUNT', count,
+            async (e,[cursor,resp]) => {
+              console.log(cursor)
+              console.log(resp);
+              selectedKey.keyScanInfo.cursor  = cursor;
+              if (!cursorWasZero) {
+                selectedKey.keyScanInfo.entities.push(resp);
+              } else {
+                selectedKey.keyScanInfo.entities = resp;
+              }
+              ioActions.push({type: monitoractions.SELECTED_NODE_UPDATED, key: selectedKey.key});
+          })
+        }
+        break;
+      }
       default:
         break;
     }
@@ -331,11 +440,7 @@ async function addNewKey(redisInstance, model, callback) {
           pattern:"*",
           hasMoreEntities: false,            
       }}
-      const SCAN_TYPE_MAP = {
-        set:'sscan',
-        hash:'hscan',
-        zset:'zscan'
-      }
+      
       const scanMethod = SCAN_TYPE_MAP[newType];
       redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {      
         newKeyInfo.keyScanInfo.entities = resp;

@@ -20,8 +20,8 @@ export const buildSETQuery = (info: any): Array<any> => {
 export const buildDELQuery = (node: RedisNode ): Array<any> => {
     return [['del', recursiveSpreadNodes(node)]];
 };
-export const buildNewEntityQuery = (model: NewEntityModel) => {
-    const args = [[]];
+export const buildNewEntityQuery = (model: NewEntityModel): Array<any> => {
+    const args = [];
     switch (model.formType) {
         case 'set':
         {
@@ -34,7 +34,7 @@ export const buildNewEntityQuery = (model: NewEntityModel) => {
             args.push(lineArgs);
             break;
         }
-        case 'hset':
+        case 'hash':
         {
             const lineArgs = [];
             // maybe hset?
