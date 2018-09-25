@@ -35,6 +35,20 @@
         <button mat-color="primary" (click)="submitNewValue()" mat-raised-button>Submit</button>
     </mat-expansion-panel>
   </mat-accordion>
+<mat-form-field>    
+  <input
+    type="text"
+    [(ngModel)]="searchPattern"
+    matInput placeholder="Key/name/pattern" value="{{_selectedKeyInfo.keyScanInfo.pattern}}" #searchInput>
+    <button mat-button *ngIf="_selectedKeyInfo.keyScanInfo.pattern" matSuffix mat-icon-button aria-label="Clear"
+      (click)="searchInputChanged.emit('')">
+      <mat-icon>remove</mat-icon>
+    </button>
+    <button mat-button  matSuffix mat-icon-button aria-label="Search"
+      (click)="clickSearch()">
+      <mat-icon>search</mat-icon>
+    </button>
+</mat-form-field> 
 <table>
   <thead>
     <tr>
@@ -43,9 +57,9 @@
     </tr>
   </thead>
   <tbody>
-    <tr class="clickableEntity" *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
+    <tr class="clickableEntity" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''"  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
       <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
-      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''" [ngClass]="col == 'score' ? 'scoreCol' : ''" [matTooltip]="entity[col]" [matTooltipShowDelay]="300" *ngFor="let col of displayedColumns">{{entity[col] | ellipsis: 20}}</td>
+      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" [matTooltip]="entity[col]" [matTooltipShowDelay]="300" *ngFor="let col of displayedColumns">{{entity[col] | ellipsis: 20}}</td>
       <button  matTooltip="Delete" (click)="deleteEntity(entity)" mat-icon-button>
         <mat-icon>delete</mat-icon>
       </button>

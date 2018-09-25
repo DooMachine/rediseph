@@ -66,4 +66,7 @@ export class RedisSocketService {
     deselectNode(redisId, key) {
         this.socket.emit('[Redis] DESELECT_NODE_KEY', {redisId: redisId, key: key});
     }
+    updateEntityPagination(action) {
+        this.socket.emit('[Redis] UPDATE_ENTITY_PAGINATION', action);
+    }
 }

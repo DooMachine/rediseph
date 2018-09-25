@@ -49,4 +49,7 @@ export class AppComponent implements OnInit {
     const args = buildNewEntityQuery($event.model);
     this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }
+  paginationChanged($event) {
+    this.store.dispatch(new keyActions.EntityPaginationChanged($event));
+  }
 }

@@ -15,6 +15,7 @@ export class NodeRootComponent implements OnInit {
   @Output() closeKeyInfo = new EventEmitter();
   @Output() updateStringValue = new EventEmitter();
   @Output() selectEntityIndex = new EventEmitter();
+  @Output() paginationChanged = new EventEmitter();
   keyInfoHost: SelectedKeyInfoHost;
 
   @Input('selectedKeyInfoHosts')

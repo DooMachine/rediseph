@@ -190,6 +190,15 @@ export class RedisEffects {
                 }
             )
         );
+    @Effect({dispatch: false})
+    selectedKeyPaginationChange$ = this.actions$
+        .pipe(
+            ofType(keyActions.SelectedKeyActionTypes.ENTITY_PAGINATION_CHANGED),
+            switchMap((action: keyActions.EntityPaginationChanged) => {
+                this.redisService.updateEntityPagination(action.payload);
+                return of();
+            }),
+        );
     @Effect()
     redisEvent$: Observable<Action> =
         this.redisService.redisUpdated$.pipe( // listen to the socket for REDIS UPDATES

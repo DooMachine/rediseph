@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { SelectedKeyInfo, NewEntityModel } from '../../models/redis';
 import { MatTableDataSource } from '@angular/material';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-list-viewer',
@@ -9,6 +10,9 @@ import { MatTableDataSource } from '@angular/material';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListViewerComponent implements OnInit {
+  @Output() searchInputChanged = new EventEmitter();
+  searchPattern = '';
+
   @Output() selectEntityIndex = new EventEmitter();
   @Output() newValueAdd = new EventEmitter();
   isSelectible = false;
@@ -28,6 +32,7 @@ export class ListViewerComponent implements OnInit {
     this._selectedKeyInfo = v;
     this.formModel.formType = v.type;
     this.formModel.key = v.key;
+    this.searchPattern = v.keyScanInfo.pattern;
     this.isSelectible = v.type === 'set' || v.type === 'zset' || v.type === 'hset';
     if (this.isSelectible) {
       this.multipleActions.push({name: 'Delete', color: 'warn'});
@@ -78,5 +83,8 @@ export class ListViewerComponent implements OnInit {
       this.formModel.formErrors.push('Value required');
     }
     this.newValueAdd.emit(this.formModel);
+  }
+  clickSearch() {
+    this.searchInputChanged.emit(this.searchPattern);
   }
 }

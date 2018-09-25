@@ -161,7 +161,7 @@ io.on('connection', (client) => {
                                 io.to(redisInstance.roomId).emit(actions.SELECTED_NODE_UPDATED,
                                     {
                                        redisId: redisInstance.roomId,
-                                       keyInfo: redisInstance.selectedKeyInfo.find(p=>p.key == action.key)
+                                       keyInfo: action.keyInfo
                                    });
                                 break;
                             }  
@@ -345,7 +345,7 @@ io.on('connection', (client) => {
         if(newSelectedKeyInfo.type === 'string') {
             newSelectedKeyInfo.value = await redisInstance.redis.get(newSelectedKeyInfo.key)
             redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-            redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, key:newSelectedKeyInfo.key}]);
+            redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
         }
         else if(newSelectedKeyInfo.type === 'list') {
             redisutils.handleListEntityScan(redisInstance, newSelectedKeyInfo,
@@ -354,7 +354,7 @@ io.on('connection', (client) => {
                     newSelectedKeyInfo.pageIndex++;
                     newSelectedKeyInfo.hasMorePage = entities.length == newSelectedKeyInfo.keyScanInfo.pageSize;
                     redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, key:newSelectedKeyInfo.key}]);
+                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
                 });
         }
         else if (keyInfo.type === 'set' || keyInfo.type === 'zset' || keyInfo.type === 'hash') {
@@ -369,7 +369,7 @@ io.on('connection', (client) => {
                     newSelectedKeyInfo.keyScanInfo.pageIndex++;
                     newSelectedKeyInfo.hasMorePage = cursor !== "0";
                     redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
-                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, key:newSelectedKeyInfo.key}]);
+                    redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
             })
         }
         
@@ -408,11 +408,49 @@ io.on('connection', (client) => {
             redisInstance.keyInfo.pattern,
             redisInstance.keyInfo.pageSize,
             async (keys, cursor) => {
-                redisInstance.keys = Object.assign(redisInstance.keys,keys);
+                redisInstance.keys = {...redisInstance.keys,...keys};
                 redisInstance.keyInfo.cursor = cursor;
                 redisInstance.keyInfo.pageIndex++;
                 redisInstance.keyInfo.hasMoreKeys = cursor !== "0";
                 redisInstance.ioStreamer.next([{type: monitoractions.UPDATE_LOCAL_TREE}])                
+        })
+    });
+    client.on(actions.UPDATE_ENTITY_PAGINATION, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
+        if (!redisInstance) {
+            client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                {error: 'This should not happen!'})
+            return;
+        }
+        // In case of refresh (Maybe after user start monitoring)
+        const keyInfo = redisInstance.selectedKeyInfo.find(p => p.key === data.key);
+        console.log(data)
+        
+        if(data.pattern === "" || data.pattern == null) {
+            keyInfo.keyScanInfo.pattern = "*";
+            keyInfo.keyScanInfo.pageIndex = 0;
+        } else {
+            keyInfo.keyScanInfo.pattern = data.pattern;
+        }
+        if(data.pageSize) {
+            keyInfo.keyScanInfo.pageSize = data.pageSize;
+        }
+        if(data.pageIndex) {
+            keyInfo.keyScanInfo.pageIndex = data.pageIndex;
+        }
+        // iter from current cursor with pagesize
+        redisutils.scanKeyEntities(redisInstance,
+            keyInfo.key,
+            keyInfo.type,
+            keyInfo.keyScanInfo.cursor,
+            keyInfo.keyScanInfo.pattern,
+            keyInfo.keyScanInfo.pageSize,
+            async (keys, cursor) => {
+                keyInfo.keyScanInfo.entities = keys;
+                keyInfo.keyScanInfo.cursor = cursor;
+                keyInfo.keyScanInfo.pageIndex++;
+                keyInfo.keyScanInfo.hasMoreEntities = cursor !== "0";
+                redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo: keyInfo}])                
         })
     });
     /**
