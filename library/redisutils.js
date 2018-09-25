@@ -194,7 +194,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       }
       case 'zadd':
       {
-        const cmdArgs = cmdArgs;
+        const cmdArgs = args.splice(1);
         pipeline.zadd(args[0],cmdArgs, async (e, result) => {
           if(result) {
             nextActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0], pattern: cmdArgs[1]+'*'}})
@@ -207,7 +207,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         const cmdArgs = args.splice(1);
         pipeline.hmset(args[0],cmdArgs, async (e, result) => {
           if(result) {
-            nextActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0], pattern: cmdArgs[1]+'*'}})
+            nextActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0], pattern: cmdArgs[0]+'*'}})
           }
         })
         break;

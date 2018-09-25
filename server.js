@@ -364,10 +364,12 @@ io.on('connection', (client) => {
                 newSelectedKeyInfo.keyScanInfo.pattern,
                 newSelectedKeyInfo.keyScanInfo.pageSize,
                 async (entities, cursor) => {
+                    console.log("CURSOR ENTITY")
+                    console.log(cursor)
                     newSelectedKeyInfo.keyScanInfo.entities = entities;
                     newSelectedKeyInfo.keyScanInfo.cursor = cursor;
                     newSelectedKeyInfo.keyScanInfo.pageIndex++;
-                    newSelectedKeyInfo.hasMorePage = cursor !== "0";
+                    newSelectedKeyInfo.keyScanInfo.hasMoreEntities = cursor != "0";
                     redisInstance.selectedKeyInfo.push(newSelectedKeyInfo);
                     redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo:newSelectedKeyInfo}]);
             })
@@ -424,32 +426,26 @@ io.on('connection', (client) => {
         }
         // In case of refresh (Maybe after user start monitoring)
         const keyInfo = redisInstance.selectedKeyInfo.find(p => p.key === data.key);
-        console.log(data)
         
-        if(data.pattern === "" || data.pattern == null) {
-            keyInfo.keyScanInfo.pattern = "*";
+        if(data.pattern || data.pattern == '') {
             keyInfo.keyScanInfo.pageIndex = 0;
-        } else {
+            keyInfo.keyScanInfo.cursor = "0";
             keyInfo.keyScanInfo.pattern = data.pattern;
         }
-        if(data.pageSize) {
+        if (data.pageSize) {
             keyInfo.keyScanInfo.pageSize = data.pageSize;
         }
-        if(data.pageIndex) {
-            keyInfo.keyScanInfo.pageIndex = data.pageIndex;
-        }
-        // iter from current cursor with pagesize
         redisutils.scanKeyEntities(redisInstance,
             keyInfo.key,
             keyInfo.type,
             keyInfo.keyScanInfo.cursor,
-            keyInfo.keyScanInfo.pattern,
+            data.pattern,
             keyInfo.keyScanInfo.pageSize,
             async (keys, cursor) => {
                 keyInfo.keyScanInfo.entities = keys;
                 keyInfo.keyScanInfo.cursor = cursor;
                 keyInfo.keyScanInfo.pageIndex++;
-                keyInfo.keyScanInfo.hasMoreEntities = cursor !== "0";
+                keyInfo.keyScanInfo.hasMoreEntities = cursor != "0";
                 redisInstance.ioStreamer.next([{type: monitoractions.SELECTED_NODE_UPDATED, keyInfo: keyInfo}])                
         })
     });
@@ -492,7 +488,7 @@ io.on('connection', (client) => {
         redisInstance.connectedClientCount--;
         // if no connection left remove redis instance
         if(redisInstance.connectedClientCount < 1) {
-            db.redisInstances = db.redisInstances.filter(p=>p.roomId == redisId);
+            db.redisInstances = db.redisInstances.filter(p=>p.roomId != redisId);
         }
         client.emit(actions.DISCONNECT_REDIS_INSTANCE_SUCCESS,
             {redisId:redisId})

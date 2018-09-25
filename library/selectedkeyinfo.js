@@ -16,7 +16,7 @@ module.exports = class SelectedKeyInfo {
             selectedEntityIndex: 0,
             pageIndex: 0,
             pageSize:process.env.SCAN_PAGE_SIZE || 20,
-            pattern: '*'
+            pattern: ''
         }        
     }
   }

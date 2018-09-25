@@ -1,5 +1,6 @@
 
-<mat-accordion>
+<div fxLayout="column" class="left-c" fxLayoutAlign="start stretch" fxLayoutGap="4px">
+  <mat-accordion>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -35,7 +36,7 @@
         <button mat-color="primary" (click)="submitNewValue()" mat-raised-button>Submit</button>
     </mat-expansion-panel>
   </mat-accordion>
-<mat-form-field>    
+<mat-form-field *ngIf="_selectedKeyInfo.type != 'list'">    
   <input
     type="text"
     [(ngModel)]="searchPattern"
@@ -59,8 +60,12 @@
   <tbody>
     <tr class="clickableEntity" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''"  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
       <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
-      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" [matTooltip]="entity[col]" [matTooltipShowDelay]="300" *ngFor="let col of displayedColumns">{{entity[col] | ellipsis: 20}}</td>
-      <button  matTooltip="Delete" (click)="deleteEntity(entity)" mat-icon-button>
+      <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})"
+       [matTooltip]="entity[col]" [matTooltipShowDelay]="300"
+        *ngFor="let col of displayedColumns">
+        {{entity[col] | ellipsis: 20}}
+      </td>
+      <button  matTooltip="Delete" (click)="deleteEntity.emit({entity: entity, keyInfo: _selectedKeyInfo})" mat-icon-button>
         <mat-icon>delete</mat-icon>
       </button>
     </tr>
@@ -72,4 +77,6 @@
     </tr>
   </tbody>
 </table>
+</div>
+
 

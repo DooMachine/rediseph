@@ -15,6 +15,7 @@ export class ListViewerComponent implements OnInit {
 
   @Output() selectEntityIndex = new EventEmitter();
   @Output() newValueAdd = new EventEmitter();
+  @Output() deleteEntity = new EventEmitter();
   isSelectible = false;
   multipleActions = [];
   _selectedKeyInfo: SelectedKeyInfo;

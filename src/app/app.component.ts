@@ -52,4 +52,7 @@ export class AppComponent implements OnInit {
   paginationChanged($event) {
     this.store.dispatch(new keyActions.EntityPaginationChanged($event));
   }
+  deleteEntity($event) {
+    console.log($event);
+  }
 }

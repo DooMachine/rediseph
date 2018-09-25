@@ -22,6 +22,7 @@
             (newValueAdd) = "newValueAdd.emit({model: $event, redisId: redisId})"
             (selectEntityIndex) = "selectEntityIndex.emit({info: $event,redisId:redisId})"
             (saveNewValue)= "updateStringValue.emit({info: {value: $event, keyInfo:keyInfo}, redisId: redisId})"
+            (deleteEntity)= "deleteEntity.emit({info:$event, redisId: redisId})"
             >
           </app-list-viewer>
         </div>      
