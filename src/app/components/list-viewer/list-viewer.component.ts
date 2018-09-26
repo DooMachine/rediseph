@@ -20,10 +20,12 @@ export class ListViewerComponent implements OnInit {
   @Output() searchInputChanged = new EventEmitter();
   @Output() pageIndexChanged = new EventEmitter();
   searchPattern = '';
+  selectedEntity: any;
   @ViewChild('listTable') tableRef: ElementRef;
   @Output() selectEntityIndex = new EventEmitter();
   @Output() newValueAdd = new EventEmitter();
   @Output() deleteEntity = new EventEmitter();
+  @Output() updateEntiyValue = new EventEmitter();
   isSelectible = false;
   multipleActions = [];
   _selectedKeyInfo: SelectedKeyInfo;
@@ -43,9 +45,9 @@ export class ListViewerComponent implements OnInit {
     this.formModel.key = v.key;
     this.searchPattern = v.keyScanInfo.pattern;
     this.isSelectible = v.type === 'set' || v.type === 'zset' || v.type === 'hset';
-    const selectedEntity = v.keyScanInfo.entities[v.keyScanInfo.selectedEntityIndex];
-    if (selectedEntity) {
-      this.stringValue = selectedEntity.value;
+    this.selectedEntity = v.keyScanInfo.entities[v.keyScanInfo.selectedEntityIndex];
+    if (this.selectedEntity) {
+      this.stringValue = this.selectedEntity.value;
     }
     if (this.isSelectible) {
       this.multipleActions.push({name: 'Delete', color: 'warn'});
@@ -78,7 +80,9 @@ export class ListViewerComponent implements OnInit {
     // Scroll into previous selected entity
     setTimeout(() => {
       const selectedRef = this.tableRef.nativeElement.getElementsByClassName('selectedEntity')[0];
-      selectedRef.scrollIntoView();
+      if (selectedRef) {
+        selectedRef.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'end'});
+      }
     }, 90);
   }
 
@@ -100,6 +104,7 @@ export class ListViewerComponent implements OnInit {
     this.formModel.formErrors = [];
     if (!this.formModel.addValue) {
       this.formModel.formErrors.push('Value required');
+      return;
     }
     this.newValueAdd.emit(this.formModel);
   }
@@ -109,5 +114,9 @@ export class ListViewerComponent implements OnInit {
   loadMore() {
     const newPageIndex = this._selectedKeyInfo.keyScanInfo.pageIndex + 1;
     this.pageIndexChanged.emit(newPageIndex);
+  }
+  saveEntityValue() {
+    const selectedVal = this._selectedKeyInfo.keyScanInfo.entities[this._selectedKeyInfo.keyScanInfo.selectedEntityIndex];
+    this.updateEntiyValue.emit({newValue: this.stringValue, entity: selectedVal, key: this._selectedKeyInfo});
   }
 }

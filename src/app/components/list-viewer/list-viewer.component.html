@@ -93,11 +93,23 @@
     </table>
   </div>
   </div>
-  <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="1px">
+  <div fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="8px">    
+    <div fxLayout="row" fxLayoutAlign="end center" fxLayoutGap="10px">
+      <div fxLayout="row" fxLayoutAlign="end start" fxLayoutGap="2px">
+          <button color="accent" (click)="saveEntityValue()" mat-stroked-button>Save Changes</button>
+      </div>
+      <button
+        *ngIf="!isRealtime"
+        matTooltip="Refresh Value" color="accent" mat-icon-button>
+          <mat-icon >sync</mat-icon>
+      </button>
+    </div>
     <ngx-codemirror 
+      *ngIf="_selectedKeyInfo"
       [autoFocus]="true"
       [name]="list-value-viewer"
-      [(ngModel)]="stringValue"
+      [ngModel]="_selectedKeyInfo?.keyScanInfo.entities[_selectedKeyInfo.keyScanInfo.selectedEntityIndex]?.value"
+      (ngModelChange)="stringValue = $event"
       [options]="editorOptions"
     ></ngx-codemirror>
   </div>

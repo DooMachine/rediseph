@@ -254,6 +254,7 @@ io.on('connection', (client) => {
             });            
             monitor.on('monitor', async (time, args, source, database) => {
                 console.log("I Monitored")
+                console.log(args);
                 if (database === redisInstance.connectionInfo.db.toString()) {                    
                     storedArgs.push(args);
                 }
@@ -429,6 +430,7 @@ io.on('connection', (client) => {
             keyInfo.keyScanInfo.cursor = "0";
             keyInfo.keyScanInfo.pattern = data.pattern;
         }
+        console.log(data);
         if (data.pageSize) {
             keyInfo.keyScanInfo.pageSize = data.pageSize;
         }
@@ -442,7 +444,7 @@ io.on('connection', (client) => {
                 redisInstance.ioStreamer.next([{type: ioActions.SELECTED_NODE_UPDATED, keyInfo: keyInfo}])
             });
         } else {
-            redisutils.scanKeyEntities(redisInstance,
+            await redisutils.scanKeyEntities(redisInstance,
                 keyInfo.key,
                 keyInfo.type,
                 keyInfo.keyScanInfo.cursor,
@@ -454,11 +456,11 @@ io.on('connection', (client) => {
                         keyInfo.keyScanInfo.entities = entities;
                     } else {
                         keyInfo.keyScanInfo.entities = keyInfo.keyScanInfo.entities.concat(entities);
-                        keyInfo.keyScanInfo.cursor = cursor;
-                        keyInfo.keyScanInfo.hasMoreEntities = cursor != "0";
-                        redisInstance.ioStreamer.next([{type: ioActions.SELECTED_NODE_UPDATED, keyInfo: keyInfo}]) 
-                    }
-                                   
+                    }                    
+                    keyInfo.keyScanInfo.cursor = cursor;
+                    keyInfo.keyScanInfo.hasMoreEntities = cursor != "0";
+                    redisInstance.ioStreamer.next([{type: ioActions.SELECTED_NODE_UPDATED, keyInfo: keyInfo}]) 
+                                        
             })
         }
         

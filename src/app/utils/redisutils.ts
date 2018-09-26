@@ -107,7 +107,7 @@ export const buildEntityModel = (keyInfo: SelectedKeyInfo) => {
     }
   } else if (keyInfo.type === 'list') {
     for (let i = 0; i < keyInfo.keyScanInfo.entities.length; i++) {
-      fixedEntities.push({value: keyInfo.keyScanInfo.entities[i]});
+      fixedEntities.push({listIndex: i, value: keyInfo.keyScanInfo.entities[i]});
     }
   } else if (keyInfo.type === 'hash') {
     for (let i = 0; i < keyInfo.keyScanInfo.entities.length - 1; i += 2) {

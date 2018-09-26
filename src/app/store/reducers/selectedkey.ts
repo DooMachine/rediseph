@@ -37,7 +37,9 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
                 }
             }
             action.payload.selectedKeys.map((kh) => {
-                kh.keyScanInfo.selectedEntityIndex = 0;
+                if (kh.keyScanInfo) {
+                    kh.keyScanInfo.selectedEntityIndex = 0;
+                }
             });
             const newhost: SelectedKeyInfoHost = {redisId : action.payload.redisId,
                  keyInfos: action.payload.selectedKeys, selectedKeyQueue: [], };
@@ -78,13 +80,18 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
             if (keyInfo.type !== 'string') {
                 keyInfo.keyScanInfo.entities = buildEntityModel(keyInfo);
                 keyInfo.keyScanInfo.hasMoreEntities = action.payload.keyInfo.keyScanInfo.hasMoreEntities;
+                if (keyInfo.keyScanInfo.entities) {
+                    keyInfo.keyScanInfo.selectedEntityIndex = 0;
+                }
             }
             // If exist update
             if (newKeyInfo.keyInfos.findIndex(p => p.key === keyInfo.key) !== -1) {
                 newKeyInfo.keyInfos = newKeyInfo.keyInfos.map((p) => {
                     if (p.key === action.payload.keyInfo.key) {
                         // set previously selected entity
-                        keyInfo.keyScanInfo.selectedEntityIndex = p.keyScanInfo.selectedEntityIndex;
+                        if (keyInfo.type !== 'string') {
+                            keyInfo.keyScanInfo.selectedEntityIndex = p.keyScanInfo.selectedEntityIndex;
+                        }
                         return keyInfo;
                     }
                     return p;

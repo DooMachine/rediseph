@@ -6,7 +6,7 @@ import * as keyActions from './store/actions/selectedkey';
 import { SelectedKeyInfoHost } from './models/redis';
 import { Observable } from 'rxjs';
 import { getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from './store/reducers';
-import { buildSETQuery, buildNewEntityQuery, buildDeleteFromNodeQuery, buildLREMQuery } from './utils/commandutils';
+import { buildSETQuery, buildNewEntityQuery, buildDeleteFromNodeQuery, buildLREMQuery, buildUpdateEntityQuery } from './utils/commandutils';
 import { LremDialogComponent } from './components/lrem-dialog/lrem-dialog.component';
 import { MatDialog } from '@angular/material';
 
@@ -53,6 +53,10 @@ export class AppComponent implements OnInit {
   }
   paginationChanged($event) {
     this.store.dispatch(new keyActions.EntityPaginationChanged($event));
+  }
+  updateEntityValue($event) {
+    const args = buildUpdateEntityQuery($event.info);
+    this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }
   deleteEntity($event) {
     console.log($event);

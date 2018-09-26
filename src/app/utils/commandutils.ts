@@ -114,3 +114,48 @@ export const buildDeleteFromNodeQuery = (info: any) => {
 export const buildLREMQuery = (result: any): Array<any> =>  {
     return [['lrem', [result.key , result.count, result.value]]];
 };
+
+export const buildUpdateEntityQuery = (model: any): Array<any> => {
+    const args = [];
+    switch (model.key.type) {
+        case 'zset':
+        {
+            const delq: Array<any> = ['zrem'];
+            const deline = [model.key.key, model.entity.value];
+            delq.push(deline);
+            const adq: Array<any> = ['zadd'];
+            const addLine = [model.key.key, model.entity.score, model.newValue];
+            adq.push(addLine);
+            args.push(delq);
+            args.push(adq);
+            break;
+        }
+        case 'set':
+        {
+            const delq: Array<any> = ['srem'];
+            const deline = [model.key.key, model.entity.value];
+            delq.push(deline);
+            const adq: Array<any> = ['sadd'];
+            const addLine = [model.key.key, model.newValue];
+            adq.push(addLine);
+            args.push(delq);
+            args.push(adq);
+            break;
+        }
+        case 'hash':
+        {
+            const upLine = ['hmset', [model.key.key, model.entity.hash, model.newValue]];
+            args.push(upLine);
+            break;
+        }
+        case 'list':
+        {
+            const upLine = ['lset', [model.key.key, model.entity.listIndex, model.newValue]];
+            args.push(upLine);
+            break;
+        }
+        default:
+            break;
+    }
+    return args;
+};

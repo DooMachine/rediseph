@@ -18,6 +18,7 @@
           <app-list-viewer
             fxFlex="26"
             [selectedKeyInfo] = "keyInfo"
+            (updateEntiyValue) = "updateEntiyValue.emit({info: $event, redisId: redisId})"
             (pageIndexChanged) = "paginationChanged.emit({pageIndex: $event, key: keyInfo.key, redisId: redisId})"
             (searchInputChanged) = "paginationChanged.emit({pattern: $event, key: keyInfo.key, redisId: redisId})"
             (newValueAdd) = "newValueAdd.emit({model: $event, redisId: redisId})"

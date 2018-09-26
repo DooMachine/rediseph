@@ -1,6 +1,3 @@
-
-
-
 module.exports = class SelectedKeyInfo {
     constructor(key, type, redisId) {
         this.redisId = redisId;  

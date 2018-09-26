@@ -100,9 +100,6 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
       }
     } else if (command == 'hmset' || command == 'hset' || command == 'zset' || command == 'sadd') {
       key = args[1];
-      console.log(command)
-      console.log("monitor debg");
-      console.log(key);
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
       if (selectedKey) {
         nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: key}})
@@ -126,6 +123,8 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
 async function handleCommandExecution(redisInstance,commands, callback) {
   let nextCmdActions = [];
   let nextIoActions = [];
+  console.log("COMMADS =")
+  console.log(commands);
   const pipeline = redisInstance.redis.pipeline();
   for (let i = 0; i < commands.length; i++) {
     const cmd = commands[i][0].toLowerCase();
@@ -283,13 +282,25 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         })
         break;
       }
+      case 'lset':
+      {
+        const cmdArgs = args.splice(1);
+        pipeline.lset(args[0], cmdArgs, async (e, result) => {
+          if (result) {
+            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
+          } else 
+          {
+            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
+          }
+        })
+      }
       default:
         break;
     }
   }  
   await pipeline.exec( async (_, results) => {
     let cmdOutIoActions = [];
-    if (nextCmdActions.length) {
+    if (nextCmdActions.length && !redisInstance.isMonitoring) {
       cmdOutIoActions = await handleCmdOutputActions(redisInstance, nextCmdActions);
     }
     callback([...nextIoActions,...cmdOutIoActions ]); 
@@ -411,8 +422,6 @@ async function handleCmdOutputActions(redisInstance, actions) {
               'MATCH', action.payload.pattern,
               'COUNT', selectedKey.keyScanInfo.pageSize,
             async (e,[cursor,resp]) => {
-              console.log("resp from scan entity")
-              console.log(resp)
               selectedKey.keyScanInfo.cursor  = cursor;    
               selectedKey.keyScanInfo.pattern = action.payload.pattern;         
               selectedKey.keyScanInfo.entities = resp;
@@ -427,9 +436,8 @@ async function handleCmdOutputActions(redisInstance, actions) {
         const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
         if (selectedKey) {
           if(selectedKey.type == 'list') {
-            await redisInstance.redis.lrange(action.key,0,selectedKey.keyScanInfo.entities.length,
+            await redisInstance.redis.lrange(action.payload.key,0,selectedKey.keyScanInfo.entities.length,
             async (e, resp) => {
-              console.log(resp);
               selectedKey.keyScanInfo.entities = resp;
               selectedKey.keyScanInfo.hasMoreEntities = false;
               nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo:selectedKey })
