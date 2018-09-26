@@ -100,7 +100,7 @@ export const buildDeleteFromNodeQuery = (info: any) => {
         {
             lineArgs.push('hdel');
             cmdArgs.push(info.keyInfo.key);
-            cmdArgs.push(info.entity.value);
+            cmdArgs.push(info.entity.hash);
             lineArgs.push(cmdArgs);
             args.push(lineArgs);
             break;

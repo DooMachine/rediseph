@@ -1,87 +1,105 @@
 
-<div fxLayout="column" class="left-c" fxLayoutAlign="start stretch" fxLayoutGap="4px">
-  <mat-accordion>
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <b>Add </b>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-form-field
-       *ngIf="formModel?.formType == 'set' ||
-        formModel?.formType == 'list' ||
-        formModel?.formType == 'hash' ||
-        formModel?.formType == 'zset'">
-        <input matInput [(ngModel)]="formModel.addValue"
-         placeholder="{{ placeholderMap(formModel?.formType)}}">
-      </mat-form-field>
-      <mat-form-field
-       *ngIf=" formModel?.formType == 'zset'">
-        <input matInput [(ngModel)]="formModel.score" placeholder="Score">
-      </mat-form-field> 
-      <mat-form-field
-        *ngIf=" formModel?.formType == 'list'">
-          <mat-select [(value)]="formModel.listAddType" placeholder="To..">
-            <mat-option [value]="'head'">
-              Head
-            </mat-option>
-            <mat-option  [value]="'tail'">
-              Tail
-            </mat-option>
-          </mat-select>
+<div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="4px">
+  <div fxLayout="column" class="left-c" fxLayoutAlign="start stretch" fxLayoutGap="4px">
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <b>Add </b>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-form-field
+        *ngIf="formModel?.formType == 'set' ||
+          formModel?.formType == 'list' ||
+          formModel?.formType == 'hash' ||
+          formModel?.formType == 'zset'">
+          <input matInput [(ngModel)]="formModel.addValue"
+          placeholder="{{ placeholderMap(formModel?.formType)}}">
         </mat-form-field>
-        <ul *ngIf="formModel.formErrors">
-          <li *ngFor="let err of formModel.formErrors">{{err}</li>
-        </ul>
-        <button mat-color="primary" (click)="submitNewValue()" mat-raised-button>Submit</button>
-    </mat-expansion-panel>
-  </mat-accordion>
-<mat-form-field *ngIf="_selectedKeyInfo.type != 'list'">    
-  <input
-    type="text"
-    [(ngModel)]="searchPattern"
-    matInput placeholder="Key/name/pattern" value="{{_selectedKeyInfo.keyScanInfo.pattern}}" #searchInput>
-    <button mat-button *ngIf="_selectedKeyInfo.keyScanInfo.pattern" matSuffix mat-icon-button aria-label="Clear"
-      (click)="searchInputChanged.emit('')">
-      <mat-icon>remove</mat-icon>
-    </button>
-    <button mat-button  matSuffix mat-icon-button aria-label="Search"
-      (click)="clickSearch()">
-      <mat-icon>search</mat-icon>
-    </button>
-</mat-form-field> 
-<div fxLayout="column" fxLayoutAlign="start stretch"  class="table-wrapper">
-  <table>
-    <thead>
-      <tr>
-        <th *ngIf="_selectedKeyInfo?.type == 'list'">Index</th>
-        <th [ngClass]="col == 'score' ? 'scoreCol' : ''" *ngFor="let col of displayedColumns;" >{{col | capitalize}} </th>      
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="clickableEntity" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''"  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
-        <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
-        <td (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})"
-        [matTooltip]="entity[col]" [matTooltipShowDelay]="300"
-          *ngFor="let col of displayedColumns">
-          {{entity[col] | ellipsis: 20}}
-        </td>
-        <td>
-          <button  class="t-icon" matTooltip="Delete"
-          (click)="deleteEntity.emit({entity: entity, keyInfo: _selectedKeyInfo})" mat-icon-button>
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </tr>
-      <tr *ngIf="_selectedKeyInfo?.keyScanInfo.hasMoreEntities">
-        <button class="loadKey"  mat-stroked-button (click)="loadMore(_selectedKeyInfo)">
-          Load More
-          <mat-icon>details</mat-icon>
-        </button> 
-      </tr>
-    </tbody>
-  </table>
+        <mat-form-field
+        *ngIf=" formModel?.formType == 'zset'">
+          <input matInput [(ngModel)]="formModel.score" placeholder="Score">
+        </mat-form-field> 
+        <mat-form-field
+          *ngIf=" formModel?.formType == 'list'">
+            <mat-select [(value)]="formModel.listAddType" placeholder="To..">
+              <mat-option [value]="'head'">
+                Head
+              </mat-option>
+              <mat-option  [value]="'tail'">
+                Tail
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <ul *ngIf="formModel.formErrors">
+            <li *ngFor="let err of formModel.formErrors">{{err}</li>
+          </ul>
+          <button mat-color="primary" (click)="submitNewValue()" mat-raised-button>Submit</button>
+      </mat-expansion-panel>
+    </mat-accordion>
+  <mat-form-field *ngIf="_selectedKeyInfo.type != 'list'">    
+    <input
+      type="text"
+      [(ngModel)]="searchPattern"
+      matInput placeholder="Key/name/pattern" value="{{_selectedKeyInfo.keyScanInfo.pattern}}" #searchInput>
+      <button mat-button *ngIf="_selectedKeyInfo.keyScanInfo.pattern" matSuffix mat-icon-button aria-label="Clear"
+        (click)="searchInputChanged.emit('')">
+        <mat-icon>remove</mat-icon>
+      </button>
+      <button mat-button  matSuffix mat-icon-button aria-label="Search"
+        (click)="clickSearch()">
+        <mat-icon>search</mat-icon>
+      </button>
+  </mat-form-field> 
+  <div #listTable fxLayout="column" fxLayoutAlign="start stretch"  class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th *ngIf="_selectedKeyInfo?.type == 'list'">Index</th>
+          <th [ngClass]="col == 'score' ? 'scoreCol' : ''" *ngFor="let col of displayedColumns;" >{{col | capitalize}} </th>      
+        </tr>
+      </thead>
+      <tbody>
+        <tr (click)="selectEntityIndex.emit({keyInfo: _selectedKeyInfo,index: i})" class="clickableEntity" [ngClass]="_selectedKeyInfo?.keyScanInfo.selectedEntityIndex == i ? 'selectedEntity' : ''"  *ngFor="let entity of _selectedKeyInfo?.keyScanInfo.entities; let i = index" >
+          <td *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
+          <td [matTooltip]="entity[col]" [matTooltipShowDelay]="300"
+            *ngFor="let col of displayedColumns">
+            {{entity[col] | ellipsis: 20}}
+          </td>
+          <td>
+          <button class="t-icon" mat-icon-button [matMenuTriggerFor]="entityMenu">
+              <mat-icon class="t-icon">more_vert</mat-icon>
+            </button>
+            <mat-menu #entityMenu="matMenu">
+              <button matTooltip="Delete"
+                (click)="deleteEntity.emit({entity: entity, keyInfo: _selectedKeyInfo})" mat-menu-item>
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+              <button (click)="renameKey.emit(node.key)" color="accent" mat-menu-item>
+                <mat-icon>edit</mat-icon>
+                <span>Rename</span>
+              </button>
+            </mat-menu>
+          </td>
+        </tr>
+        <tr *ngIf="_selectedKeyInfo?.keyScanInfo.hasMoreEntities">
+          <button class="loadKey"  mat-stroked-button (click)="loadMore(_selectedKeyInfo)">
+            Load More
+            <mat-icon>details</mat-icon>
+          </button> 
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="1px">
+    <ngx-codemirror 
+      [autoFocus]="true"
+      [name]="list-value-viewer"
+      [(ngModel)]="stringValue"
+      [options]="editorOptions"
+    ></ngx-codemirror>
+  </div>
 </div>
-</div>
-
 

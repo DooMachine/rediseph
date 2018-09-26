@@ -79,16 +79,19 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
                 keyInfo.keyScanInfo.entities = buildEntityModel(keyInfo);
                 keyInfo.keyScanInfo.hasMoreEntities = action.payload.keyInfo.keyScanInfo.hasMoreEntities;
             }
-            // If exist update if not add.
+            // If exist update
             if (newKeyInfo.keyInfos.findIndex(p => p.key === keyInfo.key) !== -1) {
                 newKeyInfo.keyInfos = newKeyInfo.keyInfos.map((p) => {
                     if (p.key === action.payload.keyInfo.key) {
+                        // set previously selected entity
+                        keyInfo.keyScanInfo.selectedEntityIndex = p.keyScanInfo.selectedEntityIndex;
                         return keyInfo;
                     }
                     return p;
                 });
                 newKeyInfo.selectedKeyQueue = prev.selectedKeyQueue;
-            } else {
+            } else { // if not add.
+                keyInfo.keyScanInfo.selectedEntityIndex = 0;
                 newKeyInfo.keyInfos.push(keyInfo);
                 newKeyInfo.selectedKeyQueue.push(keyInfo.key);
             }

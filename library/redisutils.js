@@ -61,11 +61,11 @@ async function scanKeyEntities(redisInstance,key, type, cursor, pattern = '*', f
   }
   await iterEntityScanNext();
 }
-async function handleListEntityScan(redisInstance,newSelectedKeyInfo, callback) {
+async function handleListEntityScan(redisInstance,keyInfo, callback) {
 
-  const start = newSelectedKeyInfo.keyScanInfo.pageIndex* newSelectedKeyInfo.keyScanInfo.pageSize;
-  const end = start + newSelectedKeyInfo.keyScanInfo.pageSize -1;
-  redisInstance.redis.lrange(newSelectedKeyInfo.key, start, end, async (err,resp) => {
+  const start = keyInfo.keyScanInfo.pageIndex* keyInfo.keyScanInfo.pageSize;
+  const end = start + keyInfo.keyScanInfo.pageSize -1;
+  redisInstance.redis.lrange(keyInfo.key, start, end, async (err,resp) => {
     await callback(resp);
   })
 }
@@ -231,7 +231,58 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         })
         break;
       }
-      // TODO: ADD REMOVE CASES.
+      case 'zrem':
+      {
+        const cmdArgs = args.splice(1);
+        pipeline.zrem(args[0], cmdArgs, async (e, result) => {
+          if (result) {
+            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
+          } else 
+          {
+            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
+          }
+        })
+        break;
+      }
+      case 'srem':
+      {
+        const cmdArgs = args.splice(1);
+        pipeline.srem(args[0], cmdArgs, async (e, result) => {
+          if (result) {
+            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
+          } else 
+          {
+            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
+          }
+        })
+        break;
+      }
+      case 'hdel':
+      {
+        const cmdArgs = args.splice(1);
+        pipeline.hdel(args[0], cmdArgs, async (e, result) => {
+          if (result) {
+            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
+          } else 
+          {
+            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
+          }
+        })
+        break;
+      }
+      case 'lrem':
+      {
+        const cmdArgs = args.splice(1);
+        pipeline.lrem(args[0], cmdArgs, async (e, result) => {
+          if (result) {
+            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
+          } else 
+          {
+            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
+          }
+        })
+        break;
+      }
       default:
         break;
     }
@@ -360,6 +411,7 @@ async function handleCmdOutputActions(redisInstance, actions) {
               'MATCH', action.payload.pattern,
               'COUNT', selectedKey.keyScanInfo.pageSize,
             async (e,[cursor,resp]) => {
+              console.log("resp from scan entity")
               console.log(resp)
               selectedKey.keyScanInfo.cursor  = cursor;    
               selectedKey.keyScanInfo.pattern = action.payload.pattern;         
@@ -369,6 +421,36 @@ async function handleCmdOutputActions(redisInstance, actions) {
           })
         }
         break;
+      }
+      case cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT:
+      {
+        const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
+        if (selectedKey) {
+          if(selectedKey.type == 'list') {
+            await redisInstance.redis.lrange(action.key,0,selectedKey.keyScanInfo.entities.length,
+            async (e, resp) => {
+              console.log(resp);
+              selectedKey.keyScanInfo.entities = resp;
+              selectedKey.keyScanInfo.hasMoreEntities = false;
+              nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo:selectedKey })
+            });
+          } else {
+            const pattern = selectedKey.keyScanInfo.pattern == '' ? "*" : selectedKey.keyScanInfo.pattern;
+            const scanMethod = SCAN_TYPE_MAP[selectedKey.type]
+            await redisInstance.redis[scanMethod](
+                selectedKey.key,
+                "0",
+                'MATCH', pattern,
+                'COUNT', selectedKey.keyScanInfo.entities.length,
+              async (e,[cursor,resp]) => {
+                selectedKey.keyScanInfo.cursor  = cursor;           
+                selectedKey.keyScanInfo.entities = resp;
+                selectedKey.keyScanInfo.selectedEntityIndex = 0;
+                nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo: selectedKey});
+            })
+          }
+          break;
+        }
       }
       default:
         break;
@@ -395,7 +477,7 @@ async function addNewKey(redisInstance, model, callback) {
   const pipeline = redisInstance.redis.pipeline();
   if (newType==='string')
   {
-    pipeline.set(model.key, "Modify This Value").get(model.key).exec(async (e,res) => {         
+    await pipeline.set(model.key, "Modify This Value").get(model.key).exec(async (e,res) => {         
       redisInstance.keys[model.key] = {type: newType}
       const newKeyInfo = {
         key: model.key,
@@ -424,13 +506,12 @@ async function addNewKey(redisInstance, model, callback) {
       }};
       const start = (newKeyInfo.keyScanInfo.pageIndex * newKeyInfo.keyScanInfo.pageSize);
       const end = start + newKeyInfo.keyScanInfo.pageSize -1;
-      redisInstance.redis.lrange(model.key,start,end, async (err,resp) => {
+      await redisInstance.redis.lrange(model.key,start,end, async (err,resp) => {
         if( err ) {
           nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: err})
         } else {
           newKeyInfo.keyScanInfo.entities = resp;
           newKeyInfo.keyScanInfo.hasMoreEntities = false;
-          newKeyInfo.keyScanInfo.pageIndex ++;
           redisInstance.selectedKeyInfo.push(newKeyInfo)
           nextIoActions.push({type: ioActions.NEW_KEY_ADDED, keyInfo:newKeyInfo })
         }
@@ -453,7 +534,7 @@ async function addNewKey(redisInstance, model, callback) {
       addLine.push("my_key")
     }
     addLine.push("my_value");
-    redisInstance.redis.call(commandMap[newType],addLine, async (e,res) => { 
+    await redisInstance.redis.call(commandMap[newType],addLine, async (e,res) => { 
       redisInstance.keys[model.key] = {type: newType}
       const newKeyInfo = {
         key: model.key,
@@ -462,13 +543,13 @@ async function addNewKey(redisInstance, model, callback) {
           entities : [],
           pageSize: 20,
           pageIndex: 0,
-          cursor: "",
+          cursor: "0",
           pattern:"*",
           hasMoreEntities: false,            
       }}
       
       const scanMethod = SCAN_TYPE_MAP[newType];
-      redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {
+      await redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {
         console.log(err);
         if( err ) {
           nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: err})
@@ -476,7 +557,6 @@ async function addNewKey(redisInstance, model, callback) {
           newKeyInfo.keyScanInfo.entities = resp;
           newKeyInfo.keyScanInfo.hasMoreEntities = false,
           newKeyInfo.keyScanInfo.cursor = cursor;
-          newKeyInfo.keyScanInfo.pageIndex ++;
           redisInstance.selectedKeyInfo.push(newKeyInfo);
           nextIoActions.push({type: ioActions.NEW_KEY_ADDED, keyInfo: newKeyInfo })
         }     

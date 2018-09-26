@@ -1,7 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { SelectedKeyInfo, NewEntityModel } from '../../models/redis';
-import { MatTableDataSource } from '@angular/material';
-import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-list-viewer',
@@ -10,9 +8,19 @@ import { FormControl } from '@angular/forms';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListViewerComponent implements OnInit {
-  @Output() searchInputChanged = new EventEmitter();
-  searchPattern = '';
+  // List Value Viewer
+  editorOptions = {
+    lineNumbers: false,
+    theme: 'material',
+    mode: 'markdown'
+  };
+  stringValue = '';
+  // List Value Viewer End
 
+  @Output() searchInputChanged = new EventEmitter();
+  @Output() pageIndexChanged = new EventEmitter();
+  searchPattern = '';
+  @ViewChild('listTable') tableRef: ElementRef;
   @Output() selectEntityIndex = new EventEmitter();
   @Output() newValueAdd = new EventEmitter();
   @Output() deleteEntity = new EventEmitter();
@@ -35,6 +43,10 @@ export class ListViewerComponent implements OnInit {
     this.formModel.key = v.key;
     this.searchPattern = v.keyScanInfo.pattern;
     this.isSelectible = v.type === 'set' || v.type === 'zset' || v.type === 'hset';
+    const selectedEntity = v.keyScanInfo.entities[v.keyScanInfo.selectedEntityIndex];
+    if (selectedEntity) {
+      this.stringValue = selectedEntity.value;
+    }
     if (this.isSelectible) {
       this.multipleActions.push({name: 'Delete', color: 'warn'});
     }
@@ -63,11 +75,17 @@ export class ListViewerComponent implements OnInit {
       default:
         break;
     }
+    // Scroll into previous selected entity
+    setTimeout(() => {
+      const selectedRef = this.tableRef.nativeElement.getElementsByClassName('selectedEntity')[0];
+      selectedRef.scrollIntoView();
+    }, 90);
   }
 
   constructor() { }
 
   ngOnInit() {
+
   }
   placeholderMap(type) {
     const mapper = {
@@ -87,5 +105,9 @@ export class ListViewerComponent implements OnInit {
   }
   clickSearch() {
     this.searchInputChanged.emit(this.searchPattern);
+  }
+  loadMore() {
+    const newPageIndex = this._selectedKeyInfo.keyScanInfo.pageIndex + 1;
+    this.pageIndexChanged.emit(newPageIndex);
   }
 }

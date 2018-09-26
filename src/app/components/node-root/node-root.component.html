@@ -18,12 +18,14 @@
           <app-list-viewer
             fxFlex="26"
             [selectedKeyInfo] = "keyInfo"
+            (pageIndexChanged) = "paginationChanged.emit({pageIndex: $event, key: keyInfo.key, redisId: redisId})"
             (searchInputChanged) = "paginationChanged.emit({pattern: $event, key: keyInfo.key, redisId: redisId})"
             (newValueAdd) = "newValueAdd.emit({model: $event, redisId: redisId})"
             (selectEntityIndex) = "selectEntityIndex.emit({info: $event,redisId:redisId})"
             (saveNewValue)= "updateStringValue.emit({info: {value: $event, keyInfo:keyInfo}, redisId: redisId})"
             (deleteEntity)= "deleteEntity.emit({info:$event, redisId: redisId})"
             >
+            
           </app-list-viewer>
         </div>      
           
