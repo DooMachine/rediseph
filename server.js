@@ -125,7 +125,8 @@ io.on('connection', (client) => {
                  * Get actions according to monitor or user commands, execute modifications to all redis users.
                  */
                 redisInstance.ioStreamer.subscribe(async (acts)=> {
-                    acts = _.uniq(acts, 'type');
+                    acts = _.uniqWith(acts, _.isEqual);
+                    
                     for (let i = 0; i < acts.length; i++) {
                         const action = acts[i];
                         switch (action.type) {
@@ -451,6 +452,8 @@ io.on('connection', (client) => {
                 data.pattern,
                 keyInfo.keyScanInfo.pageSize,
                 async (entities, cursor) => {
+                    console.log(entities);
+                    console.log(cursor);
                     // if search, start from zero
                     if (data.pattern || data.pattern == '') {
                         keyInfo.keyScanInfo.entities = entities;

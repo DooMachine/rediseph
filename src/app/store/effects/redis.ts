@@ -198,6 +198,14 @@ export class RedisEffects {
                 }
             )
         );
+    @Effect()
+    selectedKeysUpdated$: Observable<Action> =
+        this.redisService.selectedNodeKeysUpdated$.pipe( // listen to the socket for SELECTED KEY UPDATES
+            switchMap((resp) =>  {
+                    return of(new keyActions.SelectedKeysUpdated(resp));
+                }
+            )
+        );
     @Effect({dispatch: false})
     selectedKeyPaginationChange$ = this.actions$
         .pipe(

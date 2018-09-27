@@ -105,6 +105,38 @@ export function reducer(state = initialState, action: keyActions.SelectedKeyActi
             return adapter.updateOne({id: action.payload.redisId,
                 changes: {keyInfos: newKeyInfo.keyInfos, selectedKeyQueue: newKeyInfo.selectedKeyQueue }}, state);
         }
+        case keyActions.SelectedKeyActionTypes.SELECTED_KEYS_UPDATED: {
+            const prev = state.entities[action.payload.redisId];
+            const newKeyInfo = Object.assign({}, prev);
+            const newkeyInfos = action.payload.selectedKeyInfo.map((keyInfo) => {
+                if (keyInfo.type !== 'string') {
+                    keyInfo.keyScanInfo.entities = buildEntityModel(keyInfo);
+                    if (keyInfo.keyScanInfo.entities) {
+                        keyInfo.keyScanInfo.selectedEntityIndex = 0;
+                    }
+                }
+                if (newKeyInfo.keyInfos.findIndex(p => p.key === keyInfo.key) !== -1) {
+                    newKeyInfo.keyInfos = newKeyInfo.keyInfos.map((p) => {
+                        if (p.key === keyInfo.key) {
+                            // set previously selected entity
+                            if (keyInfo.type !== 'string') {
+                                keyInfo.keyScanInfo.selectedEntityIndex = p.keyScanInfo.selectedEntityIndex;
+                            }
+                            return keyInfo;
+                        }
+                        return p;
+                    });
+                    newKeyInfo.selectedKeyQueue = prev.selectedKeyQueue;
+                } else { // if not add.
+                    keyInfo.keyScanInfo.selectedEntityIndex = 0;
+                    newKeyInfo.keyInfos.push(keyInfo);
+                    newKeyInfo.selectedKeyQueue.push(keyInfo.key);
+                }
+                return keyInfo;
+            });
+            return adapter.updateOne({id: action.payload.redisId,
+                changes: {keyInfos: newkeyInfos, selectedKeyQueue: prev.selectedKeyQueue }}, state);
+        }
         case keyActions.SelectedKeyActionTypes.CHANGE_TAB_INDEX_KEY: {
             const prevQueue = state.entities[action.payload.redisId].selectedKeyQueue;
             const newQueue = [...prevQueue];

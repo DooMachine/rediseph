@@ -19,6 +19,7 @@ export enum SelectedKeyActionTypes {
     ENTITY_PAGINATION_CHANGED = '[SelectedKey] ENTITY_PAGINATION_CHANGED',
 
     SELECTED_NODE_KEY_UPDATED = '[SelectedKey] SELECTED_NODE_KEY_UPDATED',
+    SELECTED_KEYS_UPDATED = '[SelectedKey] SELECTED_KEYS_UPDATED',
 
     CHANGE_TAB_INDEX_KEY = '[SelectedKe] CHANGE_TAB_INDEX_KEY',
 
@@ -77,6 +78,12 @@ export class SelectedNodeKeyUpdated implements Action {
 
     constructor(public payload: {keyInfo: SelectedKeyInfo, redisId: string}) { }
 }
+export class SelectedKeysUpdated implements Action {
+    readonly type = SelectedKeyActionTypes.SELECTED_KEYS_UPDATED;
+
+    constructor(public payload: {selectedKeyInfo: Array<SelectedKeyInfo>, redisId: string}) { }
+}
+
 export class ChangeTabIndexKey implements Action {
     readonly type = SelectedKeyActionTypes.CHANGE_TAB_INDEX_KEY;
 
@@ -97,6 +104,7 @@ export type SelectedKeyActions
                         | AddSelectedKeySuccess
                         | RemoveSelectedKey
                         | SelectedNodeKeyUpdated
+                        | SelectedKeysUpdated
                         | RemoveSelectedKeySuccess
                         | ChangeTabIndexKey
                         | SetSelectedEntityIndex

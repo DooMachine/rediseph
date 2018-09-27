@@ -75,7 +75,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
   let shouldSkipNextCmdActions = false;
   for (let c = 0; c < monitorCommands.length; c++) {
     const args = monitorCommands[c];
-    command = args[0].toLowerCase();
+    const command = args[0].toLowerCase();
     if(command === 'del') {
       const keys = args.splice(1);
       nextCmdActions.push({type:  cmdactions.DEL_KEYS, payload:{keys: keys}});
@@ -87,19 +87,19 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
     } else if (command == 'renamenx' || command == 'rename') {      
       nextCmdActions.push(cmdactions.SCAN_TILL_CURRENT_CURSOR);
     } else if (command == 'lpush') {
-      key = args[1];
+      const key = args[1];
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
       if (selectedKey) {
         nextCmdActions.push({type: cmdactions.ADD_SINGLE_FROM_LIST_HEAD, payload: {key: key}})
       }
     } else if (command == 'rpush') {
-      key = args[1];
+      const key = args[1];
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
       if (selectedKey) {
         nextCmdActions.push({type: cmdactions.ADD_SINGLE_FROM_LIST_TAIL, payload: {key: key}})
       }
-    } else if (command == 'hmset' || command == 'hset' || command == 'zset' || command == 'sadd') {
-      key = args[1];
+    } else if (command == 'hmset' ||  command == 'hdel' || command == 'lset' || command == 'lrem' || command == 'hset'|| command == 'hrem' || command == 'zset' || command=='zrem'|| command == 'zadd' || command == 'sadd' || command == 'srem') {
+      const key = args[1];
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
       if (selectedKey) {
         nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: key}})
@@ -116,6 +116,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
     return ioActionCallback(nextIoActions);
   }
   const fromCommandIoActions = await handleCmdOutputActions(redisInstance,nextCmdActions);
+  console.log("fromCommandIoActions");
   console.log(fromCommandIoActions);
   return ioActionCallback([...nextIoActions,...fromCommandIoActions]);
 }
@@ -123,13 +124,10 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
 async function handleCommandExecution(redisInstance,commands, callback) {
   let nextCmdActions = [];
   let nextIoActions = [];
-  console.log("COMMADS =")
-  console.log(commands);
   const pipeline = redisInstance.redis.pipeline();
   for (let i = 0; i < commands.length; i++) {
     const cmd = commands[i][0].toLowerCase();
     const args = commands[i][1];
-    console.log(args);
     switch (cmd) {
       case 'del':
       {
@@ -180,6 +178,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       }
       case 'zadd':
       {
+        console.log(args);
         const cmdArgs = args.splice(1);
         pipeline.zadd(args[0],cmdArgs, async (e, result) => {
           if(result) {
@@ -308,7 +307,24 @@ async function handleCommandExecution(redisInstance,commands, callback) {
 }
 
 async function handleCmdOutputActions(redisInstance, actions) {
-  console.log("coutpo");
+  
+  actions = _.uniqWith(actions, _.isEqual);
+  // const isCmdActionsExist = (type, key) => {
+  //   return actions.find((p) => p.type == type && p.key == key);
+  // }
+  /**
+   * If we have all scan, we dont need single addition.
+   */
+  // actions = actions.filter((action) => {
+  //   if (action.type == cmdactions.GET_NEXT_SCAN_ENTITY 
+  //     || action.type == cmdactions.ADD_SINGLE_FROM_LIST_TAIL 
+  //     || action.type == cmdactions.ADD_SINGLE_FROM_LIST_HEAD) {
+  //     if (!isCmdActionsExist(cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, action.key)) {
+  //       return action;
+  //     }
+  //   }
+  //   return action;
+  // })
   console.log(actions);
   let nextIoActions = [];
   for (let i = 0; i < actions.length; i++) {
@@ -333,7 +349,8 @@ async function handleCmdOutputActions(redisInstance, actions) {
         if (shouldUpdateLocalTree) {          
           nextIoActions.push({type: ioActions.UPDATE_LOCAL_TREE})
         }
-        if(shouldUpdateSelectedNodes) {          
+        if(shouldUpdateSelectedNodes) {  
+          console.log("DAF")        
           nextIoActions.push({type: ioActions.SELECTED_NODES_UPDATED})
         }
         break;

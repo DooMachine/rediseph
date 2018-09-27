@@ -64,7 +64,7 @@
           <td *ngIf="_selectedKeyInfo?.type == 'list'">{{i}}</td>
           <td [matTooltip]="entity[col]" [matTooltipShowDelay]="300"
             *ngFor="let col of displayedColumns">
-            {{entity[col] | ellipsis: 20}}
+              {{entity[col] | ellipsis: 20}}
           </td>
           <td>
           <button class="t-icon" mat-icon-button [matMenuTriggerFor]="entityMenu">
@@ -83,14 +83,12 @@
             </mat-menu>
           </td>
         </tr>
-        <tr *ngIf="_selectedKeyInfo?.keyScanInfo.hasMoreEntities">
-          <button class="loadKey"  mat-stroked-button (click)="loadMore(_selectedKeyInfo)">
-            Load More
-            <mat-icon>details</mat-icon>
-          </button> 
-        </tr>
       </tbody>
     </table>
+    <button *ngIf="_selectedKeyInfo?.keyScanInfo.hasMoreEntities" class="loadKey"  mat-stroked-button (click)="loadMore(_selectedKeyInfo)">
+      Load More
+      <mat-icon>details</mat-icon>
+    </button> 
   </div>
   </div>
   <div fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="8px">    
@@ -102,7 +100,16 @@
         *ngIf="!isRealtime"
         matTooltip="Refresh Value" color="accent" mat-icon-button>
           <mat-icon >sync</mat-icon>
-      </button>
+      </button>      
+      <mat-form-field
+      appearance="outline"
+      *ngIf=" formModel?.formType == 'zset'">
+        <mat-label>Score</mat-label>
+        <input matInput 
+        type="number"
+        (ngModelChange)="scoreValue = $event"
+        [ngModel]="_selectedKeyInfo?.keyScanInfo.entities[_selectedKeyInfo.keyScanInfo.selectedEntityIndex]?.score" placeholder="Score">
+      </mat-form-field>
     </div>
     <ngx-codemirror 
       *ngIf="_selectedKeyInfo"

@@ -15,6 +15,7 @@ export class RedisSocketService {
     stoppedWatchChanges$: Observable<any>;
     nodeKeySelected$: Observable<any>;
     selectedNodeKeyUpdated$: Observable<any>;
+    selectedNodeKeysUpdated$: Observable<any>;
     deselectNodeSuccess$: Observable<any>;
     newKeyAdded$: Observable<any>;
     errorExecutingCommand$: Observable<any>;
@@ -27,8 +28,9 @@ export class RedisSocketService {
         this.redisUpdated$ = this.socket.listen('[Redis] REDIS_INSTANCE_UPDATED');
         this.startedWatchChanges$ = this.socket.listen('[Redis] WATCHING_CHANGES');
         this.stoppedWatchChanges$ = this.socket.listen('[Redis] STOPPED_WATCH_CHANGES');
-        this.nodeKeySelected$ = this.socket.listen('[Redis] SET_SELECTED_NODE_SUCCESS');
+        this.nodeKeySelected$ = this.socket.listen('[Redis] NODE_SELECT_SUCCESS');
         this.selectedNodeKeyUpdated$ = this.socket.listen('[Redis] SELECTED_NODE_UPDATED');
+        this.selectedNodeKeysUpdated$ = this.socket.listen('[Redis] SELECTED_NODES_UPDATED');
         this.deselectNodeSuccess$ = this.socket.listen('[Redis] DESELECTED_NODE_SUCCESS');
         this.newKeyAdded$ = this.socket.listen('[Redis] NEW_KEY_ADDED');
         this.errorExecutingCommand$ = this.socket.listen('[Redis] ERROR_EXECUTING_COMMAND');

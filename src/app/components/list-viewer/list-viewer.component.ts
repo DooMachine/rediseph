@@ -15,6 +15,7 @@ export class ListViewerComponent implements OnInit {
     mode: 'markdown'
   };
   stringValue = '';
+  scoreValue = 0;
   // List Value Viewer End
 
   @Output() searchInputChanged = new EventEmitter();
@@ -48,6 +49,7 @@ export class ListViewerComponent implements OnInit {
     this.selectedEntity = v.keyScanInfo.entities[v.keyScanInfo.selectedEntityIndex];
     if (this.selectedEntity) {
       this.stringValue = this.selectedEntity.value;
+      this.scoreValue = this.selectedEntity.score;
     }
     if (this.isSelectible) {
       this.multipleActions.push({name: 'Delete', color: 'warn'});
@@ -117,6 +119,12 @@ export class ListViewerComponent implements OnInit {
   }
   saveEntityValue() {
     const selectedVal = this._selectedKeyInfo.keyScanInfo.entities[this._selectedKeyInfo.keyScanInfo.selectedEntityIndex];
-    this.updateEntiyValue.emit({newValue: this.stringValue, entity: selectedVal, key: this._selectedKeyInfo});
+    console.log(this.scoreValue);
+    this.updateEntiyValue.emit({
+      newValue: this.stringValue,
+      newScoreValue: this.scoreValue,
+      entity: selectedVal,
+      key: this._selectedKeyInfo
+    });
   }
 }

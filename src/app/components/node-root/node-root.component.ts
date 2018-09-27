@@ -32,10 +32,10 @@ export class NodeRootComponent implements OnInit {
     this.selectedTabIndex = sIndex === -1 ? 0 : sIndex;
   }
   private typeIconMap = {
-    list: 'list',
+    list: 'subject',
     set: 'settings_ethernet',
     zset: 'format_list_numbered',
-    hash: 'subject',
+    hash: 'list',
     string: 'text_fields'
   };
   constructor() { }

@@ -124,7 +124,7 @@ export const buildUpdateEntityQuery = (model: any): Array<any> => {
             const deline = [model.key.key, model.entity.value];
             delq.push(deline);
             const adq: Array<any> = ['zadd'];
-            const addLine = [model.key.key, model.entity.score, model.newValue];
+            const addLine = [model.key.key, model.newScoreValue, model.newValue];
             adq.push(addLine);
             args.push(delq);
             args.push(adq);

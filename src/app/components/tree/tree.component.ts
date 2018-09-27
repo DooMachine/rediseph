@@ -19,10 +19,10 @@ export class TreeComponent {
   searchInputControlSub: Subscription;
 
   private typeIconMap = {
-      list: 'list',
+      list: 'subject',
       set: 'settings_ethernet',
       zset: 'format_list_numbered',
-      hash: 'subject',
+      hash: 'list',
       string: 'text_fields'
   };
 
