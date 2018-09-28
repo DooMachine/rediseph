@@ -1,5 +1,6 @@
 const express = require('express');
 const socketio = require('socket.io');
+const path = require('path');
 const _ = require('lodash');
 const uuid = require('uuid');
 const Redis = require('ioredis');
@@ -30,9 +31,10 @@ app.use(function(req, res, next) {
 
 const router = express.Router();              
 
-// TODO: Serve Angular APP
-router.get('/', (req, res) => {
-    res.json({ health: 'OK', ...db });
+app.use(express.static(path.resolve(__dirname, 'dist', 'rediseph')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'dist', 'rediseph', 'index.html'));
 });
 
 app.use('/', router);
@@ -75,7 +77,8 @@ io.on('connection', (client) => {
                     keyInfo:previousConnectedRedis.keyInfo,
                     keys: previousConnectedRedis.keys,
                     serverInfo: previousConnectedRedis.redis.serverInfo,
-                    selectedKeyInfo: previousConnectedRedis.selectedKeyInfo
+                    selectedKeyInfo: previousConnectedRedis.selectedKeyInfo,
+                    terminalInfo: previousConnectedRedis.terminalInfo
                 })
         } else {
             let roomId = uuid();
@@ -232,7 +235,8 @@ io.on('connection', (client) => {
                                 keyInfo:redisInstance.keyInfo,
                                 keys: keys,
                                 serverInfo: redis.serverInfo,
-                                selectedKeyInfo: []
+                                selectedKeyInfo: [],
+                                terminalInfo: redisInstance.terminalInfo
                             })
                 });
             });

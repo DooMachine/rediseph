@@ -35,7 +35,7 @@ export class RedisEffects {
                     const newCliInstance: RedisCli = {
                         redisHostName: resp.redisInfo.ip,
                         redisId: resp.redisInfo.id,
-                        lines: [],
+                        lines: resp.terminalInfo.lines,
                         isLoading: false,
                         showCli: false,
                     };

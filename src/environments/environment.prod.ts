@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
-  SCAN_PAGE_SIZE: 40,
+  SCAN_PAGE_SIZE: 100,
   socket: {
-    baseUrl: 'http://localhost:3003',
+    baseUrl: '/',
     config: {}
   }
 };

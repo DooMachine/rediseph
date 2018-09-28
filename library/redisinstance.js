@@ -24,7 +24,7 @@ module.exports = class RedisInstance {
             cursor: "0",
             previousCursors: [],
             pageIndex:0,
-            pageSize: process.env.SCAN_PAGE_SIZE || 8,
+            pageSize: process.env.SCAN_PAGE_SIZE || 100,
         }        
     }
   }

@@ -76,10 +76,10 @@
                 <mat-icon>delete</mat-icon>
                 <span>Delete</span>
               </button>
-              <button (click)="renameKey.emit(node.key)" color="accent" mat-menu-item>
+              <!--<button (click)="renameKey.emit(node.key)" color="accent" mat-menu-item>
                 <mat-icon>edit</mat-icon>
                 <span>Rename</span>
-              </button>
+              </button>-->
             </mat-menu>
           </td>
         </tr>
@@ -96,11 +96,11 @@
       <div fxLayout="row" fxLayoutAlign="end start" fxLayoutGap="2px">
           <button color="accent" (click)="saveEntityValue()" mat-stroked-button>Save Changes</button>
       </div>
-      <button
+      <!--<button
         *ngIf="!isRealtime"
         matTooltip="Refresh Value" color="accent" mat-icon-button>
           <mat-icon >sync</mat-icon>
-      </button>      
+      </button>-->  
       <mat-form-field
       appearance="outline"
       *ngIf=" formModel?.formType == 'zset'">

@@ -38,6 +38,9 @@ export class RedisInstance {
   expandedNodeKeys = [];
   rootSelected = true;
   id = '';
+  name: string;
+  ip: string;
+  db: string;
   keyInfo = new KeyInfo();
   selectedKeyInfo = new SelectedKeyInfo();
   info: TableInfo<RedisInfo> = {

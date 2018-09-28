@@ -17,7 +17,6 @@ import { AddRedisModalComponent } from './components/add-redis-modal/add-redis-m
 import { RootInfoComponent } from './components/root-info/root-info.component';
 import { AddKeyModalComponent } from './components/add-key-modal/add-key-modal.component';
 import { NodeRootComponent } from './components/node-root/node-root.component';
-import { NodeTreeComponent } from './components/node-tree/node-tree.component';
 import { StringViewerComponent } from './components/string-viewer/string-viewer.component';
 import { environment } from '../environments/environment';
 import { ListViewerComponent } from './components/list-viewer/list-viewer.component';
@@ -39,7 +38,6 @@ import { RenameDialogComponent } from './components/rename-dialog/rename-dialog.
     AddKeyModalComponent,
     RootInfoComponent,
     NodeRootComponent,
-    NodeTreeComponent,
     StringViewerComponent,
     ListViewerComponent,
     LremDialogComponent,

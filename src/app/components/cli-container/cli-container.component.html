@@ -10,7 +10,7 @@
   <div *ngIf="currentRedisCli?.showCli" class="cli-lines dark-theme">
     <div fxLayout="column" fxLayoutAlign="start stretch" fxLayoutGap="2px">
       <div fxLayout="column" fxLayoutAlign="start stretch" #lineArea class="line-area">
-        <div  *ngFor="let line of currentRedisCli?.lines; let last = last">
+        <div class="p-line"  *ngFor="let line of currentRedisCli?.lines; let last = last">
           {{line}} {{last ? scrollToBottom() : ''}}
         </div>
       </div>
@@ -18,7 +18,7 @@
         <div class="cli-input-area" fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="2px">
           <mat-icon class="small-cli">chevron_right</mat-icon>
           <input [value]="cliInput" (input)="cliInput = $event.target.value"  fxFlex matInput autocomplete="off" type="text" autofocus>
-          <button matTooltip="Send Command / Enter" type="submit" mat-icon-button><mat-icon>send</mat-icon></button>
+          <button matTooltip="Click this or Tap enter" type="submit" mat-icon-button><mat-icon>send</mat-icon></button>
         </div>
       </form>
     </div>
