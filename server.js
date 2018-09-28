@@ -203,11 +203,12 @@ io.on('connection', (client) => {
                             }          
                             case ioActions.ERROR_EXECUTING_COMMAND:
                             {
-                                // Only sender should see error
+                                // Only sender(client) should see error
                                 client.emit(actions.ERROR_EXECUTING_COMMAND,
                                     {
                                         error: action.error,
                                     })
+                                break;
                             }                
                             default:
                                 break;
@@ -215,7 +216,7 @@ io.on('connection', (client) => {
                     }
                 })
                 /**
-                 * Start scan with cursor 0
+                 * Start scan with cursor 0, Then emit success action
                  */
                 redisutils.scanRedisTree(redisInstance,
                     redisInstance.keyInfo.cursor,

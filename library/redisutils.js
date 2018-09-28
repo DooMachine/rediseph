@@ -104,10 +104,11 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
       }
     } else if(command == 'rename' || command == 'renamenx') {
       const key = args[1];
+      // TODO: Should we check if renamed key exist to refresh?
       nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT, payload: {key: key}})
-      // Check if user selected the key, update the tab.
+      // Check if user selected the key, update the tab key..
       nextCmdActions.push({type: cmdactions.RENAME_KEY_IF_SELECTED, payload: {key: args[1], newKey: args[2]}})
-    } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
+    } else if (shouldRemoveTreeCommands.indexOf(command) !== -1) {
       redisInstance.keys = {};
       redisInstance.selectedKeyInfo = [];
       shouldSkipNextCmdActions = true;

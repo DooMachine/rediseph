@@ -1,6 +1,6 @@
 {
   "name": "rediseph",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "node server",
@@ -9,7 +9,8 @@
     "postinstall": "ng build --aot --prod",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "release": "release-it"
   },
   "private": true,
   "dependencies": {
@@ -65,6 +66,7 @@
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
     "tslint": "~5.11.0",
-    "typescript": "~2.9.2"
+    "typescript": "~2.9.2",
+    "release-it": "^7.4.7"
   }
 }
