@@ -6,7 +6,7 @@
     "start": "node server",
     "build": "ng build --prod --aot",
     "deploy-heroku": "git push origin master && git push heroku master",
-    "postinstall": "ng build --aot -prod",
+    "postinstall": "ng build --aot --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
