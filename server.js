@@ -471,14 +471,11 @@ io.on('connection', (client) => {
         }
         // In case of refresh (Maybe after user start monitoring)
         const keyInfo = redisInstance.selectedKeyInfo.find(p => p.key === data.key);
-        console.log(data);
         if(data.pattern || data.pattern == '') {
-            console.log(data.pattern);
             keyInfo.keyScanInfo.pageIndex = 0;
             keyInfo.keyScanInfo.cursor = "0";
             keyInfo.keyScanInfo.pattern = data.pattern;
         }
-        console.log(data);
         if (data.pageSize) {
             keyInfo.keyScanInfo.pageSize = data.pageSize;
         }
@@ -499,8 +496,6 @@ io.on('connection', (client) => {
                 data.pattern,
                 keyInfo.keyScanInfo.pageSize,
                 async (entities, cursor) => {
-                    console.log(entities);
-                    console.log(cursor);
                     // if search, start from zero
                     if (data.pattern || data.pattern == '') {
                         keyInfo.keyScanInfo.entities = entities;

@@ -14,7 +14,6 @@ async function scanRedisTree(redisInstance, cursor, pattern = '*', fetchCount = 
   {
     pattern = '*';
   }
-  console.log("s-1")
   async function scanNext () {
     const keyRoot = {};
     let newCursor = 0;
@@ -70,7 +69,6 @@ async function handleListEntityScan(redisInstance,keyInfo, callback) {
   })
 }
 async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCallback) {
-  console.log(monitorCommands);
   let nextIoActions = [];
   let nextCmdActions = [];
   let shouldSkipNextCmdActions = false;
@@ -104,13 +102,18 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
       if (selectedKey) {
         nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: key}})
       }
+    } else if(command == 'rename' || command == 'renamenx') {
+      const key = args[1];
+      nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT, payload: {key: key}})
+      // Check if user selected the key, update the tab.
+      nextCmdActions.push({type: cmdactions.RENAME_KEY_IF_SELECTED, payload: {key: args[1], newKey: args[2]}})
     } else if (shouldRemoveTreeCommands.indexOf(command) != -1) {
-        redisInstance.keys = {};
-        redisInstance.selectedKeyInfo = [];
-        shouldSkipNextCmdActions = true;
-        nextIoActions.push({type:  ioActions.UPDATE_LOCAL_TREE})
-        nextIoActions.push({type:  ioActions.SELECTED_NODES_UPDATED})
-    }  
+      redisInstance.keys = {};
+      redisInstance.selectedKeyInfo = [];
+      shouldSkipNextCmdActions = true;
+      nextIoActions.push({type:  ioActions.UPDATE_LOCAL_TREE})
+      nextIoActions.push({type:  ioActions.SELECTED_NODES_UPDATED})
+    }
     // we should track this explicitly
     if (refreshNeedCommands.indexOf(command) != -1) {      
       nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT});
@@ -238,6 +241,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         const cmdArgs = args.splice(1);
         console.log(cmdArgs);
         pipeline[cmd](args[0], cmdArgs, async (e, result) => {
+          console.log(result);
           if (result) {
             nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT, payload: {key: args[0]}})
             // Check if user selected the key, update the tab.
@@ -254,6 +258,8 @@ async function handleCommandExecution(redisInstance,commands, callback) {
     }
   }  
   await pipeline.exec( async (_, results) => {
+    console.log("nextCmdActions")
+    console.log(nextCmdActions);
     let cmdOutIoActions = [];
     if (nextCmdActions.length && !redisInstance.isMonitoring) {
       cmdOutIoActions = await handleCmdOutputActions(redisInstance, nextCmdActions);
@@ -281,7 +287,6 @@ async function handleCmdOutputActions(redisInstance, actions) {
   //   }
   //   return action;
   // })
-  console.log(actions);
   let nextIoActions = [];
   for (let i = 0; i < actions.length; i++) {
     const action = actions[i];
@@ -414,7 +419,6 @@ async function handleCmdOutputActions(redisInstance, actions) {
               selectedKey.keyScanInfo.cursor  = cursor;    
               selectedKey.keyScanInfo.pattern = action.payload.pattern;         
               selectedKey.keyScanInfo.entities = resp;
-              selectedKey.keyScanInfo.selectedEntityIndex = 0;
               nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo: selectedKey});
           })
         }
@@ -440,7 +444,8 @@ async function handleCmdOutputActions(redisInstance, actions) {
                 'MATCH', pattern,
                 'COUNT', selectedKey.keyScanInfo.entities.length,
               async (e,[cursor,resp]) => {
-                selectedKey.keyScanInfo.cursor  = cursor;           
+                selectedKey.keyScanInfo.cursor  = cursor; 
+                selectedKey.keyScanInfo.hasMoreEntities  = cursor !== '0';            
                 selectedKey.keyScanInfo.entities = resp;
                 selectedKey.keyScanInfo.selectedEntityIndex = 0;
                 nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo: selectedKey});
@@ -468,8 +473,6 @@ async function handleCmdOutputActions(redisInstance, actions) {
         break;
     }
   }
-  console.log("NEXTIO")
-  console.log(nextIoActions);
   return nextIoActions;
 }
 
@@ -564,7 +567,7 @@ async function addNewKey(redisInstance, model, callback) {
       
       const scanMethod = SCAN_TYPE_MAP[newType];
       await redisInstance.redis[scanMethod](model.key, "0",'MATCH', "*", 'COUNT', 20, async (err, [cursor, resp]) => {
-        console.log(err);
+        
         if( err ) {
           nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: err})
         } else {

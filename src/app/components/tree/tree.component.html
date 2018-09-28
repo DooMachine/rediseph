@@ -18,7 +18,7 @@
       [ngClass]="isSelected(node) ? 'selectedNode' : ''"
      *matTreeNodeDef="let node" matTreeNodeToggle>
       <li fxLayout="row" fxLayoutAlign="space-between center" class="mat-tree-node">
-        <div [matTooltip]="node.displayName" [matTooltipShowDelay]="710" class="selector-area" (click)="!isSelected(node) ? nodeClick.emit(node) : return">
+        <div [matTooltip]="node.key" [matTooltipShowDelay]="710" class="selector-area" (click)="!isSelected(node) ? nodeClick.emit(node) : return">
           <button color="primary" mat-icon-button disabled>
             <mat-icon [matTooltip]="typeTooltipMap[node.type]">
               {{typeIconMap[node.type]}}
@@ -42,7 +42,6 @@
           </mat-menu>
         </div>
       </li>
-      
     </mat-tree-node>
     
     <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
