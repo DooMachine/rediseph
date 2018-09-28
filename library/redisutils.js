@@ -86,7 +86,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
         nextCmdActions.push({type: cmdactions.SET_KEYS, payload:{ keys: [key]}})          
       }   
     } else if (command == 'renamenx' || command == 'rename') {      
-      nextCmdActions.push({type: cmdactions.SCAN_TILL_CURRENT_CURSOR});
+      nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT});
     } else if (command == 'lpush') {
       const key = args[1];
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
@@ -116,7 +116,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
   if (shouldSkipNextCmdActions) {
     return ioActionCallback(nextIoActions);
   }
-  const fromCommandIoActions = await handleCmdOutputActions(redisInstance,nextCmdActions);
+  const fromCommandIoActions = await handleCmdOutputActions(redisInstance, nextCmdActions);
   console.log("fromCommandIoActions");
   console.log(fromCommandIoActions);
   return ioActionCallback([...nextIoActions,...fromCommandIoActions]);
@@ -375,6 +375,21 @@ async function handleCmdOutputActions(redisInstance, actions) {
         }
         break;
       }
+      case cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT:
+      {
+        const currentCount = Object.keys(redisInstance.keys).length;
+        await scanRedisTree(redisInstance, "0", redisInstance.keyInfo.pattern, currentCount, async (keys, cursor) => {
+          console.log("RESCAN REFRESH KEY COUNT")
+          console.log(currentCount);
+          console.log(keys);
+          redisInstance.keys = keys;
+          redisInstance.keyInfo.cursor = cursor;
+          redisInstance.keyInfo.hasMoreKeys = cursor !== "0";  
+          //TODO: handle better.., this is workaround
+          redisInstance.ioStreamer.next([{type: ioActions.UPDATE_LOCAL_TREE}])  
+        });
+        break;
+      }
       case cmdactions.SET_KEYS:
       {
         const newKeyAndTypes = {}
@@ -383,10 +398,13 @@ async function handleCmdOutputActions(redisInstance, actions) {
           newKeyAndTypes[key] = {type: 'string'}; 
           selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === key);
           if (selectedKey) {
-            console.log(selectedKey);
-            selectedKey.value= await redisInstance.redis.get(key);
-            selectedKey.exp = await redisInstance.redis.pttl(key);
-            nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo: selectedKey})
+            try {
+              selectedKey.value= await redisInstance.redis.get(key);
+              selectedKey.exp = await redisInstance.redis.pttl(key);
+              nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo: selectedKey})              
+            } catch (error) {
+              console.error(error);
+            }
           } 
         }
         redisInstance.keys = Object.assign({},redisInstance.keys,newKeyAndTypes);

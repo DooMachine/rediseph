@@ -124,7 +124,7 @@ io.on('connection', (client) => {
                 /**
                  * Get actions according to monitor or user commands, execute modifications to all redis users.
                  */
-                redisInstance.ioStreamer.subscribe(async (acts)=> {
+                redisInstance.ioStreamer.subscribe((acts)=> {
                     acts = _.uniqWith(acts, _.isEqual);
                     
                     for (let i = 0; i < acts.length; i++) {

@@ -31,9 +31,6 @@ export function reducer(state = initialState, action: cliActions.CliActions): St
         case cliActions.CliActionTypes.ADD_NEW_CLI:
         {
             action.payload.lines = [];
-            for (let i = 0; i < 134; i++) {
-                action.payload.lines.push('Line No' + i.toString());
-            }
             return adapter.addOne(action.payload, state);
         }
         case cliActions.CliActionTypes.TOGGLE_CLI:
