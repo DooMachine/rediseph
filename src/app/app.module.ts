@@ -27,6 +27,7 @@ import { RootContainerComponent } from './components/root-container/root-contain
 import { LremDialogComponent } from './components/lrem-dialog/lrem-dialog.component';
 import { CliContainerComponent } from 'src/app/components/cli-container/cli-container.component';
 import { CliComponent } from './components/cli/cli.component';
+import { RenameDialogComponent } from './components/rename-dialog/rename-dialog.component';
 
 @NgModule({
   declarations: [
@@ -42,13 +43,14 @@ import { CliComponent } from './components/cli/cli.component';
     StringViewerComponent,
     ListViewerComponent,
     LremDialogComponent,
+    RenameDialogComponent,
     CliContainerComponent,
     CliComponent,
 
     EllipsisPipe,
     CapitalizePipe
   ],
-  entryComponents: [AddRedisModalComponent, AddKeyModalComponent, LremDialogComponent],
+  entryComponents: [AddRedisModalComponent, AddKeyModalComponent, LremDialogComponent, RenameDialogComponent],
   imports: [
     BrowserModule,
     NoopAnimationsModule,

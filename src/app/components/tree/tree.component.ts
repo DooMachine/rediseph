@@ -45,6 +45,7 @@ export class TreeComponent implements AfterViewInit {
   @Output() nodeClick = new EventEmitter();
   @Output() expandClick = new EventEmitter();
   @Output() deleteClick = new EventEmitter();
+  @Output() renameClick = new EventEmitter();
   @Output() loadMore = new EventEmitter();
   @Output() addFolderKey = new EventEmitter();
   @Input('redisTree')

@@ -9,7 +9,8 @@ import { MatDialog } from '@angular/material';
 import { selectAllRedisInstances, getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from '../../store/reducers';
 import { AddRedisModalComponent } from '../add-redis-modal/add-redis-modal.component';
 import { AddKeyModalComponent } from '../add-key-modal/add-key-modal.component';
-import { buildDELQuery, buildSETQuery } from '../../utils/commandutils';
+import { buildDELQuery, buildSETQuery, buildRENAMEQuery } from '../../utils/commandutils';
+import { RenameDialogComponent } from '../rename-dialog/rename-dialog.component';
 
 @Component({
   selector: 'app-root-container',
@@ -127,6 +128,25 @@ export class RootContainerComponent implements OnInit {
   updateStringKeyValue($event) {
     const args = buildSETQuery($event.info);
     this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
+  }
+
+  renameNode($event) {
+    console.log($event);
+    const dialogData = {
+      newKey: $event.node.key,
+      node: $event.node
+    };
+    const dialogRef = this.dialog.open(RenameDialogComponent, {
+      data: dialogData,
+      width: '300px'
+    });
+
+    dialogRef.afterClosed().subscribe((res) => {
+      if (res) {
+        const args = buildRENAMEQuery($event.node, dialogData.newKey);
+        this.store.dispatch(new redisActions.ExecuteCommand({command: args, redisId: $event.redisId}));
+      }
+    });
   }
 
 }

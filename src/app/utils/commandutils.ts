@@ -20,6 +20,9 @@ export const buildSETQuery = (info: any): Array<any> => {
 export const buildDELQuery = (node: RedisNode ): Array<any> => {
     return [['del', recursiveSpreadNodes(node)]];
 };
+export const buildRENAMEQuery = (node: RedisNode, newKey: string): Array<any> => {
+    return [['rename', [node.key, newKey]]];
+};
 export const buildNewEntityQuery = (model: NewEntityModel): Array<any> => {
     const args = [];
     const lineArgs = [];
