@@ -94,6 +94,7 @@ export class RedisEffects {
                 return of();
             }),
         );
+
     @Effect({dispatch: false})
     erroeExecutingCommand$: Observable<Action> =
         this.redisService.errorExecutingCommand$.pipe(
@@ -101,6 +102,23 @@ export class RedisEffects {
                 this.snackBar.open(resp.error ? resp.error.message : 'Could not uptade redis!', 'Ok', { duration: 2000 });
                 return of();
             })
+        );
+    @Effect({dispatch: false})
+    executeCliCommand$ = this.actions$
+        .pipe(
+            ofType(cliActions.CliActionTypes.EXECUTE_LINE),
+            mergeMap((action: cliActions.ExecuteLine) => {
+                this.redisService.executeTerminalLine(action.payload);
+                return of();
+            }),
+        );
+    @Effect()
+    terminalResponse$: Observable<Action> =
+        this.redisService.terminalResponse$.pipe( // listen to the socket for REDIS UPDATES
+            mergeMap((resp) =>  {
+                    return of(new cliActions.ExecuteLineResponse(resp));
+                }
+            )
         );
     @Effect({dispatch: false})
     loadNextPage$ = this.actions$

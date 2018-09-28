@@ -1,13 +1,15 @@
 
 
 const Subject = require('rxjs').Subject;
-const SelectedKeyInfo = require('./selectedkeyinfo');
 
 module.exports = class RedisInstance {
     constructor(roomId,connectionInfo,redis) {
         this.roomId = roomId,
         this.connectionInfo= connectionInfo,
         this.redis= redis,
+        this.terminalInfo = {
+            lines: ['Connecting to '+ this.connectionInfo.ip],            
+        },
         this.cmdStreamer= new Subject(),
         this.ioStreamer= new Subject(),
         this.monitorDebouncer = new Subject(),

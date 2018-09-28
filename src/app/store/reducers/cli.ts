@@ -42,6 +42,12 @@ export function reducer(state = initialState, action: cliActions.CliActions): St
             return adapter.updateOne({id: action.payload.redisId,
                 changes: {showCli: action.payload.show == null ? !prev : action.payload.show}}, state);
         }
+        case cliActions.CliActionTypes.EXECUTE_LINE_RESPONSE:
+        {
+            const prev = state.entities[action.payload.redisId];
+            return adapter.updateOne({id: action.payload.redisId,
+                    changes: {lines: action.payload.terminalInfo.lines}}, state);
+        }
         default:
             return state;
     }

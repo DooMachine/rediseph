@@ -17,7 +17,7 @@
       <form (ngSubmit)="onSubmit()" novalidate>
         <div class="cli-input-area" fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="2px">
           <mat-icon class="small-cli">chevron_right</mat-icon>
-          <input [ngModelOptions]="{standalone: true}" fxFlex matInput autocomplete="off" type="text" autofocus [(ngModel)]="inputValue">
+          <input [value]="cliInput" (input)="cliInput = $event.target.value"  fxFlex matInput autocomplete="off" type="text" autofocus>
           <button matTooltip="Send Command / Enter" type="submit" mat-icon-button><mat-icon>send</mat-icon></button>
         </div>
       </form>

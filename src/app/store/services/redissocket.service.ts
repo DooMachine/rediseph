@@ -19,6 +19,7 @@ export class RedisSocketService {
     deselectNodeSuccess$: Observable<any>;
     newKeyAdded$: Observable<any>;
     errorExecutingCommand$: Observable<any>;
+    terminalResponse$: Observable<any>;
 
     constructor(private socket: SocketService) {
         // Every socket REDIS event has it's own observable, will be used by ngrx effects
@@ -34,6 +35,7 @@ export class RedisSocketService {
         this.deselectNodeSuccess$ = this.socket.listen('[Redis] DESELECTED_NODE_SUCCESS');
         this.newKeyAdded$ = this.socket.listen('[Redis] NEW_KEY_ADDED');
         this.errorExecutingCommand$ = this.socket.listen('[Redis] ERROR_EXECUTING_COMMAND');
+        this.terminalResponse$ = this.socket.listen('[Redis] EXECUTE_TERMINAL_LINE_RESPONSE');
     }
 
     // These methods will be called by ngrx effects (do not use directly in the components)
@@ -72,5 +74,9 @@ export class RedisSocketService {
     }
     updateEntityPagination(action) {
         this.socket.emit('[Redis] UPDATE_ENTITY_PAGINATION', action);
+    }
+
+    executeTerminalLine(action) {
+        this.socket.emit('[Redis] EXECUTE_TERMINAL_LINE', action);
     }
 }

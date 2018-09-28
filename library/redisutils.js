@@ -70,6 +70,7 @@ async function handleListEntityScan(redisInstance,keyInfo, callback) {
   })
 }
 async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCallback) {
+  console.log(monitorCommands);
   let nextIoActions = [];
   let nextCmdActions = [];
   let shouldSkipNextCmdActions = false;
@@ -85,7 +86,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
         nextCmdActions.push({type: cmdactions.SET_KEYS, payload:{ keys: [key]}})          
       }   
     } else if (command == 'renamenx' || command == 'rename') {      
-      nextCmdActions.push(cmdactions.SCAN_TILL_CURRENT_CURSOR);
+      nextCmdActions.push({type: cmdactions.SCAN_TILL_CURRENT_CURSOR});
     } else if (command == 'lpush') {
       const key = args[1];
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
@@ -382,9 +383,10 @@ async function handleCmdOutputActions(redisInstance, actions) {
           newKeyAndTypes[key] = {type: 'string'}; 
           selectedKey = redisInstance.selectedKeyInfo.find(p=>p.key === key);
           if (selectedKey) {
+            console.log(selectedKey);
             selectedKey.value= await redisInstance.redis.get(key);
             selectedKey.exp = await redisInstance.redis.pttl(key);
-            ioActionextIoActionsns.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo: selectedKey})
+            nextIoActions.push({type: ioActions.SELECTED_NODE_UPDATED, keyInfo: selectedKey})
           } 
         }
         redisInstance.keys = Object.assign({},redisInstance.keys,newKeyAndTypes);
@@ -481,6 +483,8 @@ async function handleCmdOutputActions(redisInstance, actions) {
         break;
     }
   }
+  console.log("NEXTIO")
+  console.log(nextIoActions);
   return nextIoActions;
 }
 
@@ -591,6 +595,19 @@ async function addNewKey(redisInstance, model, callback) {
   }
 }
 
+async function handleRawCommandExecution(redisInstance, args, callback) {
+  try {
+    if (!args) {
+      throw EvalError("Line is empty");
+    }
+    const resp = await redisInstance.redis.call(args[0], args.splice(1));
+    callback(null,resp);
+  } catch (error) {
+    console.error(error);
+    callback(error, null)
+  }
+}
+
 const shouldRemoveTreeCommands = [
   'flushall','flushdb',
 ]
@@ -628,5 +645,6 @@ const refreshNeedCommands = ['set',
     handleListEntityScan,
     handleMonitorCommands,
     handleCommandExecution,
-    handleCmdOutputActions
+    handleCmdOutputActions,
+    handleRawCommandExecution
   }

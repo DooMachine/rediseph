@@ -7,7 +7,10 @@ import { RedisCli } from '../../models/cli';
  */
 export enum CliActionTypes {
     ADD_NEW_CLI = '[Cli] ADD_NEW_CLI',
-    TOGGLE_CLI = '[Cli] TOGGLE_CLI'
+    TOGGLE_CLI = '[Cli] TOGGLE_CLI',
+
+    EXECUTE_LINE = '[Cli] EXECUTE_LINE',
+    EXECUTE_LINE_RESPONSE = '[Cli] EXECUTE_LINE_RESPONSE'
 }
 
 /**
@@ -26,11 +29,22 @@ export class ToggleCli implements Action {
 
     constructor(public payload: {redisId: string, show: boolean | null}) { }
 }
+export class ExecuteLine implements Action {
+    readonly type = CliActionTypes.EXECUTE_LINE;
 
+    constructor(public payload: {redisId: string, line: string}) { }
+}
+export class ExecuteLineResponse implements Action {
+    readonly type = CliActionTypes.EXECUTE_LINE_RESPONSE;
+
+    constructor(public payload: {redisId: string, terminalInfo: any}) { }
+}
 /**
  * Export a type alias of all actions in this action group
  * so that reducers can easily compose action types
  */
 export type CliActions
                         = AddNewCli
-                        | ToggleCli;
+                        | ToggleCli
+                        | ExecuteLine
+                        | ExecuteLineResponse;

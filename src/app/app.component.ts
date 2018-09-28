@@ -19,7 +19,6 @@ import { RedisCli } from './models/cli';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit {
-  title = 'rediSeph';
   selectedInstanceId$: Observable<string | number>;
   selectedKeyInfoHosts$: Observable<SelectedKeyInfoHost[]>;
   selectedRedisIndex$: Observable<number>;
@@ -90,5 +89,8 @@ export class AppComponent implements OnInit {
 
   toggleCli($event) {
     this.store.dispatch(new cliActions.ToggleCli($event));
+  }
+  submitTerminalLine($event) {
+    this.store.dispatch(new cliActions.ExecuteLine($event));
   }
 }

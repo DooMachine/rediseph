@@ -12,7 +12,7 @@ export class CliContainerComponent implements OnInit {
 
   @Output() submitLine = new EventEmitter();
   @Input() redisId: string;
-  cliInput: string;
+  cliInput = '';
 
   currentRedisCli: RedisCli;
   redisClis: Array<RedisCli>;
@@ -28,8 +28,9 @@ export class CliContainerComponent implements OnInit {
   ngOnInit() {
   }
   onSubmit() {
+    console.log(this.cliInput);
     if (this.cliInput.length > 0) {
-      this.submitLine.emit(this.cliInput);
+      this.submitLine.emit({redisId: this.redisId, line: this.cliInput});
     }
   }
   scrollToBottom() {

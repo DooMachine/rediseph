@@ -293,7 +293,7 @@ io.on('connection', (client) => {
         io.to(data.redisId).emit(actions.STOPPED_WATCH_CHANGES, data.redisId)
     });
     /**
-     * Executing raw commands
+     * Executing client commands
      */
     client.on(actions.EXECUTE_COMMAND, async (data) => {
         const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
@@ -304,6 +304,40 @@ io.on('connection', (client) => {
         // if it is not monitoring we should take care of it        
         await redisutils.handleCommandExecution(redisInstance, data.args, (nextIoActions) => {         
             redisInstance.ioStreamer.next(nextIoActions);
+        })
+        
+    });
+    /**
+     * Executing raw terminal commands
+     */
+    client.on(actions.EXECUTE_TERMINAL_LINE, async (data) => {
+        const redisInstance = db.redisInstances.find(p=>p.roomId == data.redisId);
+        if (!redisInstance) {
+            client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                {error: 'This should not happen!'})
+        }      
+        
+        const args = data.line.replace(/\s\s+/g, ' ').split(' ');
+        const cmdArgs = [...args];
+        await redisutils.handleRawCommandExecution(redisInstance, args, async (err, resp) => {     
+            const commanddate = new Date();    
+            redisInstance.terminalInfo.lines.push(commanddate.toTimeString()+ '> '+ data.line);
+            if(err) {
+                redisInstance.terminalInfo.lines.push(err.message)                
+            } else {
+                redisInstance.terminalInfo.lines.push(resp);
+            }
+            io.to(data.redisId).emit(actions.EXECUTE_TERMINAL_LINE_RESPONSE, {
+                redisId: data.redisId,
+                terminalInfo: redisInstance.terminalInfo,
+            });
+            // if we are not monitoring we should next lines to subscriber.
+            console.debug(redisInstance.isMonitoring);
+            if (!redisInstance.isMonitoring) {
+                redisutils.handleMonitorCommands(redisInstance, [cmdArgs], async (nextIoActions) => {
+                    redisInstance.ioStreamer.next(nextIoActions);
+                })
+            }
         })
         
     });
