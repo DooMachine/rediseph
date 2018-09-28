@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy,
+   Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { RedisCli } from '../../models/cli';
 
 @Component({
@@ -7,10 +8,11 @@ import { RedisCli } from '../../models/cli';
   styleUrls: ['./cli-container.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CliContainerComponent implements OnInit {
+export class CliContainerComponent implements OnInit, OnChanges {
   @ViewChild('lineArea') lineRef: ElementRef;
 
   @Output() submitLine = new EventEmitter();
+  @Output() toggleCli = new EventEmitter();
   @Input() redisId: string;
   cliInput = '';
 
@@ -21,8 +23,10 @@ export class CliContainerComponent implements OnInit {
     this.redisClis = clis;
     this.currentRedisCli = this.redisClis.find(p => p.redisId === this.redisId);
   }
-
-  @Output() toggleCli = new EventEmitter();
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log(changes);
+    this.currentRedisCli = this.redisClis.find(p => p.redisId === this.redisId);
+  }
   constructor() { }
 
   ngOnInit() {

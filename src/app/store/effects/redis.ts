@@ -254,8 +254,9 @@ export class RedisEffects {
     @Effect()
     connectRedisFail$: Observable<Action> =
         this.redisService.redisConnectFail$.pipe( // listen to the socket for CLIENT CONNECTED FAIL event
-            switchMap(resp =>
-                of(new redisActions.ConnectRedisInstanceFail(resp))
-            )
+            switchMap((resp) => {
+                this.snackBar.open('Failed to connect redis engine', 'ok');
+                return of(new redisActions.ConnectRedisInstanceFail(resp));
+            })
         );
 }

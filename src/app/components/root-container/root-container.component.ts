@@ -59,10 +59,10 @@ export class RootContainerComponent implements OnInit {
   }
   clickNew() {
     const newData: ConnectServerModel = {
-      ip: 'localhost',
-      name: '',
-      port: 6379,
-      password: '',
+      ip: 'redis-13374.c14.us-east-1-2.ec2.cloud.redislabs.com',
+      name: 'wqe',
+      port: 13374,
+      password: '0HKw40bHp1GCRoqryAqKPq78bYGU9ddO',
       db: 0
     };
     const dialogRef = this.dialog.open(AddRedisModalComponent, {

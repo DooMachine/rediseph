@@ -21,9 +21,7 @@ body{
   margin: 0;
   padding: 0;
   height:100%;
-
 }
-
 // Override typography for a specific Angular Material components.
 @include mat-checkbox-typography($redis-typography);
 
@@ -42,7 +40,7 @@ $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
   @include mat-checkbox-typography($redis-typography);
   background:rgb(48, 10, 36);
   color:#e0e0e0;
-  border-top-left-radius: 9px;
+  border-top-left-radius: 9px;  
   padding:5px;
 }
 

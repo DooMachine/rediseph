@@ -40,7 +40,10 @@ export class TreeComponent implements AfterViewInit {
 
   @Input() selectedNodeKey: string;
   @Input() expandedNodeKeys: Array<string>;
-  @Input() searchText: string;
+  @Input('searchText')
+  set value(sText: string) {
+    this.searchInputControl.setValue(sText);
+  }
   @Input() hasMoreKeys: boolean;
   @Output() nodeClick = new EventEmitter();
   @Output() expandClick = new EventEmitter();

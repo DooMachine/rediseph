@@ -54,6 +54,7 @@ io.on('connection', (client) => {
      * On Client tries to connect
      */
     client.on(actions.CONNECT_REDIS_INSTANCE, async (connectionInfo) => {
+        console.log(connectionInfo);
         // if we need multiple users make changes same time (like live chat)
         const diffrentEveryUser = config.get('DIFFERENT_CONNECTION_FOR_EVERY_USER');
         const previousConnectedRedis = db.redisInstances.find(p=> 
@@ -546,9 +547,11 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
+        console.log(redisInstance);
         redisInstance.connectedClientCount--;
         // if no connection left remove redis instance
         if(redisInstance.connectedClientCount < 1) {
+            redisInstance.redis.disconnect();
             db.redisInstances = db.redisInstances.filter(p=>p.roomId != redisId);
         }
         client.emit(actions.DISCONNECT_REDIS_INSTANCE_SUCCESS,
