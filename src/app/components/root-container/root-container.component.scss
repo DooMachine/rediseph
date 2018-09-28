@@ -10,14 +10,15 @@
     font-size: 32px;
 }
 .inner-sidenav-container {
-    height: 100%;
+    height: calc(100vh-100px) !important;
 }
 .inner-sidenav {
     position: relative;
     overflow-y: auto;
+    height: calc(100vh-100px) !important;
 }
 .inner-sidenav-content {
-    max-height: 93vh;
+    height: calc(100vh-100px) !important;
     margin:0 !important;
 }
 mat-sidenav {
@@ -29,4 +30,14 @@ mat-sidenav {
 }
 .new-tab-label{
     min-width: 50px;    
+}
+.cli-wrapper {
+    position: fixed;
+    bottom: 0px;
+    right: 20px;
+    z-index: 123;
+    width: calc(50% - 150px);
+}
+.inner-container {
+    position: relative;
 }

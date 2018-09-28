@@ -11,8 +11,8 @@ export class ListViewerComponent implements OnInit {
   // List Value Viewer
   editorOptions = {
     lineNumbers: false,
-    theme: 'material',
-    mode: 'markdown'
+    theme: 'monokai',
+    mode: 'application/json'
   };
   stringValue = '';
   scoreValue = 0;

@@ -6,7 +6,9 @@ import { Actions, Effect, ofType } from '@ngrx/effects';
 import { RedisSocketService } from '../services/redissocket.service';
 import * as redisActions from '../actions/redis';
 import * as keyActions from '../actions/selectedkey';
+import * as cliActions from '../actions/cli';
 import { MatSnackBar } from '@angular/material';
+import { RedisCli } from '../../models/cli';
 
 @Injectable()
 export class RedisEffects {
@@ -30,8 +32,16 @@ export class RedisEffects {
     connectRedisSuccess$: Observable<Action> =
         this.redisService.redisConnected$.pipe( // listen to the socket for CLIENT CONNECTED event
             switchMap((resp) =>  {
+                    const newCliInstance: RedisCli = {
+                        redisHostName: resp.redisInfo.ip,
+                        redisId: resp.redisInfo.id,
+                        lines: [],
+                        isLoading: false,
+                        showCli: false,
+                    };
                     return from([
                         new redisActions.ConnectRedisInstanceSuccess(resp),
+                        new cliActions.AddNewCli(newCliInstance),
                         new keyActions.AddSelectedKeyHost({redisId: resp.redisInfo.id, selectedKeys: resp.selectedKeyInfo})
                     ]);
                 }

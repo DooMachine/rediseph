@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { RedisNode } from '../../models/redis-node';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material';
@@ -11,9 +11,10 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./tree.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TreeComponent {
+export class TreeComponent implements AfterViewInit {
 
-  constructor() { }
+  constructor(private elem: ElementRef) { }
+  @ViewChild('listTree') treeRef: ElementRef;
   @Output() searchInputChanged = new EventEmitter();
   searchInputControl: FormControl = new FormControl();
   searchInputControlSub: Subscription;
@@ -24,6 +25,13 @@ export class TreeComponent {
       zset: 'format_list_numbered',
       hash: 'list',
       string: 'text_fields'
+  };
+  private typeTooltipMap = {
+    list: 'List',
+    set: 'Set',
+    zset: 'Ordered Set',
+    hash: 'Hash Map',
+    string: 'String'
   };
 
   nestedTreeControl: NestedTreeControl<RedisNode>;
@@ -45,6 +53,8 @@ export class TreeComponent {
     this.nestedDataSource = new MatTreeNestedDataSource();
     this.nestedDataSource.data = tree;
     this.nestedTreeControl.isExpanded = this.isExpanded;
+    // Scroll into previous selected entity
+
   }
   hasNestedChild = (_: number, nodeData: RedisNode) => nodeData.type === 'folder';
   isSelected = (nodeData: RedisNode) => nodeData.key === this.selectedNodeKey;
@@ -53,5 +63,13 @@ export class TreeComponent {
 
   clickSearch() {
     this.searchInputChanged.emit(this.searchInputControl.value);
+  }
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      const selectedRef = this.elem.nativeElement.querySelectorAll('.selectedNode')[0];
+      if (selectedRef) {
+        selectedRef.scrollIntoView({block: 'center', inline: 'center'});
+      }
+    });
   }
 }

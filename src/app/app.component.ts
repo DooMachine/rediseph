@@ -3,12 +3,14 @@ import { State } from './store/reducers/redis';
 import { Store, select } from '@ngrx/store';
 import * as redisActions from './store/actions/redis';
 import * as keyActions from './store/actions/selectedkey';
+import * as cliActions from './store/actions/cli';
 import { SelectedKeyInfoHost } from './models/redis';
 import { Observable } from 'rxjs';
-import { getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId } from './store/reducers';
+import { getSelectedRedisIndex, selectAllSelectedKeyHosts, getSelectedRedisId, selectAllCli } from './store/reducers';
 import { buildSETQuery, buildNewEntityQuery, buildDeleteFromNodeQuery, buildLREMQuery, buildUpdateEntityQuery } from './utils/commandutils';
 import { LremDialogComponent } from './components/lrem-dialog/lrem-dialog.component';
 import { MatDialog } from '@angular/material';
+import { RedisCli } from './models/cli';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +23,7 @@ export class AppComponent implements OnInit {
   selectedInstanceId$: Observable<string | number>;
   selectedKeyInfoHosts$: Observable<SelectedKeyInfoHost[]>;
   selectedRedisIndex$: Observable<number>;
+  allRedisClis$: Observable<Array<RedisCli>>;
   constructor(private readonly store: Store<State>, private dialog: MatDialog) {
   }
 
@@ -29,6 +32,7 @@ export class AppComponent implements OnInit {
     this.selectedRedisIndex$ = this.store.pipe(select(getSelectedRedisIndex));
     this.selectedKeyInfoHosts$ = this.store.pipe(select(selectAllSelectedKeyHosts));
     this.selectedInstanceId$ = this.store.pipe(select(getSelectedRedisId));
+    this.allRedisClis$ = this.store.pipe(select(selectAllCli));
   }
 
   changeKeyTabIndex($event) {
@@ -59,7 +63,6 @@ export class AppComponent implements OnInit {
     this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }
   deleteEntity($event) {
-    console.log($event);
     if ($event.info.keyInfo.type === 'list') {
       this.openLREMModal($event);
     } else { // remove from set hset zset
@@ -83,5 +86,9 @@ export class AppComponent implements OnInit {
         this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
       }
     });
+  }
+
+  toggleCli($event) {
+    this.store.dispatch(new cliActions.ToggleCli($event));
   }
 }

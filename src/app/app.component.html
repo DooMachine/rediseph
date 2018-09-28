@@ -13,4 +13,10 @@
       (updateEntiyValue)= "updateEntityValue($event)"
       >                      
     </app-node-root>
+    <app-cli-container cli
+      [redisId] ="selectedInstanceId$ | async"
+      [allRedisClis] = "allRedisClis$ | async"
+      (toggleCli) = "toggleCli($event)"
+    >
+    </app-cli-container>
 </app-root-container>

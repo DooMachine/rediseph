@@ -14,8 +14,8 @@ export class StringViewerComponent implements OnInit {
   isRealtime = false;
   editorOptions = {
     lineNumbers: false,
-    theme: 'material',
-    mode: 'markdown'
+    theme: 'monokai',
+    mode: 'application/json'
   };
   stringValue = '';
   newValue = '';

@@ -1,0 +1,37 @@
+
+.cli-input-area{
+    border-top:1px solid wheat;
+}
+:host{
+    color:#e0e0e0 !important;
+}
+.line-area{
+    overflow-y: auto;
+    height: 400px;
+    display: block;
+}
+.cli-input-area
+{
+    width: 100%;
+}
+mat-icon.small-cli {
+    width: 21px;
+    height: 21px;
+    font-size: 21px;
+}
+mat-chip {
+    cursor: pointer;
+}
+input {
+    font-size: 18px;    
+}
+
+.line-area::-webkit-scrollbar {
+    width: 6px;
+    border-radius: 1px;
+    background:none
+} 
+.line-area::-webkit-scrollbar-thumb {
+    background-color: #666666;
+    border-radius: 7px;
+}

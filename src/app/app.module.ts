@@ -25,6 +25,8 @@ import { EllipsisPipe } from './pipes/ellipsis.pipe';
 import { CapitalizePipe } from './pipes/capitalize.pipe';
 import { RootContainerComponent } from './components/root-container/root-container.component';
 import { LremDialogComponent } from './components/lrem-dialog/lrem-dialog.component';
+import { CliContainerComponent } from 'src/app/components/cli-container/cli-container.component';
+import { CliComponent } from './components/cli/cli.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +42,8 @@ import { LremDialogComponent } from './components/lrem-dialog/lrem-dialog.compon
     StringViewerComponent,
     ListViewerComponent,
     LremDialogComponent,
+    CliContainerComponent,
+    CliComponent,
 
     EllipsisPipe,
     CapitalizePipe

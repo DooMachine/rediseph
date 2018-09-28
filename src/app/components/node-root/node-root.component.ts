@@ -38,6 +38,13 @@ export class NodeRootComponent implements OnInit {
     hash: 'list',
     string: 'text_fields'
   };
+  private typeTooltipMap = {
+    list: 'List',
+    set: 'Set',
+    zset: 'Ordered Set',
+    hash: 'Hash Map',
+    string: 'String'
+  };
   constructor() { }
 
   ngOnInit() {

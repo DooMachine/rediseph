@@ -1,0 +1,26 @@
+<div class="terminal-container " fxLayout="column" fxLayoutAlign="start stretch" fxLayoutGap="2px">
+
+  <div class="cli-menu" fxLayout="row" fxLayoutAlign="end center">
+    <mat-chip-list>
+      <mat-chip (click)="toggleCli.emit({redisId: redisId, show: null})" color="primary" selected>
+        <mat-icon>{{currentRedisCli?.showCli ? 'minimize' : 'maximize'}}</mat-icon> Terminal
+      </mat-chip>
+    </mat-chip-list>
+  </div>
+  <div *ngIf="currentRedisCli?.showCli" class="cli-lines dark-theme">
+    <div fxLayout="column" fxLayoutAlign="start stretch" fxLayoutGap="2px">
+      <div fxLayout="column" fxLayoutAlign="start stretch" #lineArea class="line-area">
+        <div  *ngFor="let line of currentRedisCli?.lines; let last = last">
+          {{line}} {{last ? scrollToBottom() : ''}}
+        </div>
+      </div>
+      <form (ngSubmit)="onSubmit()" novalidate>
+        <div class="cli-input-area" fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="2px">
+          <mat-icon class="small-cli">chevron_right</mat-icon>
+          <input [ngModelOptions]="{standalone: true}" fxFlex matInput autocomplete="off" type="text" autofocus [(ngModel)]="inputValue">
+          <button matTooltip="Send Command / Enter" type="submit" mat-icon-button><mat-icon>send</mat-icon></button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

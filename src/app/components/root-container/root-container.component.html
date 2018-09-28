@@ -17,7 +17,8 @@
               <mat-icon matTooltip="Disconnect" (click)="disconnectRedis(instance)" class="tab-icon">close</mat-icon>
             </ng-template>
             <mat-sidenav-container fxLayout="row" fxLayoutAlign="start stretch" class="inner-sidenav-container">
-                <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch" #sidenav mode="side" opened autosize class="inner-sidenav"> 
+                <mat-sidenav fxLayout="column" fxLayoutAlign="start stretch"
+                 #sidenav mode="side" opened class="inner-sidenav"> 
                     <div fxLayout="row" fxLayoutAlign="space-between start" fxLayoutGap="6px">
                         
                         <button matTooltip="Add new key" (click)="addNewKey(null, instance.id)" color="accent" mat-icon-button>
@@ -73,6 +74,7 @@
                     </app-tree>
                 </mat-sidenav>
                 <mat-sidenav-content fxFlex class="inner-sidenav-content" fullscreen>
+                  <div class="inner-container">
                     <app-redis-instance
                       [hidden]="!instance.rootSelected"
                       [instance] = "instance">                          
@@ -81,13 +83,18 @@
                         >
                       </app-root-info>   
                     </app-redis-instance>
-                    <div  [hidden]="instance.rootSelected">
-                      <ng-content></ng-content>
+                    <div [hidden]="instance.rootSelected">
+                      <ng-content></ng-content>                      
                     </div>
+                    
+                  </div>
                 </mat-sidenav-content>
             </mat-sidenav-container>
           </mat-tab>
         </mat-tab-group>
+        <div class="cli-wrapper">
+            <ng-content select="[cli]"></ng-content>                      
+        </div>
     </mat-sidenav-content>
   </mat-sidenav-container>
   

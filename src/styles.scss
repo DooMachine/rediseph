@@ -1,7 +1,7 @@
 @import '~@angular/material/theming';
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,500,600,700');
 @import "~codemirror/lib/codemirror.css";
-@import "~codemirror/theme/material.css";
+@import "~codemirror/theme/monokai.css";
 @include mat-core();
 
 $redis-app-primary: mat-palette($mat-red,800, 400, 700);
@@ -20,6 +20,8 @@ body{
   font-family: 'Open Sans,  sans-serif' !important;
   margin: 0;
   padding: 0;
+  height:100%;
+
 }
 
 // Override typography for a specific Angular Material components.
@@ -35,8 +37,13 @@ $dark-primary: mat-palette($mat-blue-grey);
 $dark-accent:  mat-palette($mat-amber, A200, A100, A400);
 $dark-warn:    mat-palette($mat-deep-orange);
 $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
-.cli-theme {
+.dark-theme {
   @include angular-material-theme($dark-theme);
+  @include mat-checkbox-typography($redis-typography);
+  background:rgb(48, 10, 36);
+  color:#e0e0e0;
+  border-top-left-radius: 9px;
+  padding:5px;
 }
 
 .mat-tab-body{ transition: none; }

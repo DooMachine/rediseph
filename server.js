@@ -130,6 +130,9 @@ io.on('connection', (client) => {
                     for (let i = 0; i < acts.length; i++) {
                         const action = acts[i];
                         switch (action.type) {
+                            /**
+                             * Some commands(set,del,rename etc..) updated redis keys
+                             */
                             case ioActions.UPDATE_LOCAL_TREE:
                             {
                                 io.to(redisInstance.roomId).emit(actions.REDIS_INSTANCE_UPDATED,
@@ -142,6 +145,9 @@ io.on('connection', (client) => {
                                 });
                                 break; 
                             }
+                            /**
+                             * Someone added new key to redis
+                             */
                             case ioActions.NEW_KEY_ADDED:
                             {
                                 io.to(redisInstance.roomId).emit(actions.NEW_KEY_ADDED,
@@ -151,6 +157,10 @@ io.on('connection', (client) => {
                                 })
                                 break;
                             }
+                            /**
+                             * When after some commands
+                             * One of selected nodes updated
+                             */
                             case ioActions.SELECTED_NODE_UPDATED: 
                             {
                                 console.log("Selected Key Updated");
@@ -161,6 +171,9 @@ io.on('connection', (client) => {
                                    });
                                 break;
                             }  
+                            /**
+                             * When Client Closes Key Tab
+                             */
                             case ioActions.NODE_DESELECTED: 
                             {
                                 console.log("Selected Key Deleted");
@@ -241,11 +254,11 @@ io.on('connection', (client) => {
             redisInstance.isMonitoring = true;
             redisInstance.monitor = monitor;
             let storedArgs = [];
-            // We Process monitor commands every 1.3 sec, because redis server can be so busy.
-            let interval$ = Rx.interval(1300);
+            // We Process monitor commands every 0.8 sec, because redis server may be busy.
+            let interval$ = Rx.interval(800);
             interval$.subscribe((time) => {
                 if (storedArgs.length) {
-                    // duplicate so we can keep new commands while "handleMonitorCommands" handling processing.
+                    // duplicate to keep new commands while "handleMonitorCommands" handling processing.
                     const toCmdArgs = [...storedArgs];
                     storedArgs = [];
                     redisutils.handleMonitorCommands(redisInstance, toCmdArgs, async (nextActions) => {

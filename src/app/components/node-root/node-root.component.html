@@ -2,7 +2,7 @@
 <mat-tab-group color="warn" (selectedIndexChange)="keyTabChanged.emit({redisId: redisId, index: $event})" [selectedIndex]="selectedTabIndex">
     <mat-tab  [attr.key]="keyInfo.key" *ngFor=" let keyInfo of (keyInfoHost?.keyInfos); let i = index">
       <ng-template  mat-tab-label>
-        <mat-icon [matTooltip]="keyInfo.type" color="primary" class="tab-icon">{{typeIconMap[keyInfo.type]}}</mat-icon>
+        <mat-icon [matTooltip]="typeTooltipMap[keyInfo.type]" color="primary" class="tab-icon">{{typeIconMap[keyInfo.type]}}</mat-icon>
           {{keyInfo.key | ellipsis: 12}}
         <mat-icon matTooltip="Close" (click)="closeKeyInfo.emit({redisId: redisId, selectedKeyInfo: keyInfo})" class="tab-icon">close</mat-icon>
       </ng-template>
