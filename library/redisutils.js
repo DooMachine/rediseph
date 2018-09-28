@@ -85,8 +85,6 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
         const key = args[1];
         nextCmdActions.push({type: cmdactions.SET_KEYS, payload:{ keys: [key]}})          
       }   
-    } else if (command == 'renamenx' || command == 'rename') {      
-      nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT});
     } else if (command == 'lpush') {
       const key = args[1];
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
@@ -99,6 +97,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
       if (selectedKey) {
         nextCmdActions.push({type: cmdactions.ADD_SINGLE_FROM_LIST_TAIL, payload: {key: key}})
       }
+      
     } else if (command == 'hmset' ||  command == 'hdel' || command == 'lset' || command == 'lrem' || command == 'hset'|| command == 'hrem' || command == 'zset' || command=='zrem'|| command == 'zadd' || command == 'sadd' || command == 'srem') {
       const key = args[1];
       const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == key);
@@ -111,8 +110,13 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
         shouldSkipNextCmdActions = true;
         nextIoActions.push({type:  ioActions.UPDATE_LOCAL_TREE})
         nextIoActions.push({type:  ioActions.SELECTED_NODES_UPDATED})
-    }    
+    }  
+    // we should track this explicitly
+    if (refreshNeedCommands.indexOf(command) != -1) {      
+      nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT});
+    }  
   }
+  
   if (shouldSkipNextCmdActions) {
     return ioActionCallback(nextIoActions);
   }
@@ -125,7 +129,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
 async function handleCommandExecution(redisInstance,commands, callback) {
   let nextCmdActions = [];
   let nextIoActions = [];
-  const pipeline = redisInstance.redis.pipeline();
+  const pipeline = redisInstance. redis.pipeline();
   for (let i = 0; i < commands.length; i++) {
     const cmd = commands[i][0].toLowerCase();
     const args = commands[i][1];
@@ -163,10 +167,10 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         })
         break;
       }
-      case 'sadd':
+      case 'sadd': case 'hmset':
       {
         const cmdArgs = args.splice(1);
-        pipeline.sadd(args[0],cmdArgs, async (e, result) => {          
+        pipeline[cmd](args[0],cmdArgs, async (e, result) => {          
           if(result) {
             nextCmdActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0], pattern: cmdArgs[0]+'*'}})
           }
@@ -179,24 +183,10 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       }
       case 'zadd':
       {
-        console.log(args);
         const cmdArgs = args.splice(1);
         pipeline.zadd(args[0],cmdArgs, async (e, result) => {
           if(result) {
             nextCmdActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0], pattern: cmdArgs[1]+'*'}})
-          } else 
-          {
-            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
-          }
-        })
-        break;
-      }
-      case 'hmset':
-      {
-        const cmdArgs = args.splice(1);
-        pipeline.hmset(args[0],cmdArgs, async (e, result) => {
-          if(result) {
-            nextCmdActions.push({type: cmdactions.GET_NEXT_SCAN_ENTITY, payload: {key: args[0], pattern: cmdArgs[0]+'*'}})
           } else 
           {
             nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
@@ -230,10 +220,10 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         })
         break;
       }
-      case 'zrem':
+      case 'lrem': case 'lset': case 'hdel': case 'srem': case 'zrem':
       {
         const cmdArgs = args.splice(1);
-        pipeline.zrem(args[0], cmdArgs, async (e, result) => {
+        pipeline[cmd](args[0], cmdArgs, async (e, result) => {
           if (result) {
             nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
           } else 
@@ -243,56 +233,21 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         })
         break;
       }
-      case 'srem':
+      case 'rename': case 'renamenx':
       {
         const cmdArgs = args.splice(1);
-        pipeline.srem(args[0], cmdArgs, async (e, result) => {
+        console.log(cmdArgs);
+        pipeline[cmd](args[0], cmdArgs, async (e, result) => {
           if (result) {
-            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
+            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT, payload: {key: args[0]}})
+            // Check if user selected the key, update the tab.
+            nextCmdActions.push({type: cmdactions.RENAME_KEY_IF_SELECTED, payload: {key: args[0], newKey: cmdArgs[0]}})
           } else 
           {
             nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
           }
         })
         break;
-      }
-      case 'hdel':
-      {
-        const cmdArgs = args.splice(1);
-        pipeline.hdel(args[0], cmdArgs, async (e, result) => {
-          if (result) {
-            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
-          } else 
-          {
-            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
-          }
-        })
-        break;
-      }
-      case 'lrem':
-      {
-        const cmdArgs = args.splice(1);
-        pipeline.lrem(args[0], cmdArgs, async (e, result) => {
-          if (result) {
-            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
-          } else 
-          {
-            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
-          }
-        })
-        break;
-      }
-      case 'lset':
-      {
-        const cmdArgs = args.splice(1);
-        pipeline.lset(args[0], cmdArgs, async (e, result) => {
-          if (result) {
-            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
-          } else 
-          {
-            nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
-          }
-        })
       }
       default:
         break;
@@ -350,8 +305,7 @@ async function handleCmdOutputActions(redisInstance, actions) {
         if (shouldUpdateLocalTree) {          
           nextIoActions.push({type: ioActions.UPDATE_LOCAL_TREE})
         }
-        if(shouldUpdateSelectedNodes) {  
-          console.log("DAF")        
+        if(shouldUpdateSelectedNodes) {   
           nextIoActions.push({type: ioActions.SELECTED_NODES_UPDATED})
         }
         break;
@@ -379,9 +333,7 @@ async function handleCmdOutputActions(redisInstance, actions) {
       {
         const currentCount = Object.keys(redisInstance.keys).length;
         await scanRedisTree(redisInstance, "0", redisInstance.keyInfo.pattern, currentCount, async (keys, cursor) => {
-          console.log("RESCAN REFRESH KEY COUNT")
-          console.log(currentCount);
-          console.log(keys);
+          
           redisInstance.keys = keys;
           redisInstance.keyInfo.cursor = cursor;
           redisInstance.keyInfo.hasMoreKeys = cursor !== "0";  
@@ -496,6 +448,21 @@ async function handleCmdOutputActions(redisInstance, actions) {
           }
           break;
         }
+      }
+      case cmdactions.RENAME_KEY_IF_SELECTED:
+      {
+        console.log(action.payload);
+        const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
+        if (selectedKey) {
+          redisInstance.selectedKeyInfo.map((keyInfo) => {
+            if (keyInfo.key == action.payload.key) {
+              keyInfo.key = action.payload.newKey;
+            }
+            return keyInfo;
+          });
+          nextIoActions.push({type: ioActions.SELECTED_NODES_UPDATED});
+        }
+        break;
       }
       default:
         break;
