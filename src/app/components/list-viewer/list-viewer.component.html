@@ -41,7 +41,7 @@
     <input
       type="text"
       [(ngModel)]="searchPattern"
-      matInput placeholder="Key/name/pattern" value="{{_selectedKeyInfo.keyScanInfo.pattern}}" #searchInput>
+      matInput placeholder="Key / Pattern (asterix*)" value="{{_selectedKeyInfo.keyScanInfo.pattern}}" #searchInput>
       <button mat-button *ngIf="_selectedKeyInfo.keyScanInfo.pattern" matSuffix mat-icon-button aria-label="Clear"
         (click)="searchInputChanged.emit('')">
         <mat-icon>remove</mat-icon>

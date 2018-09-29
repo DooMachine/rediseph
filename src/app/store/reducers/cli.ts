@@ -35,13 +35,15 @@ export function reducer(state = initialState, action: cliActions.CliActions): St
         }
         case cliActions.CliActionTypes.TOGGLE_CLI:
         {
-            const prev = state.entities[action.payload.redisId].showCli;
-            return adapter.updateOne({id: action.payload.redisId,
-                changes: {showCli: action.payload.show == null ? !prev : action.payload.show}}, state);
+            const prev = state.entities[action.payload.redisId];
+            if (prev) {
+                return adapter.updateOne({id: action.payload.redisId,
+                    changes: {showCli: action.payload.show == null ? !prev.showCli : action.payload.show}}, state);
+            }
+            return state;
         }
         case cliActions.CliActionTypes.EXECUTE_LINE_RESPONSE:
         {
-            const prev = state.entities[action.payload.redisId];
             return adapter.updateOne({id: action.payload.redisId,
                     changes: {lines: action.payload.terminalInfo.lines}}, state);
         }

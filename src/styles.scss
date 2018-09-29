@@ -9,24 +9,12 @@ $redis-app-accent:  mat-palette($mat-teal,500, 300, 800);
 $redis-app-warn:  mat-palette($mat-grey,800, 400, 700);
 $redis-app-theme: mat-light-theme($redis-app-primary, $redis-app-accent);
 
-$redis-typography: mat-typography-config(
-  $font-family: 'Open Sans,  sans-serif',
-  $headline: mat-typography-level(24px, 36px, 600),
-  $body-1: mat-typography-level(14px, 20px, 400)
-);
-
-@include mat-base-typography($redis-typography);
 body{
   font-family: 'Open Sans,  sans-serif' !important;
   margin: 0;
   padding: 0;
   height:100%;
 }
-// Override typography for a specific Angular Material components.
-@include mat-checkbox-typography($redis-typography);
-
-// Override typography for all Angular Material, including mat-base-typography and all components.
-@include angular-material-typography($redis-typography);
 
 @include angular-material-theme($redis-app-theme);
 
@@ -37,7 +25,6 @@ $dark-warn:    mat-palette($mat-deep-orange);
 $dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
 .dark-theme {
   @include angular-material-theme($dark-theme);
-  @include mat-checkbox-typography($redis-typography);
   background:rgb(48, 10, 36);
   color:#e0e0e0;
   border-top-left-radius: 9px;  

@@ -1,5 +1,6 @@
 <app-root-container>
     <app-node-root
+      *ngIf="selectedInstanceId$ | async"
       [redisId] ="selectedInstanceId$ | async"
       [selectedKeyInfoHosts] = "selectedKeyInfoHosts$ | async"
       (keyTabChanged) = "changeKeyTabIndex($event)"
@@ -12,7 +13,7 @@
       (updateEntiyValue)= "updateEntityValue($event)"
       >                      
     </app-node-root>
-    <app-cli-container cli
+    <app-cli-container cli *ngIf="selectedInstanceId$ | async"
       [redisId] ="selectedInstanceId$ | async"
       [allRedisClis] = "allRedisClis$ | async"
       (toggleCli) = "toggleCli($event)"

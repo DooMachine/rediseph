@@ -98,6 +98,10 @@
         <div class="cli-wrapper">
             <ng-content select="[cli]"></ng-content>                      
         </div>
+        <div class="welcome" *ngIf="!(selectedInstanceId$ | async)">
+          <h2>rediSeph</h2> 
+          <div>Click the 'plus' icon at the top-left to connect redis.</div>
+        </div>
     </mat-sidenav-content>
   </mat-sidenav-container>
   

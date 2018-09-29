@@ -78,7 +78,7 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
     if(command === 'del') {
       const keys = args.splice(1);
       nextCmdActions.push({type:  cmdactions.DEL_KEYS, payload:{keys: keys}});
-    } else if(command === 'set') {
+    } else if(command === 'set' || command === 'append') {
       if(args.length == 3) {
         const key = args[1];
         nextCmdActions.push({type: cmdactions.SET_KEYS, payload:{ keys: [key]}})          
@@ -149,7 +149,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       {
         pipeline.set(args[0],args[1] ,(err,result) => {
           if (result) {
-            nextCmdActions.push({type: cmdactions.SET_KEY, payload:{key: args[0], value: args[1]}})
+            nextCmdActions.push({type: cmdactions.SET_KEY, payload:{key: args[0]}})
           }
         })
         break;
@@ -201,7 +201,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
         const cmdArgs = args.splice(1);
         pipeline.lpush(args[0],cmdArgs, async (e, result) => {
           if(result) {
-            nextCmdActions.push({type: cmdactions.ADD_SINGLE_FROM_LIST_HEAD, payload: {key: args[0]}})
+            nextCmdActions.push({type: cmdactions.ADD_VALUES_FROM_LIST_HEAD, payload: {key: args[0]}})
           } else 
           {
             nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
@@ -212,9 +212,10 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       case 'rpush':
       {
         const cmdArgs = args.splice(1);
-        pipeline.rpush(args[0],cmdArgs, async (e, result) => {
+        const newCount = cmdArgs.length;
+        pipeline.rpush(args[0], cmdArgs, async (e, result) => {
           if(result) {
-            nextCmdActions.push({type: cmdactions.ADD_SINGLE_FROM_LIST_TAIL, payload: {key: args[0]}})
+            nextCmdActions.push({type: cmdactions.ADD_VALUES_FROM_LIST_TAIL, payload: {key: args[0], count: newCount}})
           } else 
           {
             nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
@@ -225,9 +226,10 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       case 'lrem': case 'lset': case 'hdel': case 'srem': case 'zrem':
       {
         const cmdArgs = args.splice(1);
+        const newCount = cmdArgs.length;
         pipeline[cmd](args[0], cmdArgs, async (e, result) => {
           if (result) {
-            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0]}})
+            nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_ENTITY_COUNT, payload: {key: args[0], count: newCount}})
           } else 
           {
             nextIoActions.push({type: ioActions.ERROR_EXECUTING_COMMAND, error: e})
@@ -363,33 +365,35 @@ async function handleCmdOutputActions(redisInstance, actions) {
         nextIoActions.push({type: ioActions.UPDATE_LOCAL_TREE})
         break;
       }
-      case cmdactions.ADD_SINGLE_FROM_LIST_HEAD:
+      case cmdactions.ADD_VALUES_FROM_LIST_HEAD:
       {
         const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
         if (selectedKey) {
           await redisInstance.redis.lrange(
               action.payload.key,
               0,
-              0,
+              action.payload.count,
             async (e,resp) => {
-              selectedKey.keyScanInfo.entities = resp.concat(selectedKey.keyScanInfo.entities);
-              selectedKey.keyScanInfo.selectedEntityIndex = 0;
-              nextIoActions.push({
-                type: ioActions.SELECTED_NODE_UPDATED,
-                keyInfo: selectedKey, 
-              });
+              if (resp) {
+                selectedKey.keyScanInfo.entities = resp.concat(selectedKey.keyScanInfo.entities);
+                selectedKey.keyScanInfo.selectedEntityIndex = 0;
+                nextIoActions.push({
+                  type: ioActions.SELECTED_NODE_UPDATED,
+                  keyInfo: selectedKey, 
+                });
+              }              
           })
         }
         break;
       }
-      case cmdactions.ADD_SINGLE_FROM_LIST_TAIL:
+      case cmdactions.ADD_VALUES_FROM_LIST_TAIL:
       {
         const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
         if (selectedKey) {
           await redisInstance.redis.lrange(
               action.payload.key,
               -1,
-              -1,
+              -1* action.payload.count,
             async (e,resp) => {
               selectedKey.keyScanInfo.entities.push(resp);
               selectedKey.keyScanInfo.selectedEntityIndex = selectedKey.keyScanInfo.entities.length -1;

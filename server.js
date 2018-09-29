@@ -98,7 +98,6 @@ io.on('connection', (client) => {
                     {redisInfo: connectionInfo, error: 'Could not connect Redis server with provided parameters!'});
                 redis.disconnect();
                 db.redisInstances = db.redisInstances.filter(p=>p.roomId != roomId);
-                return;
             }, 5000);
             
             redis.on('error', async (e) => {           
@@ -507,7 +506,7 @@ io.on('connection', (client) => {
                 keyInfo.key,
                 keyInfo.type,
                 keyInfo.keyScanInfo.cursor,
-                data.pattern,
+                keyInfo.keyScanInfo.pattern,
                 keyInfo.keyScanInfo.pageSize,
                 async (entities, cursor) => {
                     // if search, start from zero

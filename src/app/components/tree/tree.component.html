@@ -2,7 +2,7 @@
   <input
     type="text"
     [formControl]="searchInputControl"
-    matInput placeholder="Key/name/pattern" [value]="searchInputControl.value" #searchInput>
+    matInput placeholder="Key / Pattern (asterix*)" [value]="searchInputControl.value" #searchInput>
     <button mat-button *ngIf="searchInputControl.value" matSuffix mat-icon-button aria-label="Clear"
      (click)="searchInputChanged.emit('')">
       <mat-icon>remove</mat-icon>

@@ -83,7 +83,7 @@ export class ListViewerComponent implements OnInit {
     setTimeout(() => {
       const selectedRef = this.tableRef.nativeElement.getElementsByClassName('selectedEntity')[0];
       if (selectedRef) {
-        selectedRef.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'end'});
+        selectedRef.scrollIntoView({behavior: 'instant', block: 'center', inline: 'end'});
       }
     }, 90);
   }

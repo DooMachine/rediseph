@@ -125,7 +125,7 @@ export class RedisEffects {
                 }
             )
         );
-    @Effect({dispatch: false})
+    @Effect()
     loadNextPage$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.LOAD_NEXT_PAGE),
@@ -134,7 +134,7 @@ export class RedisEffects {
                 return of(new uiActions.ToggleLoadingBar(true));
             }),
         );
-    @Effect({dispatch: false})
+    @Effect()
     refreshLoadedKeys$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.REFRESH_LOADED_KEYS),
