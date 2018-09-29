@@ -125,8 +125,6 @@ async function handleMonitorCommands (redisInstance,monitorCommands, ioActionCal
     return ioActionCallback(nextIoActions);
   }
   const fromCommandIoActions = await handleCmdOutputActions(redisInstance, nextCmdActions);
-  console.log("fromCommandIoActions");
-  console.log(fromCommandIoActions);
   return ioActionCallback([...nextIoActions,...fromCommandIoActions]);
 }
 
@@ -240,9 +238,7 @@ async function handleCommandExecution(redisInstance,commands, callback) {
       case 'rename': case 'renamenx':
       {
         const cmdArgs = args.splice(1);
-        console.log(cmdArgs);
         pipeline[cmd](args[0], cmdArgs, async (e, result) => {
-          console.log(result);
           if (result) {
             nextCmdActions.push({type: cmdactions.REFRESH_TILL_CURRENT_KEY_COUNT, payload: {key: args[0]}})
             // Check if user selected the key, update the tab.
@@ -259,8 +255,6 @@ async function handleCommandExecution(redisInstance,commands, callback) {
     }
   }  
   await pipeline.exec( async (_, results) => {
-    console.log("nextCmdActions")
-    console.log(nextCmdActions);
     let cmdOutIoActions = [];
     if (nextCmdActions.length && !redisInstance.isMonitoring) {
       cmdOutIoActions = await handleCmdOutputActions(redisInstance, nextCmdActions);
@@ -457,7 +451,6 @@ async function handleCmdOutputActions(redisInstance, actions) {
       }
       case cmdactions.RENAME_KEY_IF_SELECTED:
       {
-        console.log(action.payload);
         const selectedKey = redisInstance.selectedKeyInfo.find(p => p.key == action.payload.key)
         if (selectedKey) {
           redisInstance.selectedKeyInfo.map((keyInfo) => {

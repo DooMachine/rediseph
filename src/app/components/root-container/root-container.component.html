@@ -9,12 +9,8 @@
       </div>
     </mat-sidenav>
     <mat-sidenav-content fxFlex>
-      <section *ngIf="UILoading$" class="loading-bar">
-        <mat-progress-bar
-          class="example-margin"
-          color="primary"
-          mode="query" >
-      </mat-progress-bar>
+      <section *ngIf="UILoading$ | async" class="loading-bar">
+        <mat-progress-bar mode="query"></mat-progress-bar>
       </section>
       <mat-tab-group [selectedIndex]="selectedRedisIndex$ | async" (selectedIndexChange)="redisSelected($event)" [@.disabled]="true">
           <mat-tab [@.disabled]="true" *ngFor=" let instance of (redisInstances$ | async)">

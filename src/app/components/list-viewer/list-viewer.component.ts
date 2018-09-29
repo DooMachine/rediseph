@@ -119,7 +119,7 @@ export class ListViewerComponent implements OnInit {
   }
   saveEntityValue() {
     const selectedVal = this._selectedKeyInfo.keyScanInfo.entities[this._selectedKeyInfo.keyScanInfo.selectedEntityIndex];
-    console.log(this.scoreValue);
+
     this.updateEntiyValue.emit({
       newValue: this.stringValue,
       newScoreValue: this.scoreValue,

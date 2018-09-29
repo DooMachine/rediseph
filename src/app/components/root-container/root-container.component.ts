@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RedisInstance, SelectedKeyInfoHost, ConnectServerModel, AddKeyModel, DataType } from '../../models/redis';
 import { Observable } from 'rxjs';
 import { Store, select } from '@ngrx/store';
-import { State } from '../../store/reducers';
+import { State, getUiLoading } from '../../store/reducers';
 import * as redisActions from '../../store/actions/redis';
 import * as keyActions from '../../store/actions/selectedkey';
 import { MatDialog } from '@angular/material';
@@ -30,15 +30,16 @@ export class RootContainerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const redisInstance = new RedisInstance();
-    redisInstance.serverModel = {
-      name: 'redis-lab-fre',
-      ip: 'redis-16990.c55.eu-central-1-1.ec2.cloud.redislabs.com',
-      port: 16990,
-      db: 0,
-      password: 'H9q9Nvq52lc8gTqpDz6t38YDhUbjidRn'
-    };
-    this.store.dispatch(new redisActions.ConnectRedisInstance(redisInstance.serverModel));
+    // TODO: ADD DEMO
+    // const redisInstance = new RedisInstance();
+    // redisInstance.serverModel = {
+    //   name: 'redis-lab-fre',
+    //   ip: 'redis-16990.c55.eu-central-1-1.ec2.cloud.redislabs.com',
+    //   port: 16990,
+    //   db: 0,
+    //   password: ''
+    // };
+    // this.store.dispatch(new redisActions.ConnectRedisInstance(redisInstance.serverModel));
 
     this.redisInstances$ = this.store.pipe(select(selectAllRedisInstances));
     this.selectedRedisIndex$ = this.store.pipe(select(getSelectedRedisIndex));
@@ -60,11 +61,12 @@ export class RootContainerComponent implements OnInit {
     this.store.dispatch(new redisActions.SetSearchQuery($event));
   }
   clickNew() {
+    // TODO: Add Demo
     const newData: ConnectServerModel = {
-      ip: 'redis-13374.c14.us-east-1-2.ec2.cloud.redislabs.com',
-      name: 'wqe',
-      port: 13374,
-      password: '0HKw40bHp1GCRoqryAqKPq78bYGU9ddO',
+      ip: '',
+      name: '',
+      port: 13131,
+      password: '',
       db: 0
     };
     const dialogRef = this.dialog.open(AddRedisModalComponent, {
@@ -133,7 +135,6 @@ export class RootContainerComponent implements OnInit {
   }
 
   renameNode($event) {
-    console.log($event);
     const dialogData = {
       newKey: $event.node.key,
       node: $event.node

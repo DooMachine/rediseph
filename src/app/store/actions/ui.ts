@@ -14,7 +14,7 @@ export enum UIActionTypes {
  * type checking in reducer functions.
  */
 export class ToggleLoadingBar implements Action {
-    readonly type = ActionTypes.TOGGLE_LOADING_BAR;
+    readonly type = UIActionTypes.TOGGLE_LOADING_BAR;
 
     constructor(public payload: boolean | null ) { }
 }

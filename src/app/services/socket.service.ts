@@ -46,7 +46,7 @@ export class SocketService {
     return new Observable( observer => {
 
       this.socket.on(event, data => {
-        if (environment.production) {
+        if (!environment.production) {
           console.group();
             console.log('----- SOCKET INBOUND -----');
             console.log('Action: ', event);

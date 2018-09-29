@@ -20,7 +20,6 @@ export class AddKeyModalComponent implements OnInit {
 
   onSubmit() {
     this.errors = [];
-    console.log(this.data);
     if (!this.data.key) {
       this.errors.push('Key required');
     }

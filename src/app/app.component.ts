@@ -45,12 +45,10 @@ export class AppComponent implements OnInit {
     this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }
   selectEntityIndex($event) {
-    console.log($event);
     this.store.dispatch(new keyActions.SetSelectedEntityIndex({redisId: $event.redisId,
       key: $event.info.keyInfo.key, index: $event.info.index}));
   }
   addNewEntity($event) {
-    console.log($event);
     const args = buildNewEntityQuery($event.model);
     this.store.dispatch(new redisActions.ExecuteCommand({redisId: $event.redisId, command: args}));
   }

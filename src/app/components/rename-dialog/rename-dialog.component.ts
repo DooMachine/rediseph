@@ -21,7 +21,6 @@ export class RenameDialogComponent implements OnInit {
 
   onSubmit() {
     this.errors = [];
-    console.log(this.data);
     if (!this.data.newKey) {
       this.errors.push('Key required');
     }

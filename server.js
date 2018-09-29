@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
 app.use('/', router);
 
 const server = app.listen(app.get('port'), () => {
-    console.log('Rediseph server listening on port ' + app.get('port'));
+    console.log('Rediseph server listening on localhost:' + app.get('port'));
 });
 
 const io = socketio(server, {'origins': '*:*'} );
@@ -67,7 +67,7 @@ io.on('connection', (client) => {
             && p.connectionInfo.port == connectionInfo.port
             ) 
         if(!diffrentEveryUser && previousConnectedRedis != null) {
-            console.log("CONNECTING SAME")
+            console.log("CONNECTING SAME ENGINE")
             connectionInfo.id = previousConnectedRedis.roomId;
             client.join(previousConnectedRedis.roomId);
             previousConnectedRedis.connectedClientCount++;
@@ -284,8 +284,6 @@ io.on('connection', (client) => {
                 }
             });            
             monitor.on('monitor', async (time, args, source, database) => {
-                console.log("I Monitored")
-                console.log(args);
                 if (database === redisInstance.connectionInfo.db.toString()) {                    
                     storedArgs.push(args);
                 }
@@ -562,7 +560,6 @@ io.on('connection', (client) => {
             client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
                 {error: 'This should not happen!'})
         }
-        console.log(redisInstance);
         redisInstance.connectedClientCount--;
         // if no connection left remove redis instance
         if(redisInstance.connectedClientCount < 1) {

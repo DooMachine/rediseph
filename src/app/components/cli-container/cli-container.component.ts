@@ -24,7 +24,6 @@ export class CliContainerComponent implements OnInit, OnChanges {
     this.currentRedisCli = this.redisClis.find(p => p.redisId === this.redisId);
   }
   ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
     this.currentRedisCli = this.redisClis.find(p => p.redisId === this.redisId);
   }
   constructor() { }
@@ -32,7 +31,6 @@ export class CliContainerComponent implements OnInit, OnChanges {
   ngOnInit() {
   }
   onSubmit() {
-    console.log(this.cliInput);
     if (this.cliInput.length > 0) {
       this.submitLine.emit({redisId: this.redisId, line: this.cliInput});
     }
