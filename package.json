@@ -1,6 +1,6 @@
 {
   "name": "rediseph",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "author": "Okan Aslankan <okn.aslnkn@gmail.com>",
   "displayName": "rediSeph",
   "description": "Real-time GUI management tool for Redis",
@@ -16,7 +16,7 @@
   ],
   "main": "server.js",
   "bin": {
-    "rediseph": "./server"
+    "rediseph": "server.js"
   },
   "preferGlobal": true,
   "repository": {
@@ -31,12 +31,9 @@
     "deploy-heroku": "git push origin master && git push heroku master",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e",
-    "release": "release-it"
+    "e2e": "ng e2e"
   },
   "dependencies": {
-    "@types/socket.io-client": "^1.4.32",
-    "codemirror": "^5.40.2",
     "config": "^2.0.1",
     "core-js": "^2.5.4",
     "express": "^4.16.3",
@@ -73,6 +70,9 @@
     "@types/jasmine": "~2.8.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
+    "@types/socket.io-client": "^1.4.32",
+    "codemirror": "^5.40.2",
+
     "codelyzer": "~4.3.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
@@ -85,7 +85,6 @@
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
     "tslint": "~5.11.0",
-    "typescript": "~2.9.2",
-    "release-it": "^7.4.7"
+    "typescript": "~2.9.2"
   }
 }
