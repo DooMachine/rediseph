@@ -6,7 +6,6 @@ const uuid = require('uuid');
 const Redis = require('ioredis');
 const config = require('config');
 const Rx = require('rxjs');
-const rxop = require('rxjs/operators')
 
 const redisutils = require('./library/redisutils')
 const RedisInstance = require('./library/redisinstance')
@@ -16,6 +15,7 @@ const ioActions = require('./library/ioactions');
 
 const port = process.env.PORT || 3003;
 const env = process.env.NODE_ENV || "development";
+
 
 const app = express();
 
@@ -56,7 +56,6 @@ io.on('connection', (client) => {
      * On Client tries to connect
      */
     client.on(actions.CONNECT_REDIS_INSTANCE, async (connectionInfo) => {
-        console.log(connectionInfo);
         // if we need multiple users make changes same time (like live chat)
         const diffrentEveryUser = config.get('DIFFERENT_CONNECTION_FOR_EVERY_USER');
         const previousConnectedRedis = db.redisInstances.find(p=> 
@@ -326,8 +325,8 @@ io.on('connection', (client) => {
         const args = data.line.replace(/\s\s+/g, ' ').split(' ');
         const cmdArgs = [...args];
         await redisutils.handleRawCommandExecution(redisInstance, args, async (err, resp) => {     
-            const commanddate = new Date();    
-            redisInstance.terminalInfo.lines.push(commanddate.toTimeString()+ '> '+ data.line);
+             
+            redisInstance.terminalInfo.lines.push(new Date().toISOString()+ '> '+ data.line);
             if(err) {
                 redisInstance.terminalInfo.lines.push(err.message)                
             } else {
@@ -338,7 +337,6 @@ io.on('connection', (client) => {
                 terminalInfo: redisInstance.terminalInfo,
             });
             // if we are not monitoring we should next lines to subscriber.
-            console.debug(redisInstance.isMonitoring);
             if (!redisInstance.isMonitoring) {
                 redisutils.handleMonitorCommands(redisInstance, [cmdArgs], async (nextIoActions) => {
                     redisInstance.ioStreamer.next(nextIoActions);

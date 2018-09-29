@@ -75,7 +75,6 @@ export class RedisSocketService {
     updateEntityPagination(action) {
         this.socket.emit('[Redis] UPDATE_ENTITY_PAGINATION', action);
     }
-
     executeTerminalLine(action) {
         this.socket.emit('[Redis] EXECUTE_TERMINAL_LINE', action);
     }

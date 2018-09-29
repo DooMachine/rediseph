@@ -3,7 +3,7 @@ import * as socketio from 'socket.io-client';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-// Low level socket service api (based on rxjs)
+// Low level socket service
 @Injectable({
     providedIn: 'root'
 })
@@ -18,14 +18,13 @@ export class SocketService {
     this.socket.on('disconnect', () => this.connected$.next(false));
   }
 
-  join(room: string) {
-    // auto rejoin after reconnect mechanism
-    this.connected$.subscribe(connected => {
-      if (connected) {
-        this.socket.emit('join', {room});
-      }
-    });
-  }
+  // join(room: string) {
+  //   this.connected$.subscribe(connected => {
+  //     if (connected) {
+  //       this.socket.emit('join', {room});
+  //     }
+  //   });
+  // }
 
   disconnect() {
     this.socket.disconnect();
@@ -33,13 +32,13 @@ export class SocketService {
   }
 
   emit(event: string, data?: any) {
-
-    console.group();
-      console.log('----- SOCKET OUTGOING -----');
-      console.log('Action: ', event);
-      console.log('Payload: ', data);
-    console.groupEnd();
-
+    if (!environment.production) {
+      console.group();
+        console.log('----- SOCKET OUTGOING -----');
+        console.log('Action: ', event);
+        console.log('Payload: ', data);
+      console.groupEnd();
+    }
     this.socket.emit(event, data);
   }
 
@@ -47,16 +46,15 @@ export class SocketService {
     return new Observable( observer => {
 
       this.socket.on(event, data => {
-
-        console.group();
-          console.log('----- SOCKET INBOUND -----');
-          console.log('Action: ', event);
-          console.log('Payload: ', data);
-        console.groupEnd();
-
+        if (environment.production) {
+          console.group();
+            console.log('----- SOCKET INBOUND -----');
+            console.log('Action: ', event);
+            console.log('Payload: ', data);
+          console.groupEnd();
+        }
         observer.next(data);
       });
-      // dispose of the event listener when unsubscribed
       return () => this.socket.off(event);
     });
   }
