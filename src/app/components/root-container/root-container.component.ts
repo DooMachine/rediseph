@@ -24,6 +24,7 @@ export class RootContainerComponent implements OnInit {
   redisInstances$: Observable<RedisInstance[]>;
   selectedInstanceId$: Observable<string | number>;
   selectedKeyInfoHosts$: Observable<SelectedKeyInfoHost[]>;
+  UILoading$: Observable<boolean>;
   selectedRedisIndex$: Observable<number>;
   constructor(private readonly store: Store<State>, private dialog: MatDialog) {
   }
@@ -43,6 +44,7 @@ export class RootContainerComponent implements OnInit {
     this.selectedRedisIndex$ = this.store.pipe(select(getSelectedRedisIndex));
     this.selectedKeyInfoHosts$ = this.store.pipe(select(selectAllSelectedKeyHosts));
     this.selectedInstanceId$ = this.store.pipe(select(getSelectedRedisId));
+    this.UILoading$ = this.store.pipe(select(getUiLoading));
   }
 
   nodeClicked($event) {

@@ -1,6 +1,7 @@
 import * as fromRedis from './redis';
 import * as fromKeys from './selectedkey';
 import * as fromCli from './cli';
+import * as fromUi from './ui';
 
 import { ActionReducerMap,
     ActionReducer, Action,
@@ -16,6 +17,7 @@ export interface State {
     redis: fromRedis.State;
     selectedKey: fromKeys.State;
     cli: fromCli.State;
+    ui: fromUi.State;
 }
 /**
  * Root reducer
@@ -24,6 +26,7 @@ export const reducers: ActionReducerMap<State> = {
     redis: fromRedis.reducer,
     selectedKey: fromKeys.reducer,
     cli: fromCli.reducer,
+    ui: fromUi.reducer,
 };
 
 /**
@@ -63,7 +66,7 @@ export const getFeatureState = createFeatureSelector<State>('redis');
 export const getRedisState = createSelector(getFeatureState, state => state.redis);
 export const getSelectedKeyState = createSelector(getFeatureState, state => state.selectedKey);
 export const getCliState = createSelector(getFeatureState, state => state.cli);
-
+export const getUiState = createSelector(getFeatureState, state => state.ui);
 
 /**
  * Select All Redis
@@ -87,3 +90,4 @@ export const {
 
 export const getSelectedRedisIndex = createSelector(getRedisState, state => state.selectedInstanceIndex);
 export const getSelectedRedisId = createSelector(getRedisState, state => state.selectedInstanceId);
+export const getUiLoading = createSelector(getUiState, state => state.isLoading);

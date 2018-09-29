@@ -7,6 +7,7 @@ import { RedisSocketService } from '../services/redissocket.service';
 import * as redisActions from '../actions/redis';
 import * as keyActions from '../actions/selectedkey';
 import * as cliActions from '../actions/cli';
+import * as uiActions from '../actions/ui';
 import { MatSnackBar } from '@angular/material';
 import { RedisCli } from '../../models/cli';
 
@@ -18,7 +19,7 @@ export class RedisEffects {
         public snackBar: MatSnackBar
     ) {}
 
-    @Effect({dispatch: false})
+    @Effect()
     connectRedis$ = this.actions$
         .pipe(
             ofType(redisActions.RedisActionTypes.CONNECT_REDIS_INSTANCE),
@@ -255,7 +256,7 @@ export class RedisEffects {
     connectRedisFail$: Observable<Action> =
         this.redisService.redisConnectFail$.pipe( // listen to the socket for CLIENT CONNECTED FAIL event
             switchMap((resp) => {
-                this.snackBar.open('Failed to connect redis engine', 'ok');
+                this.snackBar.open(resp.error, 'ok');
                 return of(new redisActions.ConnectRedisInstanceFail(resp));
             })
         );

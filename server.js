@@ -92,6 +92,14 @@ io.on('connection', (client) => {
                     return delay;
                 }
             });
+            // SEND ERROR IF WE CANNOT CONNECT IN 5 SEC
+            const connectionTimeout = setTimeout(() => {
+                client.emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
+                    {redisInfo: connectionInfo, error: 'Could not connect Redis server with provided parameters!'});
+                redis.disconnect();
+                db.redisInstances = db.redisInstances.filter(p=>p.roomId != roomId);
+                return;
+            }, 5000);
             
             redis.on('error', async (e) => {           
                 io.to(roomId).emit(actions.CONNECT_REDIS_INSTANCE_FAIL,
@@ -106,6 +114,8 @@ io.on('connection', (client) => {
             })
           
             redis.on('ready', async () => {
+                // clear failed connection timeout
+                clearTimeout(connectionTimeout);
                 const version = redis.serverInfo.redis_version;
                 if(version) {
                     const versionNo = parseInt(version[0]+version[2]);
