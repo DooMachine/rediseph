@@ -2,6 +2,7 @@
 
 Rediseph is a real-time redis managemen tool. With tree-style key view, terminal, and more!!.
 
+** Still in beta. Do not use me if your data is sensitive!**
 
 ### Installing
 
@@ -53,7 +54,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](LICENSE) file for details
 
 
-##TODO
+## TODO
 
 - [ ] Cleaning/Commenting code
 - [ ] Tests
