@@ -31,10 +31,12 @@ npm run start
 
 ## Built With
 
-* [ioredis](https://github.com/luin/ioredis) - Awesome redis library for node.js
-* [Angular 6](https://angular.io/) - Client Framework
-* [Ngrx](https://github.com/ngrx?tab=repositories) - Client state management
-* [Rxjs](https://github.com/ReactiveX/rxjs) - Reactive Extensions for both server/client
+* [Angular 6](https://angular.io/) - Client Framework.
+* [express](http://expressjs.com//) - server.
+* [ioredis](https://github.com/luin/ioredis) - Awesome redis library for node.js.
+* [Ngrx](https://github.com/ngrx?tab=repositories) - Client state management.
+* [Rxjs](https://github.com/ReactiveX/rxjs) - Reactive Extensions for both server/client.
+* [socket.io](https://socket.io/) - Socket library for node.js.
 
 ## Contributing
 
