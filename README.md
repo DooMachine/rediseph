@@ -2,7 +2,7 @@
 
 Rediseph is a real-time redis managemen tool. With tree-style key view, terminal, and more!!.
 
-** Still in beta. Do not use me if your data is sensitive!**
+**Still in beta. Do not use me if your data is sensitive!**
 
 ### Installing
 
