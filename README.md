@@ -4,6 +4,8 @@ Rediseph is a real-time redis managemen tool. With tree-style key view, terminal
 
 **Still in beta. Do not use this tool if your data is sensitive!**
 
+### Check out demo
+[Click](https://rediseph.herokuapp.com/) and try it.
 ### Installing
 
 Rediseph can be downloaded from npm
