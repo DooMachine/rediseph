@@ -33,7 +33,7 @@ export class RootContainerComponent implements OnInit {
 
     const redisInstance = new RedisInstance();
     redisInstance.serverModel = {
-      name: 'redis-lab-fre',
+      name: 'redis-lab-free-trail',
       ip: 'redis-16990.c55.eu-central-1-1.ec2.cloud.redislabs.com',
       port: 16990,
       db: 0,
