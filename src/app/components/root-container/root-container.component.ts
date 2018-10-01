@@ -30,16 +30,16 @@ export class RootContainerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // TODO: ADD DEMO
-    // const redisInstance = new RedisInstance();
-    // redisInstance.serverModel = {
-    //   name: 'redis-lab-fre',
-    //   ip: 'redis-16990.c55.eu-central-1-1.ec2.cloud.redislabs.com',
-    //   port: 16990,
-    //   db: 0,
-    //   password: ''
-    // };
-    // this.store.dispatch(new redisActions.ConnectRedisInstance(redisInstance.serverModel));
+
+    const redisInstance = new RedisInstance();
+    redisInstance.serverModel = {
+      name: 'redis-lab-fre',
+      ip: 'redis-16990.c55.eu-central-1-1.ec2.cloud.redislabs.com',
+      port: 16990,
+      db: 0,
+      password: 'H9q9Nvq52lc8gTqpDz6t38YDhUbjidRn'
+    };
+    this.store.dispatch(new redisActions.ConnectRedisInstance(redisInstance.serverModel));
 
     this.redisInstances$ = this.store.pipe(select(selectAllRedisInstances));
     this.selectedRedisIndex$ = this.store.pipe(select(getSelectedRedisIndex));
