@@ -3,6 +3,9 @@
 Rediseph is a real-time redis managemen tool. With tree-style key view, terminal, and more!!.
 
 **Still in beta. Do not use this tool if your data is sensitive!**
+### What do I mean real-time. It is really real-time.
+
+![Really real-time](https://media.giphy.com/media/30pdZkAa2N7mZVRtxN/giphy.gif)
 
 ### Check out demo
 [Click](https://rediseph.herokuapp.com/) and try it.
@@ -55,6 +58,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](LICENSE) file for details
 
+## Support
+
+Click that star button!
 
 ## TODO
 
